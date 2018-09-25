@@ -1,7 +1,6 @@
 inputProg*
 parse
 parse.cpp
-parse.h
 parse.output
 parse.y~
 scanner.cpp
