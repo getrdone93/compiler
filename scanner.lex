@@ -110,7 +110,7 @@ struct tab {
 
 int debug_int(const char* str, int retVal) {
   if (lex_debug) {
-    cout << "matched this token ";
+    cout << "matched this token -> ";
     cout << str;
     cout << "\n";
   }
@@ -119,7 +119,7 @@ int debug_int(const char* str, int retVal) {
 
 char debug_char(char c) {
   if (lex_debug) {
-    cout << "matched this token: ";
+    cout << "matched this token -> ";
     cout << c;
     cout << "\n";
   }
@@ -148,7 +148,7 @@ int is_keyword( const char *string )
 
     retVal = ptr ? ptr -> value : IDENTIFIER;
     if (lex_debug) {
-      cout << "matched this token ";
+      cout << "matched this token -> ";
       cout << retVal;
       cout << "\n";
     }
