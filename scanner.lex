@@ -10,7 +10,9 @@ Scanner for test grammar for CSCI4700
 #include        <iomanip>
 #include        <stdlib.h>
 #include        <string.h>
+#define         EXTERN_ME
 #include        "parse.h"
+#undef          EXTERN_ME
 #include        "y.tab.h"
 
 using namespace std;

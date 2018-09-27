@@ -29,6 +29,8 @@ int yyerror( const char *msg );
 int my_input( char *buf, int max_size );
 void detab( char *line );
 int yylex( void );
+void dumpit( parsetree *root, int level );
+void dotit( parsetree *root, int level );
 extern "C" int yywrap( void );
 extern char *yytext; // In the scanner
 
@@ -976,7 +978,8 @@ int main( int ac, char *av[] )
 
     if ( ! err_count )
     {
-        cout << "Compiled OK\n";
+        //cout << "Compiled OK\n";
+      dotit(root, 0);
         return( 0 );
     }
     else
@@ -1113,6 +1116,7 @@ int my_input( unsigned char *buf, int max_size )
     }
 }
 
+
 /* ===========================================================================
 
 detab
@@ -1150,4 +1154,54 @@ void detab( char *line )
     *d = '\0';
     (void) strcpy( line, temp );
     
-} 
+}
+
+void dumpit( parsetree *root, int level )
+{
+    for( int i = 0; i < level; i++ )
+        cout << "    ";
+
+    cout << nodenames[ root -> type ];
+
+    if ( root -> type == node_INT )
+        cout << " keyword 'int'";
+    else if ( root -> type == node_IDENTIFIER )
+        cout << " identifier value is '" << root -> str_ptr << "'";
+    // More else's as needed.
+
+    if ( root -> children[ 0 ] )
+    {
+        cout << endl;
+        for( int i = 0; root -> children[ i ]; i++ )
+            dumpit( root -> children[ i ], level + 1 );
+    }
+    else
+        cout << " - no children" << endl;
+}
+
+void dotit( parsetree *root, int level )
+{
+    char name[ 32 ], cname[ 32 ];
+
+    if ( level == 0 )
+        cout << "digraph g {" << endl;
+
+    sprintf( name, "%p", root );
+    name[ 0 ] = 'x'; // It's a dot thing
+    if ( root -> type == node_IDENTIFIER )
+        cout << "    " << name << " [label=\"" << nodenames[ root -> type ] << "\\n" << root -> str_ptr << "\"];" << endl;
+    else
+        cout << "    " << name << " [label=\"" << nodenames[ root -> type ] << "\"];" << endl;
+    for( int i = 0; root -> children[ i ]; i++ )
+    {
+        sprintf( cname, "%p", root -> children[ i ] );
+        cname[ 0 ] = 'x'; // It's a dot thing
+        cout << "    " << name << " -> " << cname << ";" << endl;
+        dotit( root -> children[ i ], level + 1 );
+    }
+
+    if ( level == 0 )
+        cout << "}" << endl;
+
+}
+ 

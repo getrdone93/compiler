@@ -1,4 +1,5 @@
 inputProg*
+*.dat
 parse
 parse.cpp
 parse.output
