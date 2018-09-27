@@ -237,22 +237,58 @@ decl_list
         ;
 
 decl    // Only type is integer here
-        : INT i_list ';' 
+        : INT IDENTIFIER
 	 {
-	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> type = node_decl;
-	   $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> children[0] -> type = node_INT;
-	   $$ -> children[1] = $2;
-	 }
+	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> type = node_decl;
+	   $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> children[0] -> type = node_INT;
+	   $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
+	   $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext);
+	 }  i_list ';'
+	  {
+	    $<treeptr>3 -> children[2] = $4;
+	  }
         ;
 
 i_list  // Could factor IDENTIFIER above if you like
-      : IDENTIFIER subs ',' i_list
-        | IDENTIFIER subs
-        | IDENTIFIER ',' i_list
-        | IDENTIFIER
+        : subs ',' IDENTIFIER
+	{
+	  $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	  $<treeptr>$ -> type = node_i_list;
+	  $<treeptr>$ -> children[0] = $1;
+	  $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	  $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
+	  $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext);
+	} i_list
+	 {
+	   $<treeptr>4 -> children[2] = $5;
+	 }
+        | subs
+	 {
+	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $$ -> type = node_i_list;
+	   $$ -> children[0] = $1;
+	 }
+        | ',' IDENTIFIER
+	 {
+ 	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> type = node_i_list;
+	   $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> children[0] -> type = node_IDENTIFIER;
+	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
+	 } i_list
+	  {
+	    $<treeptr>3 -> children[1] = $4;
+	  }
+        |
+	 {
+	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $$ -> type = node_i_list;
+	 } 
         ;
+
 /*: IDENTIFIER
 	 {
 	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
