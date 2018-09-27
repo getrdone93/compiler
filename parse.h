@@ -76,13 +76,14 @@ enum nodetype {
   node_assignment_expression,
   node_ASSIGNMENT,
   node_identifier_list,
+  node_postfix_expression,
   node_end_of_nodes
 };
 
 struct parsetree {
     enum nodetype    type;
     int              int_val;
-    char             *str_ptr;
+    const char             *str_ptr;
     struct parsetree *children[ 10 ];
 };
 

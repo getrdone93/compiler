@@ -30,6 +30,7 @@ int my_input( char *buf, int max_size );
 void detab( char *line );
 int yylex( void );
 extern "C" int yywrap( void );
+extern char *yytext; // In the scanner
 
 char		listing_line[ 132 ];	// for listings.	
 int		err_count;		// # of errors.		
@@ -82,24 +83,24 @@ translation_unit
 	    $$ -> children[0] = $1;
 	    $$ -> children[1] = $2;
 	    root = $$;
-	    }
+	  }
 	;
 
 external_declaration
 	: INT IDENTIFIER
 	{
-	  $<context>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<context>$ -> type = node_external_declaration;
-	  $<context>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<context>$ -> children[0] -> type = node_INT;
-	  $<context>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<context>$ -> children[1] -> type = node_IDENTIFIER;
-	  $<context>$ -> children[1] -> str_ptr = strdup(yytext);
+	  $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	  $<treeptr>$ -> type = node_external_declaration;
+	  $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	  $<treeptr>$ -> children[0] -> type = node_INT;
+	  $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	  $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
+	  $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext);
 	} 
          '(' formal_list ')' block
 	  {
-	    $<context>$3 -> children[2] = $5;
-	    $<context>$3 -> children[3] = $7;
+	    $<treeptr>3 -> children[2] = $5;
+	    $<treeptr>3 -> children[3] = $7;
 	  }
         | decl
 	  { 
@@ -133,16 +134,16 @@ formal_list
 formal  
         : INT IDENTIFIER
 	{
-	  $<context>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<context>$ -> type = node_external_declaration;
-	  $<context>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<context>$ -> children[0] -> type = node_INT;
-	  $<context>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<context>$ -> children[1] -> type = node_IDENTIFIER;
-	  $<context>$ -> children[1] -> str_ptr = strdup( yytext );	  
+	  $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	  $<treeptr>$ -> type = node_external_declaration;
+	  $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	  $<treeptr>$ -> children[0] -> type = node_INT;
+	  $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	  $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
+	  $<treeptr>$ -> children[1] -> str_ptr = strdup( yytext );	  
 	} psubs
 	  { 
-	    $<context>$3 -> children[2] = $4;
+	    $<treeptr>3 -> children[2] = $4;
 	  }
         | INT IDENTIFIER
 	  {
@@ -247,39 +248,44 @@ decl    // Only type is integer here
         ;
 
 i_list  // Could factor IDENTIFIER above if you like
-        : IDENTIFIER
+      : IDENTIFIER subs ',' i_list
+        | IDENTIFIER subs
+        | IDENTIFIER ',' i_list
+        | IDENTIFIER
+        ;
+/*: IDENTIFIER
 	 {
-	   $<context>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<context>$ -> type = node_i_list;
-	   $<context>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<context>$ -> children[0] -> type = node_IDENTIFIER;
-	   $<context>$ -> children[0] -> str_ptr = strdup(yytext);
+	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> type = node_i_list;
+	   $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> children[0] -> type = node_IDENTIFIER;
+	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
 	 } subs ',' i_list
 	  {
-	    $<context>$2 -> children[1] = $3;
-	    $<context>$2 -> children[2] = $5;
+	    $<treeptr>$2 -> children[1] = $3;
+	    $<treeptr>$2 -> children[2] = $5;
 	  }
         | IDENTIFIER
 	 {
-	   $<context>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<context>$ -> type = node_i_list;
-	   $<context>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<context>$ -> children[0] -> type = node_IDENTIFIER;
-	   $<context>$ -> children[0] -> str_ptr = strdup(yytext);
+	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> type = node_i_list;
+	   $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> children[0] -> type = node_IDENTIFIER;
+	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
 	 } subs
 	  {
-	    $<context>$2 -> children[1] = $3;
+	    $<treeptr>$2 -> children[1] = $3;
 	  }
         | IDENTIFIER
 	 {
-	   $<context>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<context>$ -> type = node_i_list;
-	   $<context>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<context>$ -> children[0] -> type = node_IDENTIFIER;
-	   $<context>$ -> children[0] -> str_ptr = strdup(yytext);
+	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> type = node_i_list;
+	   $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> children[0] -> type = node_IDENTIFIER;
+	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
 	 } ',' i_list
 	  {
-	    $<context>$2 -> children[1] = $4;
+	    $<treeptr>$2 -> children[1] = $4;
 	  }
         | IDENTIFIER
 	 {
@@ -289,26 +295,26 @@ i_list  // Could factor IDENTIFIER above if you like
 	   $$ -> children[0] -> type = node_IDENTIFIER;
 	   $$ -> children[0] -> str_ptr = strdup(yytext);
 	 }
-        ;
+	 ;*/
 
 subs
         : '[' CONSTANT
 	 {
-	   $<context>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<context>$ -> type = node_subs;
-	   $<context>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<context>$ -> children[0] -> type = node_CONSTANT;
-	   $<context>$ -> children[0] -> str_ptr = strdup(yytext);
+	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> type = node_subs;
+	   $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> children[0] -> type = node_CONSTANT;
+	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
 	 } ']'
   	   {} //get rid of warning: type clash on default action
         | subs '[' CONSTANT
 	 {
-	   $<context>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<context>$ -> type = node_subs;
-	   $<context>$ -> children[0] = $1;
-	   $<context>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<context>$ -> children[1] -> type = node_CONSTANT;
-	   $<context>$ -> children[1] -> str_ptr = strdup(yytext);
+	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> type = node_subs;
+	   $<treeptr>$ -> children[0] = $1;
+	   $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> children[1] -> type = node_CONSTANT;
+	   $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext);
 	 } ']'
         ;
 
@@ -345,27 +351,27 @@ statement
 	 }
         | READ
 	 {
-	   $<context>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<context>$ -> type = node_statement;
-	   $<context>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<context>$ -> children[0] -> type = node_READ;
-	   $<context>$ -> children[0] -> str_ptr = strdup(yytext);
+	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> type = node_statement;
+	   $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $<treeptr>$ -> children[0] -> type = node_READ;
+	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
 	 } '(' IDENTIFIER
 	  {
-	    $<context>$2 -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	    $<context>$2 -> children[1] -> type = node_IDENTIFIER;
-	    $<context>$2 -> children[1] -> str_ptr = strdup(yytext);
+	    $<treeptr>2 -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	    $<treeptr>2 -> children[1] -> type = node_IDENTIFIER;
+	    $<treeptr>2 -> children[1] -> str_ptr = strdup(yytext);
 	  } ')' ';'
         | WRITE 
 	  {
-	    $<context>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	    $<context>$ -> type = node_statement;
-	    $<context>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	    $<context>$ -> children[0] -> type = node_WRITE;
-	    $<context>$ -> children[0] -> str_ptr = strdup(yytext);
+	    $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	    $<treeptr>$ -> type = node_statement;
+	    $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	    $<treeptr>$ -> children[0] -> type = node_WRITE;
+	    $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
 	  } '(' primary_expression ')' ';'
 	   {
-	     $<context>$2 -> children[1] = $4;
+	     $<treeptr>2 -> children[1] = $4;
 	   }
 	;
 
@@ -884,7 +890,7 @@ assignment_expression
 	| postfix_expression '(' ')'
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = assignment_expression;
+	  $$ -> type = node_assignment_expression;
 	  $$ -> children[0] = $1;
 	}
 	| postfix_expression '(' identifier_list ')'
