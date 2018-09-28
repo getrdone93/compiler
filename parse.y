@@ -101,8 +101,9 @@ external_declaration
 	} 
          '(' formal_list ')' block
 	  {
-	    $<treeptr>3 -> children[2] = $5;
-	    $<treeptr>3 -> children[3] = $7;
+	    $<treeptr>$ = $<treeptr>3;
+	    $<treeptr>$ -> children[2] = $5;
+	    $<treeptr>$ -> children[3] = $7;
 	  }
         | decl
 	  { 
