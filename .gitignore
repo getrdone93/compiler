@@ -1,4 +1,5 @@
 inputProg*
+*.c-
 snippet.txt
 *.dat
 parse
