@@ -88,14 +88,6 @@ translation_unit
 	  }
 	;
 
-/*ident
-    : IDENTIFIER
-    {
-      $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-      $<treeptr>$ -> type = node_IDENTIFIER;
-      $<treeptr>$ -> str_ptr = strdup(yytext);
-      }*/
-
 external_declaration
 	: int_ident '(' formal_list ')' block
 	{
@@ -112,30 +104,6 @@ external_declaration
 	    $$ -> children[0] = $1;
 	    }*/
 	;
-
-/* external_declaration */
-/* 	: INT id '(' formal_list ')' block */
-/* 	{ */
-/* 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
-/* 	  $$ -> type = node_external_declaration; */
-/* 	  $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
-/* 	  $$ -> children[0] -> type = node_INT; */
-/* 	  $$ -> children[1] = $<treeptr>2; */
-/* 	  $$ -> children[2] = $4; */
-/* 	  $$ -> children[3] = $6; */
-/* 	} */
-/*         | decl */
-/* 	; */
-
-
-/* id */
-/*   : IDENTIFIER */
-/*    { */
-/*      $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
-/*      $<treeptr>$ -> type = node_IDENTIFIER; */
-/*      $<treeptr>$ -> str_ptr = strdup(yytext); */
-/*    } */
-/*   ; */
 
 formal_list
         : formal_list ',' formal
@@ -264,54 +232,107 @@ decl_list
 	 }
         ;
 
+/* decl    // Only type is integer here */
+/*          : int_ident i_list ';' */
+/* 	 { */
+/* 	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/* 	   $$ -> type = node_decl; */
+/* 	   $$ -> children[0] = $<treeptr>1; */
+/* 	   $$ -> children[1] = $2; */
+/* 	 } */
+/*         ; */
+
 decl    // Only type is integer here
-         : int_ident i_list ';'
+        : INT i_list ';' 
 	 {
 	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> type = node_decl;
-	   $$ -> children[0] = $<treeptr>1;
+	   $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $$ -> children[0] -> type = node_INT;
 	   $$ -> children[1] = $2;
 	 }
         ;
 
 i_list  // Could factor IDENTIFIER above if you like
-        : subs ',' IDENTIFIER
-	{
-	  $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<treeptr>$ -> type = node_i_list;
-	  $<treeptr>$ -> children[0] = $1;
-	  $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
-	  $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext);
-	} i_list
+        : id_subs ',' i_list 
 	 {
-	   $<treeptr>$ = $<treeptr>4;
-	   $<treeptr>$ -> children[2] = $5;
+	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $$ -> type = node_i_list;
+	   $$ -> children[0] = $<treeptr>1;
+	   $$ -> children[1] = $3;
 	 }
-        | subs
-	  /*{
-	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> type = node_i_list;
-	   $$ -> children[0] = $1;
-	   }*/
-        | ',' IDENTIFIER
+        | id_subs
 	 {
- 	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<treeptr>$ -> type = node_i_list;
-	   $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<treeptr>$ -> children[0] -> type = node_IDENTIFIER;
-	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
-	 } i_list
-	  {
-	    $<treeptr>$ = $<treeptr>3;
-	    $<treeptr>$ -> children[1] = $4;
-	  }
-        |
+	   $$ = $<treeptr>1;
+	 }
+        | IDENTIFIER ',' i_list
 	 {
 	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
 	   $$ -> type = node_i_list;
-	 } 
+	   $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $$ -> children[0] -> type = node_IDENTIFIER;
+	   $$ -> children[0] -> str_ptr = strdup(yytext);	  	    
+	   $$ -> children[1] = $3;
+	 }
+        | IDENTIFIER
+	 {
+	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $$ -> type = node_i_list;
+	   $$ -> str_ptr = strdup(yytext);
+	 }
         ;
+
+id_subs
+       : IDENTIFIER subs
+	{
+  	  $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+  	  $<treeptr>$ -> type = node_id_subs;
+	  $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	  $<treeptr>$ -> children[0] -> type = node_IDENTIFIER;
+	  $<treeptr>$ -> children[0] -> str_ptr = strdup( yytext );	  	    
+	  $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	  $<treeptr>$ -> children[1] -> type = node_subs;
+	} 
+
+
+/* i_list  // Could factor IDENTIFIER above if you like */
+/*         : subs ',' IDENTIFIER */
+/* 	{ */
+/* 	  $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/* 	  $<treeptr>$ -> type = node_i_list; */
+/* 	  $<treeptr>$ -> children[0] = $1; */
+/* 	  $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/* 	  $<treeptr>$ -> children[1] -> type = node_IDENTIFIER; */
+/* 	  $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext); */
+/* 	} i_list */
+/* 	 { */
+/* 	   $<treeptr>$ = $<treeptr>4; */
+/* 	   $<treeptr>$ -> children[2] = $5; */
+/* 	 } */
+/*         | subs */
+/* 	  { */
+/* 	    $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/* 	    $$ -> type = node_i_list; */
+/* 	    $$ -> children[0] = $1; */
+/* 	    //	    $$ = $1; */
+/* 	  } */
+/*         | ',' IDENTIFIER */
+/* 	 { */
+/*  	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/* 	   $<treeptr>$ -> type = node_i_list; */
+/* 	   $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/* 	   $<treeptr>$ -> children[0] -> type = node_IDENTIFIER; */
+/* 	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext); */
+/* 	 } i_list */
+/* 	  { */
+/* 	    $<treeptr>$ = $<treeptr>3; */
+/* 	    $<treeptr>$ -> children[1] = $4; */
+/* 	  } */
+/*         | */
+/* 	 { */
+/* 	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/* 	   $$ -> type = node_i_list; */
+/* 	 }  */
+/*         ; */
 
 subs
         : '[' CONSTANT
@@ -322,7 +343,9 @@ subs
 	   $<treeptr>$ -> children[0] -> type = node_CONSTANT;
 	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
 	 } ']'
-	 {$<treeptr>$ = $<treeptr>1;}
+	 {
+           $<treeptr>$ = $<treeptr>1;
+         }
         | subs '[' CONSTANT
 	 {
 	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -332,6 +355,9 @@ subs
 	   $<treeptr>$ -> children[1] -> type = node_CONSTANT;
 	   $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext);
 	 } ']'
+          {
+           $<treeptr>$ = $<treeptr>1;
+          }
         ;
 
 statement
