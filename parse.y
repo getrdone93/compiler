@@ -97,29 +97,45 @@ translation_unit
       }*/
 
 external_declaration
-	: INT IDENTIFIER
+	: int_ident '(' formal_list ')' block
 	{
-	  $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<treeptr>$ -> type = node_external_declaration;
-	  $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<treeptr>$ -> children[0] -> type = node_INT;
-	  $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
-	  $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext);
-	} 
-         '(' formal_list ')' block
-	  {
-	    $<treeptr>$ = $<treeptr>3;
-	    $<treeptr>$ -> children[2] = $5;
-	    $<treeptr>$ -> children[3] = $7;
-	  }
+	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	  $$ -> type = node_external_declaration;
+	  $$ -> children[0] = $<treeptr>1;
+	  $$ -> children[1] = $3;
+	  $$ -> children[2] = $5;
+	}
         | decl
-	  /*{ 
+	  /*{
 	    $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
 	    $$ -> type = node_external_declaration;
 	    $$ -> children[0] = $1;
 	    }*/
 	;
+
+/* external_declaration */
+/* 	: INT id '(' formal_list ')' block */
+/* 	{ */
+/* 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/* 	  $$ -> type = node_external_declaration; */
+/* 	  $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/* 	  $$ -> children[0] -> type = node_INT; */
+/* 	  $$ -> children[1] = $<treeptr>2; */
+/* 	  $$ -> children[2] = $4; */
+/* 	  $$ -> children[3] = $6; */
+/* 	} */
+/*         | decl */
+/* 	; */
+
+
+/* id */
+/*   : IDENTIFIER */
+/*    { */
+/*      $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/*      $<treeptr>$ -> type = node_IDENTIFIER; */
+/*      $<treeptr>$ -> str_ptr = strdup(yytext); */
+/*    } */
+/*   ; */
 
 formal_list
         : formal_list ',' formal
@@ -143,31 +159,31 @@ formal_list
         ;
 
 formal  
-        : INT IDENTIFIER
+        : int_ident psubs
 	{
-	  $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<treeptr>$ -> type = node_external_declaration;
-	  $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<treeptr>$ -> children[0] -> type = node_INT;
-	  $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
-	  $<treeptr>$ -> children[1] -> str_ptr = strdup( yytext );	  
-	} psubs
-	  { 
-	    $<treeptr>$ = $<treeptr>3;
-	    $<treeptr>$ -> children[2] = $4;
-	  }
-        | INT IDENTIFIER
-	  {
-  	    $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-  	    $$ -> type = node_external_declaration;
-	    $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	    $$ -> children[0] -> type = node_INT;
-	    $$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	    $$ -> children[1] -> type = node_IDENTIFIER;
-	    $$ -> children[1] -> str_ptr = strdup( yytext );	  	    
-	  } 
+	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	  $$ -> type = node_formal;
+	  $$ -> children[0] = $<treeptr>1;
+	  $$ -> children[1] = $2;
+	}
+        | int_ident
+	 {
+          $<treeptr>$ = $<treeptr>1;
+         }
         ;
+
+int_ident
+         : INT IDENTIFIER
+	  {
+  	    $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+  	    $<treeptr>$ -> type = node_int_ident;
+	    $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	    $<treeptr>$ -> children[0] -> type = node_INT;
+	    $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	    $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
+	    $<treeptr>$ -> children[1] -> str_ptr = strdup( yytext );	  	    
+	  } 
+
 
 psubs   // In parameters, [] is legal if first. In decl's it is not.
         : '[' ']' subs
@@ -249,20 +265,13 @@ decl_list
         ;
 
 decl    // Only type is integer here
-        : INT IDENTIFIER
+         : int_ident i_list ';'
 	 {
-	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<treeptr>$ -> type = node_decl;
-	   $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<treeptr>$ -> children[0] -> type = node_INT;
-	   $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
-	   $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext);
-	 }  i_list ';'
-	  {
-	    $<treeptr>$ = $<treeptr>3;
-	    $<treeptr>$ -> children[2] = $4;
-	  }
+	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+	   $$ -> type = node_decl;
+	   $$ -> children[0] = $<treeptr>1;
+	   $$ -> children[1] = $2;
+	 }
         ;
 
 i_list  // Could factor IDENTIFIER above if you like
@@ -313,7 +322,7 @@ subs
 	   $<treeptr>$ -> children[0] -> type = node_CONSTANT;
 	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
 	 } ']'
-  	   {} //get rid of warning: type clash on default action
+	 {$<treeptr>$ = $<treeptr>1;}
         | subs '[' CONSTANT
 	 {
 	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );

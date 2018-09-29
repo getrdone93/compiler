@@ -77,6 +77,7 @@ enum nodetype {
   node_ASSIGNMENT,
   node_identifier_list,
   node_postfix_expression,
+  node_int_ident,
   node_end_of_nodes
 };
 
@@ -153,6 +154,7 @@ const char *nodenames[] =
     "ASSIGNMENT",
     "identifier_list",
     "postfix_expression",
+    "int_ident"
   };
 #endif
 

@@ -1,4 +1,5 @@
 inputProg*
+snippet.txt
 *.dat
 parse
 parse.cpp
