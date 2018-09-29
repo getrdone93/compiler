@@ -88,14 +88,6 @@ translation_unit
 	  }
 	;
 
-/*ident
-    : IDENTIFIER
-    {
-      $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-      $<treeptr>$ -> type = node_IDENTIFIER;
-      $<treeptr>$ -> str_ptr = strdup(yytext);
-      }*/
-
 external_declaration
 	: int_ident '(' formal_list ')' block
 	{
@@ -112,30 +104,6 @@ external_declaration
 	    $$ -> children[0] = $1;
 	    }*/
 	;
-
-/* external_declaration */
-/* 	: INT id '(' formal_list ')' block */
-/* 	{ */
-/* 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
-/* 	  $$ -> type = node_external_declaration; */
-/* 	  $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
-/* 	  $$ -> children[0] -> type = node_INT; */
-/* 	  $$ -> children[1] = $<treeptr>2; */
-/* 	  $$ -> children[2] = $4; */
-/* 	  $$ -> children[3] = $6; */
-/* 	} */
-/*         | decl */
-/* 	; */
-
-
-/* id */
-/*   : IDENTIFIER */
-/*    { */
-/*      $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
-/*      $<treeptr>$ -> type = node_IDENTIFIER; */
-/*      $<treeptr>$ -> str_ptr = strdup(yytext); */
-/*    } */
-/*   ; */
 
 formal_list
         : formal_list ',' formal
@@ -322,7 +290,9 @@ subs
 	   $<treeptr>$ -> children[0] -> type = node_CONSTANT;
 	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
 	 } ']'
-	 {$<treeptr>$ = $<treeptr>1;}
+	 {
+	   $<treeptr>$ = $<treeptr>3;
+	 }
         | subs '[' CONSTANT
 	 {
 	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -331,7 +301,10 @@ subs
 	   $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
 	   $<treeptr>$ -> children[1] -> type = node_CONSTANT;
 	   $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext);
-	 } ']'
+	 } ']' 
+	  {
+	    $<treeptr>$ = $<treeptr>4;
+	  }
         ;
 
 statement
