@@ -1053,7 +1053,8 @@ void process_decl_list(parsetree *root, stack<map<string, id_type> > symTable) {
       }     
       break;
     case node_decl:
-      if (root -> children[1] != NULL && root -> children[1] -> children[0] -> type == node_subs) {
+      if (root -> children[1] != NULL && root -> children[1] -> children[0] -> type == node_subs
+	  || root -> children[1] != NULL && root -> children[1] -> type == node_subs) {
 	insertSymTable(root -> children[0] -> children[1] -> str_ptr, integer_array, symTable);
       } else {
 	insertSymTable(root -> children[0] -> children[1] -> str_ptr, integer, symTable);
