@@ -81,6 +81,11 @@ enum nodetype {
   node_end_of_nodes
 };
 
+enum id_type {
+  integer,
+  integer_array
+};
+
 #ifdef EXTERN_ME
 extern const char *nodenames[];
 #else

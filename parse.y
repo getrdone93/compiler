@@ -19,6 +19,8 @@ For:     CSCI 4700
 #include        <ctype.h>        // Possibly needed
 #include        <string.h>       // Possibly needed
 #include        "parse.h"
+#include        <stack>
+#include        <map>
 
 using namespace std;
 
@@ -31,6 +33,7 @@ void detab( char *line );
 int yylex( void );
 void dumpit( parsetree *root, int level );
 void dotit( parsetree *root, int level );
+void symbolTable(parsetree *root, stack<map<string, id_type> > symTable);
 extern "C" int yywrap( void );
 extern char *yytext; // In the scanner
 
@@ -975,7 +978,9 @@ int main( int ac, char *av[] )
     if ( ! err_count )
     {
         //cout << "Compiled OK\n";
-      dotit(root, 0);
+        //dotit(root, 0);
+        stack<map<string, id_type> > symTable;
+	symbolTable(root, symTable);
         return( 0 );
     }
     else
@@ -985,6 +990,29 @@ int main( int ac, char *av[] )
     }
     
 }
+
+void symbolTable(parsetree *root, stack<map<string, id_type> > symTable) {
+  switch(root -> type) {
+    case node_block:
+      cout << "Found node block, would push onto stack\n";
+      if (root -> children[0] -> type == node_decl_list) {
+	cout << "Found decl list, would process those\n";
+      }
+      if (root -> children[1] != NULL) {
+	cout << "Found statement list, recursing\n";
+	symbolTable(root -> children[1], symTable);
+      }
+    case node_IDENTIFIER:
+      cout << "Found id: " << root -> str_ptr << "\n";
+    default: 
+      for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+	cout << "Making recursive symbolTable call\n";
+	symbolTable(root -> children[i], symTable);
+      }
+  }
+}
+
+
 
 /*===========================================================================
 
