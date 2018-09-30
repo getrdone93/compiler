@@ -33,6 +33,7 @@ void detab( char *line );
 int yylex( void );
 void dumpit( parsetree *root, int level );
 void dotit( parsetree *root, int level );
+void process_decl_list(parsetree *root, stack<map<string, id_type> > symTable);
 void symbolTable(parsetree *root, stack<map<string, id_type> > symTable);
 extern "C" int yywrap( void );
 extern char *yytext; // In the scanner
@@ -979,7 +980,10 @@ int main( int ac, char *av[] )
     {
         //cout << "Compiled OK\n";
         //dotit(root, 0);
+
         stack<map<string, id_type> > symTable;
+	map<string, id_type> global_scope;
+	symTable.push(global_scope);
 	symbolTable(root, symTable);
         return( 0 );
     }
@@ -992,25 +996,93 @@ int main( int ac, char *av[] )
 }
 
 void symbolTable(parsetree *root, stack<map<string, id_type> > symTable) {
+  if (root == NULL) {
+    cout << "null root, returning\n";
+    return;
+  }
   switch(root -> type) {
-    case node_block:
-      cout << "Found node block, would push onto stack\n";
-      if (root -> children[0] -> type == node_decl_list) {
-	cout << "Found decl list, would process those\n";
+    case node_translation_unit:
+      for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+	if (root -> children[i] -> type == node_decl) {
+	  cout << "processing decl list, child node type " << root -> children[i] -> type << "\n";
+	  process_decl_list(root -> children[i], symTable);
+	} else {
+	  symbolTable(root -> children[i], symTable);
+	}
       }
-      if (root -> children[1] != NULL) {
-	cout << "Found statement list, recursing\n";
-	symbolTable(root -> children[1], symTable);
+    case node_block: 
+      {
+	map<string, id_type> scope;
+	symTable.push(scope);
+
+	cout << "New scope level entered, size of stack is " << symTable.size() << "\n";
+	if (root -> children[0] -> type == node_decl_list) {
+	  process_decl_list(root -> children[0], symTable);
+	}
+	if (root -> children[1] != NULL) {
+	  symbolTable(root -> children[1], symTable);
+	}
+
+	symTable.pop();
+	cout << "scope popped, stack now of size " << symTable.size() << "\n";
       }
+      break;
     case node_IDENTIFIER:
-      cout << "Found id: " << root -> str_ptr << "\n";
+      if (symTable.top().find(root -> str_ptr) == symTable.top().end()) {
+	cout << "Error. symbol " << root -> str_ptr << " is out of scope";
+      }
+      break;
     default: 
       for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-	cout << "Making recursive symbolTable call\n";
+	cout << "Recursing over children. Child type " << root -> children[i] -> type << "\n";
 	symbolTable(root -> children[i], symTable);
       }
+      break;
   }
 }
+
+void process_decl_list(parsetree *root, stack<map<string, id_type> > symTable) {
+  if (root == NULL) {
+    cout << "null root, returning\n";
+    return;
+  }
+  switch(root -> type) {
+    case node_decl_list:
+      for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+	 process_decl_list(root -> children[i], symTable);
+      }     
+      break;
+    case node_decl:
+      if (root -> children[1] != NULL && root -> children[1] -> children[0] -> type == node_subs) {
+	      cout << "about to process first child of decl_list\n";
+	symTable.top().insert(pair<string, id_type>(root -> children[0] -> children[1] -> str_ptr, integer_array));
+      } else {
+	symTable.top().insert(pair<string, id_type>(root -> children[0] -> children[1] -> str_ptr, integer));
+      }
+      cout << "about to process first child of decl_list\n";
+      process_decl_list(root -> children[1], symTable);
+      break;
+    case node_i_list:
+      {
+	//skip first if its subs because we handle that case in node_decl
+	int start = root -> children[0] -> type == node_subs ? 1 : 0;
+	for (int c1 = start, c2 = start + 1; c2 < 10 && root -> children[c1] != NULL 
+	       && root -> children[c2] != NULL; c1 += 2, c2 += 2) {
+	  if (root -> children[c2] -> type == node_IDENTIFIER) {
+	    symTable.top().insert(pair<string, id_type>(root -> children[c1] -> str_ptr, integer));
+	    symTable.top().insert(pair<string, id_type>(root -> children[c2] -> str_ptr, integer));
+	  } else {
+	    //c2's type would have to be subs which means c1 is an array
+	    symTable.top().insert(pair<string, id_type>(root -> children[c1] -> str_ptr, integer_array));
+	  }
+	}
+      }
+      break;
+   default:
+     cout << "Error, arrived at node " << root -> type << "\n";
+     break;
+  }
+ }
 
 
 
