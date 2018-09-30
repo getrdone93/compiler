@@ -338,23 +338,6 @@ statement
 	    $$ -> type = node_statement;
 	    $$ -> children[0] = $1;
 	    }*/
-	  /*| READ
-	 {
-	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<treeptr>$ -> type = node_statement;
-	   $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $<treeptr>$ -> children[0] -> type = node_READ;
-	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
-	 } '(' IDENTIFIER
-	  {
-	    $<treeptr>$ = $<treeptr>2;
-	    $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	    $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
-	    $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext);
-	  } ')' ';'
-	   {
-	     $<treeptr>$ = $<treeptr>5;
-	     }*/
         | READ '(' IDENTIFIER
 	 {
 	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
