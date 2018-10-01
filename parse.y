@@ -40,6 +40,9 @@ void process_formal_list(parsetree *root, stack<map<string, id_type> > *symTable
 void insertSymTable(string ident, id_type idt, stack<map<string, id_type> > *symTable);
 void process_decl_list(parsetree *root, stack<map<string, id_type> > *symTable);
 void symbolTable(parsetree *root, stack<map<string, id_type> > *symTable);
+bool inScope(string id, stack<map<string, id_type> > *symTable);
+bool inTopScope(string id, stack<map<string, id_type> > *symTable);
+bool inGlobalScope(string id, stack<map<string, id_type> > *symTable);
 string getIdTypeName(id_type idt);
 extern "C" int yywrap( void );
 extern char *yytext; // In the scanner
@@ -1044,7 +1047,9 @@ void symbolTable(parsetree *root, stack<map<string, id_type> > *symTable) {
 	cout << "scope popped, stack now of size " << symTable -> size() << "\n";
       break;
     case node_IDENTIFIER:
-      if (symTable -> top().find(root -> str_ptr) == symTable -> top().end()) {
+      if (inScope(root -> str_ptr, symTable)) {
+	cout << "I see symbol " << root -> str_ptr << " and its in scope\n";
+      } else {
 	cout << "Error. symbol " << root -> str_ptr << " is out of scope\n";
       }
       break;
@@ -1054,6 +1059,24 @@ void symbolTable(parsetree *root, stack<map<string, id_type> > *symTable) {
       }
       break;
   }
+}
+
+bool inScope(string id, stack<map<string, id_type> > *symTable) {
+  return inTopScope(id, symTable) || inGlobalScope(id, symTable);
+}
+
+bool inGlobalScope(string id, stack<map<string, id_type> > *symTable) {
+  stack<map<string, id_type> > copySymTable = *symTable;
+  map<string, id_type> global_scope = copySymTable.top();
+  while(copySymTable.size() > 1) {
+    copySymTable.pop();
+    global_scope = copySymTable.top();
+  }
+  return global_scope.find(id) != global_scope.end();
+}
+
+bool inTopScope(string id, stack<map<string, id_type> > *symTable) {
+  return symTable -> top().find(id) != symTable -> top().end();
 }
 
 void outputMap(map<string, id_type> m) {
