@@ -33,6 +33,7 @@ void detab( char *line );
 int yylex( void );
 void dumpit( parsetree *root, int level );
 void dotit( parsetree *root, int level );
+bool idArray(parsetree *node, int startChild);
 void insertSymTable(string ident, id_type idt, stack<map<string, id_type> > symTable);
 void process_decl_list(parsetree *root, stack<map<string, id_type> > symTable);
 void symbolTable(parsetree *root, stack<map<string, id_type> > symTable);
@@ -1053,8 +1054,7 @@ void process_decl_list(parsetree *root, stack<map<string, id_type> > symTable) {
       }     
       break;
     case node_decl:
-      if (root -> children[1] != NULL && root -> children[1] -> children[0] -> type == node_subs
-	  || root -> children[1] != NULL && root -> children[1] -> type == node_subs) {
+      if (idArray(root, 1)) {
 	insertSymTable(root -> children[0] -> children[1] -> str_ptr, integer_array, symTable);
       } else {
 	insertSymTable(root -> children[0] -> children[1] -> str_ptr, integer, symTable);
@@ -1064,27 +1064,43 @@ void process_decl_list(parsetree *root, stack<map<string, id_type> > symTable) {
 	process_decl_list(root -> children[1], symTable);
       }
       break;
-    case node_i_list:
-      {
-	//skip first if its subs because we handle that case in node_decl
-	int start = root -> children[0] -> type == node_subs ? 1 : 0;
-	for (int c1 = start, c2 = start + 1; c2 < 10 && root -> children[c1] != NULL 
-	       && root -> children[c2] != NULL; c1 += 2, c2 += 2) {
-	  if (root -> children[c2] -> type == node_IDENTIFIER) {
-	    insertSymTable(root -> children[c1] -> str_ptr, integer, symTable);
-	    insertSymTable(root -> children[c2] -> str_ptr, integer, symTable);
-	  } else {
-	    //c2's type would have to be subs which means c1 is an array
-	    insertSymTable(root -> children[c1] -> str_ptr, integer_array, symTable);
-	  }
+   case node_i_list:
+     if (root -> children[0] == NULL) {
+       return;
+     }
+     if (root -> children[0] -> type == node_subs) {
+	if (idArray(root, 2)) {
+	  insertSymTable(root -> children[1] -> str_ptr, integer_array, symTable);
+	} else {
+	  insertSymTable(root -> children[1] -> str_ptr, integer, symTable);
+	}
+
+	if (root -> children[2] -> type == node_i_list) {
+	  process_decl_list(root -> children[2], symTable);
+	}
+      } else {
+	if (idArray(root, 1)) {
+	  insertSymTable(root -> children[0] -> str_ptr, integer_array, symTable);
+	} else {
+	  insertSymTable(root -> children[0] -> str_ptr, integer, symTable);
+	}
+
+	if (root -> children[1] -> type == node_i_list) {
+	  process_decl_list(root -> children[1], symTable);
 	}
       }
       break;
-   default:
-     cout << "Error, arrived at node " << nodenames[root -> type] << "\n";
-     break;
+    default:
+      cout << "Error, arrived at node " << nodenames[root -> type] << "\n";
+      break;
   }
  }
+
+bool idArray(parsetree *node, int startChild) {
+  const bool grandChildExists = node -> children[startChild] -> children[0] != NULL;
+  return grandChildExists && node -> children[startChild] -> children[0] -> type == node_subs
+    || grandChildExists && node -> children[startChild] -> type == node_subs;
+}
 
 void insertSymTable(string ident, id_type idt, stack<map<string, id_type> > symTable) {
   string type = idt == integer ? "integer" : "integer_array";
