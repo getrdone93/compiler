@@ -83,7 +83,8 @@ enum nodetype {
 
 enum id_type {
   integer,
-  integer_array
+  integer_array,
+  function
 };
 
 #ifdef EXTERN_ME

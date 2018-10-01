@@ -34,9 +34,13 @@ int yylex( void );
 void dumpit( parsetree *root, int level );
 void dotit( parsetree *root, int level );
 bool idArray(parsetree *node, int startChild);
+void pushScope(stack<map<string, id_type> > symTable);
+void outputMap(map<string, id_type> m);
+void process_formal_list(parsetree *root, stack<map<string, id_type> > symTable);
 void insertSymTable(string ident, id_type idt, stack<map<string, id_type> > symTable);
 void process_decl_list(parsetree *root, stack<map<string, id_type> > symTable);
 void symbolTable(parsetree *root, stack<map<string, id_type> > symTable);
+string getIdTypeName(id_type idt);
 extern "C" int yywrap( void );
 extern char *yytext; // In the scanner
 
@@ -981,9 +985,9 @@ int main( int ac, char *av[] )
     if ( ! err_count )
     {
         //cout << "Compiled OK\n";
-        //dotit(root, 0);
+      //dotit(root, 0);
 
-        stack<map<string, id_type> > symTable;
+      stack<map<string, id_type> > symTable;
 	map<string, id_type> global_scope;
 	symTable.push(global_scope);
 	symbolTable(root, symTable);
@@ -995,6 +999,12 @@ int main( int ac, char *av[] )
 	return( 1 );
     }
     
+}
+
+void pushScope(stack<map<string, id_type> > symTable) {
+  map<string, id_type> scope;
+  symTable.push(scope);
+  cout << "New scope level entered, size of stack is " << symTable.size() << "\n";
 }
 
 void symbolTable(parsetree *root, stack<map<string, id_type> > symTable) {
@@ -1012,13 +1022,18 @@ void symbolTable(parsetree *root, stack<map<string, id_type> > symTable) {
 	}
       }
       break;
-    case node_block: 
-      {
-	map<string, id_type> scope;
-	symTable.push(scope);
+    case node_external_declaration:
+	pushScope(symTable);
+	insertSymTable(root -> children[0] -> children[1] -> str_ptr, function, symTable);
+	process_formal_list(root -> children[1], symTable);
 
-	cout << "New scope level entered, size of stack is " << symTable.size() << "\n";
-	if (root -> children[0] -> type == node_decl_list) {
+	//run block statements
+	process_decl_list(root -> children[2] -> children[0], symTable);
+	symbolTable(root -> children[2] -> children[1], symTable);
+      break;
+    case node_block: 
+	pushScope(symTable);
+	if (root -> children[0] -> type == node_decl_list || root -> children[0] -> type == node_decl) {
 	  process_decl_list(root -> children[0], symTable);
 	}
 	if (root -> children[1] != NULL) {
@@ -1027,7 +1042,6 @@ void symbolTable(parsetree *root, stack<map<string, id_type> > symTable) {
 
 	symTable.pop();
 	cout << "scope popped, stack now of size " << symTable.size() << "\n";
-      }
       break;
     case node_IDENTIFIER:
       if (symTable.top().find(root -> str_ptr) == symTable.top().end()) {
@@ -1039,6 +1053,31 @@ void symbolTable(parsetree *root, stack<map<string, id_type> > symTable) {
 	symbolTable(root -> children[i], symTable);
       }
       break;
+  }
+}
+
+void outputMap(map<string, id_type> m) {
+  for (map<string, id_type>::const_iterator it = m.begin(); it != m.end(); it++) {
+    cout << "key: " << it->first << " value: " << it->second << "\n";
+  }
+}
+
+void process_formal_list(parsetree *root, stack<map<string, id_type> > symTable) {
+  switch(root -> type) {
+    case node_formal_list:
+      for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+	process_formal_list(root -> children[i], symTable);
+      }
+      break;
+    case node_int_ident:
+      insertSymTable(root -> children[1] -> str_ptr, integer, symTable);
+      break;
+    case node_formal:
+      insertSymTable(root -> children[0] -> children[1] -> str_ptr, integer_array, symTable);
+      break;
+    default:
+      cout << "Error process_formal_list, arrived at node " << nodenames[root -> type] << "\n";
+      break;    
   }
 }
 
@@ -1091,7 +1130,7 @@ void process_decl_list(parsetree *root, stack<map<string, id_type> > symTable) {
       }
       break;
     default:
-      cout << "Error, arrived at node " << nodenames[root -> type] << "\n";
+      cout << "Error process_decl_list, arrived at node " << nodenames[root -> type] << "\n";
       break;
   }
  }
@@ -1103,12 +1142,26 @@ bool idArray(parsetree *node, int startChild) {
 }
 
 void insertSymTable(string ident, id_type idt, stack<map<string, id_type> > symTable) {
-  string type = idt == integer ? "integer" : "integer_array";
-  symTable.top().insert(pair<string, id_type>(ident, idt));
-  cout << "inserted identifier " << ident << " with type " << type << " into symbol table\n";  
+  map<string, id_type> tempMap = symTable.top();
+  tempMap.insert(pair<string, id_type>(ident, idt));
+  symTable.pop();
+  symTable.push(tempMap);
+  cout << "inserted identifier " << ident << " with type " << getIdTypeName(idt) << " into symbol table\n";  
+  //  outputMap(symTable.top());  
 }
 
-
+string getIdTypeName(id_type idt) {
+  switch (idt) {
+    case integer:
+      return "integer";
+  case integer_array:
+    return "integer_array";
+  case function:
+    return "function";
+  default:
+    return "";
+  }
+}
 
 /*===========================================================================
 
