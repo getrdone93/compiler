@@ -990,7 +990,7 @@ int main( int ac, char *av[] )
         //cout << "Compiled OK\n";
       //dotit(root, 0);
 
-      stack<map<string, id_type> > symTable;
+        stack<map<string, id_type> > symTable;
 	map<string, id_type> global_scope;
 	symTable.push(global_scope);
 	symbolTable(root, &symTable);
@@ -1049,14 +1049,14 @@ void symbolTable(parsetree *root, stack<map<string, id_type> > *symTable) {
 	  symbolTable(root -> children[1], symTable);
 	}
 
+	outputMap(symTable -> top());
 	symTable -> pop();
-	cout << "scope popped, stack now of size " << symTable -> size() << "\n";
       break;
     case node_IDENTIFIER:
       if (inScope(root -> str_ptr, symTable)) {
 	cout << "I see symbol " << root -> str_ptr << " and its in scope\n";
       } else {
-	cout << "Error. symbol " << root -> str_ptr << " is out of scope\n";
+	cout << "ERROR: symbol " << root -> str_ptr << " is out of scope\n";
       }
       break;
     default: 
@@ -1087,7 +1087,7 @@ bool inTopScope(string id, stack<map<string, id_type> > *symTable) {
 
 void outputMap(map<string, id_type> m) {
   for (map<string, id_type>::const_iterator it = m.begin(); it != m.end(); it++) {
-    cout << "key: " << it->first << " value: " << it->second << "\n";
+    cout << "id: " << it->first << " type: " << getIdTypeName(it->second) << " is no longer in scope\n";
   }
 }
 
