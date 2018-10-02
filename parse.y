@@ -37,7 +37,7 @@ bool idArray(parsetree *node, int startChild);
 void pushScope(stack<map<string, id_type> > *symTable);
 void outputMap(map<string, id_type> m);
 void process_formal_list(parsetree *root, stack<map<string, id_type> > *symTable);
-void insertSymTable(string ident, id_type idt, stack<map<string, id_type> > *symTable);
+void insertSymTable(string ident, id_type idt, stack<map<string, id_type> > *symTable, int line);
 void process_decl_list(parsetree *root, stack<map<string, id_type> > *symTable);
 void symbolTable(parsetree *root, stack<map<string, id_type> > *symTable);
 bool inScope(string id, stack<map<string, id_type> > *symTable);
@@ -80,6 +80,7 @@ implementing the parse tree generation.
 %type <treeptr> inclusive_or_expression logical_and_expression logical_or_expression assignment_expression
 %type <treeptr> identifier_list
 %expect 1
+%locations
 
 %%
 
@@ -163,6 +164,7 @@ int_ident
 	    $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
 	    $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
 	    $<treeptr>$ -> children[1] -> str_ptr = strdup( yytext );	  	    
+	    $<treeptr>$ -> children[1] -> line = yylloc.first_line;
 	  } 
 
 
@@ -264,6 +266,7 @@ i_list  // Could factor IDENTIFIER above if you like
 	  $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
 	  $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
 	  $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext);
+	  $<treeptr>$ -> children[1] -> line = yylloc.first_line;
 	} i_list
 	 {
 	   $<treeptr>$ = $<treeptr>4;
@@ -282,6 +285,7 @@ i_list  // Could factor IDENTIFIER above if you like
 	   $<treeptr>$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
 	   $<treeptr>$ -> children[0] -> type = node_IDENTIFIER;
 	   $<treeptr>$ -> children[0] -> str_ptr = strdup(yytext);
+	   $<treeptr>$ -> children[0] -> line = yylloc.first_line;
 	 } i_list
 	  {
 	    $<treeptr>$ = $<treeptr>3;
@@ -360,6 +364,7 @@ statement
            $<treeptr>$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
            $<treeptr>$ -> children[1] -> type = node_IDENTIFIER;
 	   $<treeptr>$ -> children[1] -> str_ptr = strdup(yytext);
+	   $<treeptr>$ -> children[1] -> line = yylloc.first_line;
 	 } ')' ';'
 	  {
 	    $<treeptr>$ = $<treeptr>4;
@@ -499,6 +504,7 @@ primary_expression
 	  $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
 	  $$ -> children[0] -> type = node_IDENTIFIER;
 	  $$ -> children[0] -> str_ptr = strdup(yytext);  
+ 	  $$ -> children[0] -> line = yylloc.first_line;
 	}
 	| CONSTANT
 	{
@@ -923,6 +929,7 @@ identifier_list
 	   $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
 	   $$ -> children[0] -> type = node_IDENTIFIER;
 	   $$ -> children[0] -> str_ptr = strdup(yytext);
+	   $$ -> children[0] -> line = yylloc.first_line;
 	 }
 	| identifier_list ',' IDENTIFIER
 	 {
@@ -932,6 +939,7 @@ identifier_list
 	   $$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
 	   $$ -> children[1] -> type = node_IDENTIFIER;
 	   $$ -> children[1] -> str_ptr = strdup(yytext);
+	   $$ -> children[1] -> line = yylloc.first_line;
 	 }
 	;
 
@@ -1027,7 +1035,8 @@ void symbolTable(parsetree *root, stack<map<string, id_type> > *symTable) {
       break;
     case node_external_declaration:
         pushScope(symTable);
-	insertSymTable(root -> children[0] -> children[1] -> str_ptr, function, symTable);
+	insertSymTable(root -> children[0] -> children[1] -> str_ptr, function, symTable, 
+		       root -> children[0] -> children[1] -> line);
 	process_formal_list(root -> children[1], symTable);
 
 	//run block statements
@@ -1054,9 +1063,9 @@ void symbolTable(parsetree *root, stack<map<string, id_type> > *symTable) {
       break;
     case node_IDENTIFIER:
       if (inScope(root -> str_ptr, symTable)) {
-	cout << "I see symbol " << root -> str_ptr << " and its in scope\n";
+	cout << "I see symbol " << root -> str_ptr << " and its in scope at line: " << root -> line << "\n";
       } else {
-	cout << "ERROR: symbol " << root -> str_ptr << " is out of scope\n";
+	cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
       }
       break;
     default: 
@@ -1099,10 +1108,11 @@ void process_formal_list(parsetree *root, stack<map<string, id_type> > *symTable
       }
       break;
     case node_int_ident:
-      insertSymTable(root -> children[1] -> str_ptr, integer, symTable);
+      insertSymTable(root -> children[1] -> str_ptr, integer, symTable, root -> children[1] -> line);
       break;
     case node_formal:
-      insertSymTable(root -> children[0] -> children[1] -> str_ptr, integer_array, symTable);
+      insertSymTable(root -> children[0] -> children[1] -> str_ptr, integer_array, symTable,
+		     root -> children[0] -> children[1] -> line);
       break;
     default:
       cout << "Error process_formal_list, arrived at node " << nodenames[root -> type] << "\n";
@@ -1123,9 +1133,11 @@ void process_decl_list(parsetree *root, stack<map<string, id_type> > *symTable) 
       break;
     case node_decl:
       if (idArray(root, 1)) {
-	insertSymTable(root -> children[0] -> children[1] -> str_ptr, integer_array, symTable);
+	insertSymTable(root -> children[0] -> children[1] -> str_ptr, integer_array, symTable,
+		       root -> children[0] -> children[1] -> line);
       } else {
-	insertSymTable(root -> children[0] -> children[1] -> str_ptr, integer, symTable);
+	insertSymTable(root -> children[0] -> children[1] -> str_ptr, integer, symTable,
+		       root -> children[0] -> children[1] -> line);
       }
 
       if (root -> children[1] -> type == node_i_list) {
@@ -1138,9 +1150,11 @@ void process_decl_list(parsetree *root, stack<map<string, id_type> > *symTable) 
      }
      if (root -> children[0] -> type == node_subs) {
 	if (idArray(root, 2)) {
-	  insertSymTable(root -> children[1] -> str_ptr, integer_array, symTable);
+	  insertSymTable(root -> children[1] -> str_ptr, integer_array, symTable,
+			 root -> children[1] -> line);
 	} else {
-	  insertSymTable(root -> children[1] -> str_ptr, integer, symTable);
+	  insertSymTable(root -> children[1] -> str_ptr, integer, symTable,
+			 root -> children[1] -> line);
 	}
 
 	if (root -> children[2] -> type == node_i_list) {
@@ -1148,9 +1162,9 @@ void process_decl_list(parsetree *root, stack<map<string, id_type> > *symTable) 
 	}
       } else {
 	if (idArray(root, 1)) {
-	  insertSymTable(root -> children[0] -> str_ptr, integer_array, symTable);
+	  insertSymTable(root -> children[0] -> str_ptr, integer_array, symTable, root -> children[0] -> line);
 	} else {
-	  insertSymTable(root -> children[0] -> str_ptr, integer, symTable);
+	  insertSymTable(root -> children[0] -> str_ptr, integer, symTable, root -> children[0] -> line);
 	}
 
 	if (root -> children[1] -> type == node_i_list) {
@@ -1170,12 +1184,12 @@ bool idArray(parsetree *node, int startChild) {
     || grandChildExists && node -> children[startChild] -> type == node_subs;
 }
 
-void insertSymTable(string ident, id_type idt, stack<map<string, id_type> > *symTable) {
+void insertSymTable(string ident, id_type idt, stack<map<string, id_type> > *symTable, int line) {
   map<string, id_type> tempMap = symTable -> top();
   tempMap.insert(pair<string, id_type>(ident, idt));
   symTable -> pop();
   symTable -> push(tempMap);
-  cout << "inserted identifier " << ident << " with type " << getIdTypeName(idt) << " into symbol table\n";  
+  cout << "new identifier " << ident << " with type " << getIdTypeName(idt) << " in scope at line: " << line << "\n";
 }
 
 string getIdTypeName(id_type idt) {

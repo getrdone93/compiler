@@ -167,6 +167,7 @@ const char *nodenames[] =
 struct parsetree {
     enum nodetype    type;
     int              int_val;
+    int line;
     const char             *str_ptr;
     struct parsetree *children[ 10 ];
 };
