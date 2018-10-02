@@ -990,7 +990,7 @@ int main( int ac, char *av[] )
         //cout << "Compiled OK\n";
       //dotit(root, 0);
 
-        stack<map<string, id_type> > symTable;
+      stack<map<string, id_type> > symTable;
 	map<string, id_type> global_scope;
 	symTable.push(global_scope);
 	symbolTable(root, &symTable);
@@ -1031,7 +1031,13 @@ void symbolTable(parsetree *root, stack<map<string, id_type> > *symTable) {
 	process_formal_list(root -> children[1], symTable);
 
 	//run block statements
-	process_decl_list(root -> children[2] -> children[0], symTable);
+	if (root -> children[2] -> children[0] != NULL 
+	    && (root -> children[2] -> children[0] -> type == node_decl
+		|| root -> children[2] -> children[0] -> type == node_decl_list)) {
+	  process_decl_list(root -> children[2] -> children[0], symTable); 
+	} else {
+	  symbolTable(root -> children[2] -> children[0], symTable);
+	}
 	symbolTable(root -> children[2] -> children[1], symTable);
       break;
     case node_block: 
@@ -1156,7 +1162,7 @@ void process_decl_list(parsetree *root, stack<map<string, id_type> > *symTable) 
       cout << "Error process_decl_list, arrived at node " << nodenames[root -> type] << "\n";
       break;
   }
- }
+}
 
 bool idArray(parsetree *node, int startChild) {
   const bool grandChildExists = node -> children[startChild] -> children[0] != NULL;
