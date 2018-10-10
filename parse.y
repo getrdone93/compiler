@@ -128,11 +128,6 @@ formal_list
 	  $$ -> children[1] = $3;
 	}
         | formal
-	  /*{
-	    $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	    $$ -> type = node_formal_list;
-	    $$ -> children[0] = $1;
-	    }*/
         |
 	 {
 	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -181,11 +176,6 @@ psubs   // In parameters, [] is legal if first. In decl's it is not.
 	   $$ -> type = node_psubs;
 	  }
         | subs
-	  /*{
-	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> type = node_psubs;
-	   $$ -> children[0] = $1;
-	   }*/
         ;
 
 block
@@ -217,11 +207,6 @@ block
 
 statement_list
 	: statement
-	  /*{
-	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> type = node_statement_list;
-	   $$ -> children[0] = $1;
-	   }*/ 
 	| statement_list statement
 	 {
 	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -233,11 +218,6 @@ statement_list
 
 decl_list
         : decl
-	  /*{
-	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> type = node_decl_list;
-	   $$ -> children[0] = $1;
-	   }*/
         | decl_list decl
 	 {
 	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -273,11 +253,6 @@ i_list  // Could factor IDENTIFIER above if you like
 	   $<treeptr>$ -> children[2] = $5;
 	 }
         | subs
-	  /*{
-	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> type = node_i_list;
-	   $$ -> children[0] = $1;
-	   }*/
         | ',' IDENTIFIER
 	 {
  	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -326,35 +301,10 @@ subs
 
 statement
 	: block
-	  /*{
-	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> type = node_statement;
-	   $$ -> children[0] = $1;
-	   }*/
 	| expression_stmt
-	  /*{
-	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> type = node_statement;
-	   $$ -> children[0] = $1;
-	   }*/
 	| selection_stmt
-	  /*{
-	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> type = node_statement;
-	   $$ -> children[0] = $1;
-	   }*/
 	| iteration_stmt
-	  /*{
-	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> type = node_statement;
-	   $$ -> children[0] = $1;
-	   }*/
 	| return_stmt
-	  /*{
-	    $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	    $$ -> type = node_statement;
-	    $$ -> children[0] = $1;
-	    }*/
         | READ '(' IDENTIFIER
 	 {
 	   $<treeptr>$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -482,11 +432,6 @@ return_stmt
 
 expression
 	: assignment_expression
-	  /*{
-	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	   $$ -> type = node_expression;
-	   $$ -> children[0] = $1;
-	   }*/
 	| expression ',' assignment_expression
 	 {
 	   $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -532,11 +477,6 @@ primary_expression
 
 postfix_expression
 	: primary_expression
-	  /*{
-	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_postfix_expression;
-	  $$ -> children[0] = $1;
-	  }*/
 	| postfix_expression '[' expression ']'
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -566,11 +506,6 @@ postfix_expression
 
 unary_expression
 	: postfix_expression
-	  /*{
-	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_unary_expression;
-	  $$ -> children[0] = $1;
-	  }*/
 	| INC_OP unary_expression
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -647,11 +582,6 @@ unary_operator
 // rules to keep the grammar file shorter. You certainly can if you want.
 multiplicative_expression
 	: unary_expression
-	  /*{
-	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_multiplicative_expression;
-	  $$ -> children[0] = $1;
-	  }*/
 	| multiplicative_expression '*' unary_expression
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -686,11 +616,6 @@ multiplicative_expression
 
 additive_expression
 	: multiplicative_expression
-	  /*{
-	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_additive_expression;
-	  $$ -> children[0] = $1;
-	  }*/
 	| additive_expression '+' multiplicative_expression
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -715,11 +640,6 @@ additive_expression
 
 relational_expression
 	: additive_expression
-	  /*{
-	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_relational_expression;
-	  $$ -> children[0] = $1;
-	  }*/
 	| relational_expression '<' additive_expression
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -764,11 +684,6 @@ relational_expression
 
 equality_expression
 	: relational_expression
-	  /*{
-	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_equality_expression;
-	  $$ -> children[0] = $1;
-	  }*/
 	| equality_expression EQ_OP relational_expression
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -793,11 +708,6 @@ equality_expression
 
 and_expression
 	: equality_expression
-	  /*{
-	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_and_expression;
-	  $$ -> children[0] = $1;	  
-	  }*/
 	| and_expression '&' equality_expression
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -812,11 +722,6 @@ and_expression
 
 exclusive_or_expression
 	: and_expression
-	  /*{
-	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_exclusive_or_expression;
-	  $$ -> children[0] = $1;
-	  }*/
 	| exclusive_or_expression '^' and_expression
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -831,11 +736,6 @@ exclusive_or_expression
 
 inclusive_or_expression
 	: exclusive_or_expression
-	  /*{
-	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_inclusive_or_expression;
-	  $$ -> children[0] = $1;
-	  }*/
 	| inclusive_or_expression '|' exclusive_or_expression
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -850,11 +750,6 @@ inclusive_or_expression
 
 logical_and_expression
 	: inclusive_or_expression
-	  /*{
-	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_logical_and_expression;
-	  $$ -> children[0] = $1;	  
-	  }*/
 	| logical_and_expression AND_OP inclusive_or_expression
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -869,11 +764,6 @@ logical_and_expression
 
 logical_or_expression
 	: logical_and_expression
-	  /*{
-	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_logical_or_expression;
-	  $$ -> children[0] = $1;
-	  }*/
 	| logical_or_expression OR_OP logical_and_expression
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
@@ -891,11 +781,6 @@ logical_or_expression
 // because of the live registers in the expression.
 assignment_expression
 	: logical_or_expression
-	  /*{
-	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_assignment_expression;
-	  $$ -> children[0] = $1;
-	  }*/
 	| postfix_expression '(' ')'
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
