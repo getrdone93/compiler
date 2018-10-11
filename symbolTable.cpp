@@ -57,7 +57,7 @@ void symbol_table(parsetree *root, stack<map<string, id_attrs> > *symTable) {
       break;
     case node_IDENTIFIER:
       if (in_scope(root -> str_ptr, symTable)) {
-	cout << "I see symbol " << root -> str_ptr << " and its in scope at line: " << root -> line << "\n";
+	//cout << "I see symbol " << root -> str_ptr << " and its in scope at line: " << root -> line << "\n";
       } else {
 	cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
       }
@@ -70,8 +70,14 @@ void symbol_table(parsetree *root, stack<map<string, id_attrs> > *symTable) {
   }
 }
 
-bool in_scope(string id, stack<map<string, id_attrs> > *symTable) {
-  return in_top_scope(id, symTable) || in_global_scope(id, symTable);
+bool in_scope(string id, stack<map<string, id_attrs> > *sym_table) {
+  stack<map<string, id_attrs> > copy_sym_table = *sym_table;
+  bool is = false;
+  while(copy_sym_table.size() >= 1 && !is) {
+    is = in_top_scope(id, &copy_sym_table);
+    copy_sym_table.pop();
+  }
+  return is;
 }
 
 bool in_global_scope(string id, stack<map<string, id_attrs> > *symTable) {
