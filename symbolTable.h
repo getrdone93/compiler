@@ -1,5 +1,6 @@
 #include <stack>
 #include <map>
+#include "parse.h"
 using namespace std;
 
 bool idArray(parsetree *node, int startChild);

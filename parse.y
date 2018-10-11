@@ -18,7 +18,6 @@ For:     CSCI 4700
 #include        <stdlib.h>       // Possibly needed
 #include        <ctype.h>        // Possibly needed
 #include        <string.h>       // Possibly needed
-#include        "parse.h"
 #include        "symbolTable.h"
 #include        <stack>
 #include        <map>
