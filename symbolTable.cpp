@@ -181,9 +181,13 @@ void insert_sym_table(parsetree *node, id_type type, int seq, stack<map<string, 
     node -> str_ptr,
     0 //initialize variables to 0
   };
-  symTable -> top().insert(pair<string, id_attrs>(atts.id_name, atts));
-  cout << "new identifier " << atts.id_name << " with type " << get_id_type_name(atts.it) << " in scope at line: "
+  if (in_top_scope(atts.id_name, symTable)) {
+    cout << "ERROR: duplicate declaration of identifier " << atts.id_name << " found on line " << atts.line << "\n"; 
+  } else {
+    symTable -> top().insert(pair<string, id_attrs>(atts.id_name, atts));
+    cout << "new identifier " << atts.id_name << " with type " << get_id_type_name(atts.it) << " in scope at line: "
        << atts.line << "\n";
+  }
 }
 
 string get_id_type_name(id_type idt) {
