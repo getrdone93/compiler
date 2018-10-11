@@ -19,10 +19,10 @@ enum id_type {
 
 
 struct parsetree {
-    enum nodetype    type;
-    int              int_val;
+    enum nodetype type;
+    int int_val;
     int line;
-    const char             *str_ptr;
+    const char *str_ptr;
     struct parsetree *children[ 10 ];
 };
 
