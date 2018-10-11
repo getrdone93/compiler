@@ -872,10 +872,10 @@ int main( int ac, char *av[] )
         //cout << "Compiled OK\n";
       //dotit(root, 0);
 
-        stack<map<string, id_type> > symTable;
-	map<string, id_type> global_scope;
-	symTable.push(global_scope);
-	symbolTable(root, &symTable);
+        stack<map<string, id_attrs> > sym_table;
+	map<string, id_attrs> global_scope;
+	sym_table.push(global_scope);
+	symbol_table(root, &sym_table);
         return( 0 );
     }
     else
