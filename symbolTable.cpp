@@ -1,5 +1,6 @@
-#include <stack>
-#include <map>
+// #include <stack>
+// #include <vector>
+// #include <map>
 #include <stdlib.h>
 #include <string>
 #include <iostream>
@@ -7,13 +8,13 @@
 
 using namespace std;
 
-void push_scope(stack<map<string, id_attrs> > *symTable) {
+void push_scope(vector<map<string, id_attrs> > *symTable) {
   map<string, id_attrs> scope;
-  symTable -> push(scope);
+  symTable -> push_back(scope);
   cout << "New scope level entered, size of stack is " << symTable -> size() << "\n";
 }
 
-void symbol_table(parsetree *root, stack<map<string, id_attrs> > *symTable) {
+void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
   if (root == NULL) {
     cout << "null root, returning\n";
     return;
@@ -22,41 +23,41 @@ void symbol_table(parsetree *root, stack<map<string, id_attrs> > *symTable) {
     case node_translation_unit:
       for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
 	if (root -> children[i] -> type == node_decl) {
-	  process_decl_list(root -> children[i], symTable);
+	  process_decl_list(root -> children[i], sym_table);
 	} else {
-	  symbol_table(root -> children[i], symTable);
+	  symbol_table(root -> children[i], sym_table);
 	}
       }
       break;
     case node_external_declaration:
-        push_scope(symTable);
-	insert_sym_table(root -> children[0] -> children[1], function, 0, symTable);
-	process_formal_list(root -> children[1], symTable);
+        push_scope(sym_table);
+	insert_sym_table(root -> children[0] -> children[1], function, 0, sym_table);
+	process_formal_list(root -> children[1], sym_table);
 
 	//run block statements
 	if (root -> children[2] -> children[0] != NULL 
 	    && (root -> children[2] -> children[0] -> type == node_decl
 		|| root -> children[2] -> children[0] -> type == node_decl_list)) {
-	  process_decl_list(root -> children[2] -> children[0], symTable); 
+	  process_decl_list(root -> children[2] -> children[0], sym_table); 
 	} else {
-	  symbol_table(root -> children[2] -> children[0], symTable);
+	  symbol_table(root -> children[2] -> children[0], sym_table);
 	}
-	symbol_table(root -> children[2] -> children[1], symTable);
+	symbol_table(root -> children[2] -> children[1], sym_table);
       break;
     case node_block: 
-        push_scope(symTable);
+        push_scope(sym_table);
 	if (root -> children[0] -> type == node_decl_list || root -> children[0] -> type == node_decl) {
-	  process_decl_list(root -> children[0], symTable);
+	  process_decl_list(root -> children[0], sym_table);
 	}
 	if (root -> children[1] != NULL) {
-	  symbol_table(root -> children[1], symTable);
+	  symbol_table(root -> children[1], sym_table);
 	}
 
-	output_map(symTable -> top());
-	symTable -> pop();
+	output_map(sym_table -> back());
+	sym_table -> pop_back();
       break;
     case node_IDENTIFIER:
-      if (in_scope(root -> str_ptr, symTable)) {
+      if (in_scope(root -> str_ptr, sym_table)) {
 	//	root -> symbol_table_ptr = 
       } else {
 	cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
@@ -64,34 +65,33 @@ void symbol_table(parsetree *root, stack<map<string, id_attrs> > *symTable) {
       break;
     default: 
       for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-	symbol_table(root -> children[i], symTable);
+	symbol_table(root -> children[i], sym_table);
       }
       break;
   }
 }
 
-bool in_scope(string id, stack<map<string, id_attrs> > *sym_table) {
-  stack<map<string, id_attrs> > copy_sym_table = *sym_table;
+bool in_scope(string id, vector<map<string, id_attrs> > *sym_table) {
   bool is = false;
-  while(copy_sym_table.size() >= 1 && !is) {
-    is = in_top_scope(id, &copy_sym_table);
-    copy_sym_table.pop();
+  for (vector<map<string, id_attrs> >::iterator i = sym_table -> begin(); i != sym_table -> end(); i++) {
+    if (key_exists(id, *i)) {
+      is = true;
+      break;
+    }
   }
   return is;
 }
 
-bool in_global_scope(string id, stack<map<string, id_attrs> > *symTable) {
-  stack<map<string, id_attrs> > copySymTable = *symTable;
-  map<string, id_attrs> global_scope = copySymTable.top();
-  while(copySymTable.size() > 1) {
-    copySymTable.pop();
-    global_scope = copySymTable.top();
-  }
-  return global_scope.find(id) != global_scope.end();
+bool in_global_scope(string id, vector<map<string, id_attrs> > *sym_table) {
+  return key_exists(id, sym_table -> front());
 }
 
-bool in_top_scope(string id, stack<map<string, id_attrs> > *symTable) {
-  return symTable -> top().find(id) != symTable -> top().end();
+bool in_top_scope(string id, vector<map<string, id_attrs> > *sym_table) {
+  return key_exists(id, sym_table -> back());
+}
+
+bool key_exists(string id, map<string, id_attrs> m) {
+  return m.find(id) != m.end();
 }
 
 void output_map(map<string, id_attrs> m) {
@@ -101,18 +101,18 @@ void output_map(map<string, id_attrs> m) {
   }
 }
 
-void process_formal_list(parsetree *root, stack<map<string, id_attrs> > *symTable) {
+void process_formal_list(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
   switch(root -> type) {
     case node_formal_list:
       for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-	process_formal_list(root -> children[i], symTable);
+	process_formal_list(root -> children[i], sym_table);
       }
       break;
     case node_int_ident:
-      insert_sym_table(root -> children[1], integer, 0, symTable);
+      insert_sym_table(root -> children[1], integer, 0, sym_table);
       break;
     case node_formal:
-      insert_sym_table(root -> children[0] -> children[1], integer_array, 0, symTable);
+      insert_sym_table(root -> children[0] -> children[1], integer_array, 0, sym_table);
       break;
     default:
       cout << "Error process_formal_list, arrived at node " << nodenames[root -> type] << "\n";
@@ -120,7 +120,7 @@ void process_formal_list(parsetree *root, stack<map<string, id_attrs> > *symTabl
   }
 }
 
-void process_decl_list(parsetree *root, stack<map<string, id_attrs> > *symTable) {
+void process_decl_list(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
   if (root == NULL) {
     cout << "null root, returning\n";
     return;
@@ -128,18 +128,18 @@ void process_decl_list(parsetree *root, stack<map<string, id_attrs> > *symTable)
   switch(root -> type) {
     case node_decl_list:
       for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-	 process_decl_list(root -> children[i], symTable);
+	 process_decl_list(root -> children[i], sym_table);
       }     
       break;
     case node_decl:
       if (id_array(root, 1)) {
-	insert_sym_table(root -> children[0] -> children[1], integer_array, 0, symTable);
+	insert_sym_table(root -> children[0] -> children[1], integer_array, 0, sym_table);
       } else {
-	insert_sym_table(root -> children[0] -> children[1], integer, 0, symTable);
+	insert_sym_table(root -> children[0] -> children[1], integer, 0, sym_table);
       }
 
       if (root -> children[1] -> type == node_i_list) {
-	process_decl_list(root -> children[1], symTable);
+	process_decl_list(root -> children[1], sym_table);
       }
       break;
    case node_i_list:
@@ -148,23 +148,23 @@ void process_decl_list(parsetree *root, stack<map<string, id_attrs> > *symTable)
      }
      if (root -> children[0] -> type == node_subs) {
 	if (id_array(root, 2)) {
-	  insert_sym_table(root -> children[1], integer_array, 0, symTable);
+	  insert_sym_table(root -> children[1], integer_array, 0, sym_table);
 	} else {
-	  insert_sym_table(root -> children[1], integer, 0, symTable);
+	  insert_sym_table(root -> children[1], integer, 0, sym_table);
 	}
 
 	if (root -> children[2] -> type == node_i_list) {
-	  process_decl_list(root -> children[2], symTable);
+	  process_decl_list(root -> children[2], sym_table);
 	}
       } else {
 	if (id_array(root, 1)) {
-	  insert_sym_table(root -> children[0], integer_array, 0, symTable);
+	  insert_sym_table(root -> children[0], integer_array, 0, sym_table);
 	} else {
-	  insert_sym_table(root -> children[0], integer, 0, symTable);
+	  insert_sym_table(root -> children[0], integer, 0, sym_table);
 	}
 
 	if (root -> children[1] -> type == node_i_list) {
-	  process_decl_list(root -> children[1], symTable);
+	  process_decl_list(root -> children[1], sym_table);
 	}
       }
       break;
@@ -180,17 +180,17 @@ bool id_array(parsetree *node, int startChild) {
     || grandChildExists && node -> children[startChild] -> type == node_subs;
 }
 
-void insert_sym_table(parsetree *node, id_type type, int seq, stack<map<string, id_attrs> > *symTable) {
+void insert_sym_table(parsetree *node, id_type type, int seq, vector<map<string, id_attrs> > *sym_table) {
   id_attrs atts = {
     type,
     node -> line,
     node -> str_ptr,
     0 //initialize variables to 0
   };
-  if (in_top_scope(atts.id_name, symTable)) {
+  if (in_top_scope(atts.id_name, sym_table)) {
     cout << "ERROR: duplicate declaration of identifier " << atts.id_name << " found on line " << atts.line << "\n"; 
   } else {
-    symTable -> top().insert(pair<string, id_attrs>(atts.id_name, atts));
+    sym_table -> back().insert(pair<string, id_attrs>(atts.id_name, atts));
     cout << "new identifier " << atts.id_name << " with type " << get_id_type_name(atts.it) << " in scope at line: "
        << atts.line << "\n";
   }

@@ -867,9 +867,9 @@ int main( int ac, char *av[] )
         //cout << "Compiled OK\n";
       //dotit(root, 0);
 
-        stack<map<string, id_attrs> > sym_table;
+        vector<map<string, id_attrs> > sym_table;
 	map<string, id_attrs> global_scope;
-	sym_table.push(global_scope);
+	sym_table.push_back(global_scope);
 	symbol_table(root, &sym_table);
         return( 0 );
     }
