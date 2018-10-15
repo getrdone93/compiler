@@ -72,7 +72,7 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
 
 id_attrs* in_scope(string id, vector<map<string, id_attrs> > *sym_table) {
   id_attrs *ida = NULL;
-  for (vector<map<string, id_attrs> >::iterator t = sym_table -> begin(); t != sym_table -> end(); t++) {
+  for (vector<map<string, id_attrs> >::iterator t = --sym_table -> end(); t >= sym_table -> begin(); t--) {
     if (key_exists(id, *t)) {
       ida = (id_attrs*) calloc(sizeof(id_attrs), 0);
       id_attrs scope_ref = t -> find(id) -> second;

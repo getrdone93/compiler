@@ -865,9 +865,9 @@ int main( int ac, char *av[] )
     if ( ! err_count )
     {
         //cout << "Compiled OK\n";
-      //dotit(root, 0);
+      //      dotit(root, 0);
 
-        vector<map<string, id_attrs> > sym_table;
+      vector<map<string, id_attrs> > sym_table;
 	map<string, id_attrs> global_scope;
 	sym_table.push_back(global_scope);
 	symbol_table(root, &sym_table);
