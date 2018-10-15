@@ -57,7 +57,7 @@ void symbol_table(parsetree *root, stack<map<string, id_attrs> > *symTable) {
       break;
     case node_IDENTIFIER:
       if (in_scope(root -> str_ptr, symTable)) {
-	//cout << "I see symbol " << root -> str_ptr << " and its in scope at line: " << root -> line << "\n";
+	//	root -> symbol_table_ptr = 
       } else {
 	cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
       }

@@ -101,11 +101,6 @@ external_declaration
 	  $$ -> children[2] = $5;
 	}
         | decl
-	  /*{
-	    $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	    $$ -> type = node_external_declaration;
-	    $$ -> children[0] = $1;
-	    }*/
 	;
 
 formal_list
