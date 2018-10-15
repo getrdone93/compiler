@@ -1,6 +1,3 @@
-// #include <stack>
-// #include <vector>
-// #include <map>
 #include <stdlib.h>
 #include <string>
 #include <iostream>
@@ -58,7 +55,7 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
       break;
     case node_IDENTIFIER:
       if (in_scope(root -> str_ptr, sym_table)) {
-	//	root -> symbol_table_ptr = 
+	//root -> symbol_table_ptr = 
       } else {
 	cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
       }
