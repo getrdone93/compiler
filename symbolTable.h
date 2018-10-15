@@ -25,7 +25,7 @@ void process_formal_list(parsetree *root, vector<map<string, id_attrs> > *sym_ta
 void insert_sym_table(parsetree *node, id_type type, int seq, vector<map<string, id_attrs> > *sym_table);
 void process_decl_list(parsetree *root, vector<map<string, id_attrs> > *sym_table);
 void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table);
-bool in_scope(string id, vector<map<string, id_attrs> > *sym_table);
+id_attrs* in_scope(string id, vector<map<string, id_attrs> > *sym_table);
 bool key_exists(string id, map<string, id_attrs> m);
 bool in_top_scope(string id, vector<map<string, id_attrs> > *sym_table);
 bool in_global_scope(string id, stack<map<string, id_attrs> > *sym_table);

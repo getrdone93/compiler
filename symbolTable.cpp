@@ -53,11 +53,13 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
 	output_map(sym_table -> back());
 	sym_table -> pop_back();
       break;
-    case node_IDENTIFIER:
-      if (in_scope(root -> str_ptr, sym_table)) {
-	//root -> symbol_table_ptr = 
-      } else {
-	cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
+    case node_IDENTIFIER: {
+      id_attrs *atts = in_scope(root -> str_ptr, sym_table);
+       if (atts == NULL) {
+	 cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
+       } else {
+	 root -> symbol_table_ptr = atts;
+       }
       }
       break;
     default: 
@@ -68,15 +70,20 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
   }
 }
 
-bool in_scope(string id, vector<map<string, id_attrs> > *sym_table) {
-  bool is = false;
-  for (vector<map<string, id_attrs> >::iterator i = sym_table -> begin(); i != sym_table -> end(); i++) {
-    if (key_exists(id, *i)) {
-      is = true;
+id_attrs* in_scope(string id, vector<map<string, id_attrs> > *sym_table) {
+  id_attrs *ida = NULL;
+  for (vector<map<string, id_attrs> >::iterator t = sym_table -> begin(); t != sym_table -> end(); t++) {
+    if (key_exists(id, *t)) {
+      ida = (id_attrs*) calloc(sizeof(id_attrs), 0);
+      id_attrs scope_ref = t -> find(id) -> second;
+      ida -> it = scope_ref.it;
+      ida -> line = scope_ref.line;
+      ida -> id_name = scope_ref.id_name;
+      ida -> value = scope_ref.value;
       break;
     }
   }
-  return is;
+  return ida;
 }
 
 bool in_global_scope(string id, vector<map<string, id_attrs> > *sym_table) {
