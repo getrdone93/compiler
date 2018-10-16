@@ -58,7 +58,7 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
        if (atts == NULL) {
 	 cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
        } else {
-	 root -> symbol_table_ptr = atts;
+ 	 root -> symbol_table_ptr = atts;
        }
       }
       break;
@@ -74,12 +74,7 @@ id_attrs* in_scope(string id, vector<map<string, id_attrs> > *sym_table) {
   id_attrs *ida = NULL;
   for (vector<map<string, id_attrs> >::iterator t = --sym_table -> end(); t >= sym_table -> begin(); t--) {
     if (key_exists(id, *t)) {
-      ida = (id_attrs*) calloc(sizeof(id_attrs), 0);
-      id_attrs scope_ref = t -> find(id) -> second;
-      ida -> it = scope_ref.it;
-      ida -> line = scope_ref.line;
-      ida -> id_name = scope_ref.id_name;
-      ida -> value = scope_ref.value;
+      ida = &(t -> find(id) -> second);
       break;
     }
   }
