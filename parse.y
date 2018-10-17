@@ -33,6 +33,7 @@ void detab( char *line );
 int yylex( void );
 void dumpit( parsetree *root, int level );
 void dotit( parsetree *root, int level );
+void test_traverse(parsetree *root);
 extern "C" int yywrap( void );
 extern char *yytext; // In the scanner
 
@@ -867,10 +868,14 @@ int main( int ac, char *av[] )
         //cout << "Compiled OK\n";
       //      dotit(root, 0);
 
-      vector<map<string, id_attrs> > sym_table;
+        vector<map<string, id_attrs> > sym_table;
 	map<string, id_attrs> global_scope;
 	sym_table.push_back(global_scope);
 	symbol_table(root, &sym_table);
+
+	cout << "sym_table size: " << sym_table.size();
+	cout << "\n---test traverse---\n";
+	test_traverse(root);
         return( 0 );
     }
     else
@@ -879,6 +884,25 @@ int main( int ac, char *av[] )
 	return( 1 );
     }
     
+}
+
+void test_traverse(parsetree *root) {
+  switch(root -> type) {
+    case node_IDENTIFIER:
+      if (root -> symbol_table_ptr == NULL) {
+	cout << "sym pointer: " << root -> symbol_table_ptr << " id name: " << root -> str_ptr << " line: "
+	  << root -> line << "\n";
+      } else {
+	cout << "ID: " << root -> symbol_table_ptr -> id_name << " line: " << root -> symbol_table_ptr -> line
+	     << " value: " << root -> symbol_table_ptr -> value << "\n";
+      }
+      break;
+  default:
+     for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+	test_traverse(root -> children[i]);
+      }
+      break;
+  }
 }
 
 /*===========================================================================

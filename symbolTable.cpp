@@ -58,7 +58,9 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
        if (atts == NULL) {
 	 cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
        } else {
+	 cout << "Assigning pointer to atts for ID: " << root -> str_ptr << " line no: " << root -> line << "\n";
  	 root -> symbol_table_ptr = atts;
+	 //	 cout << "Assigned pointer, line no on symbol_table_ptr: " << root -> symbol_table_ptr -> line << "\n";
        }
       }
       break;
