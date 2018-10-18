@@ -54,13 +54,11 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
 	sym_table -> pop_back();
       break;
     case node_IDENTIFIER: {
-      id_attrs *atts = in_scope(root -> str_ptr, sym_table);
+       id_attrs *atts = in_scope(root -> str_ptr, sym_table);
        if (atts == NULL) {
 	 cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
        } else {
-	 cout << "Assigning pointer to atts for ID: " << root -> str_ptr << " line no: " << root -> line << "\n";
  	 root -> symbol_table_ptr = atts;
-	 //	 cout << "Assigned pointer, line no on symbol_table_ptr: " << root -> symbol_table_ptr -> line << "\n";
        }
       }
       break;
@@ -209,4 +207,102 @@ string get_id_type_name(id_type idt) {
     return "";
   }
 }
+
+void test_traverse(parsetree *root) {
+  switch(root -> type) {
+    case node_IDENTIFIER:
+      if (root -> symbol_table_ptr == NULL) {
+	cout << "sym pointer: " << root -> symbol_table_ptr << " id name: " << root -> str_ptr << " line: "
+	  << root -> line << "\n";
+      } else {
+	cout << "ID: " << root -> symbol_table_ptr -> id_name << " line: " << root -> symbol_table_ptr -> line
+	     << " value: " << root -> symbol_table_ptr -> value << "\n";
+      }
+      break;
+  default:
+     for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+	test_traverse(root -> children[i]);
+      }
+      break;
+  }
+}
+
+string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, string *output) {
+  switch (root -> type) {
+    case node_assignment_expression:
+      *output = update_output(*output, simple_assignment(root, regs_avail, regs_used));
+      break;
+    case node_statement:
+      *output = update_output(*output, we(root));
+      break;
+   default:
+     for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+       arm_output(root -> children[i], regs_avail, regs_used, output);
+      }
+      break;      
+  }
+  return *output;
+}
+
+bool write_exp(parsetree *root) {
+    parsetree *left = root -> children[0];
+    parsetree *right = root -> children[1];
+    return left != NULL && left -> type == node_WRITE && right != NULL && right -> type == node_primary_expression
+      && right -> children[0] != NULL && right -> children[0] -> type == node_IDENTIFIER;
+}
+
+string we(parsetree *root) {
+  string res = output_register() + "\n" + SWI_SEEK;
+  return write_exp(root) ? res : "";
+}
+
+string output_register() {
+  return MOV + "\tr0, #1";  
+}
+
+string update_output(string output, string new_str) {
+  return output + new_str + "\n";
+}
+
+string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+    return simple_assign_exp(root) ? sa(root, regs_avail, regs_used) : "";
+}
+
+bool simple_assign_exp(parsetree *root) {
+  parsetree *left = root -> children[0];
+  parsetree *mid = root -> children[1];
+  parsetree *right = root -> children[2];
+  return left -> type == node_primary_expression && left -> children[0] -> type == node_IDENTIFIER 
+      && mid -> type == node_ASSIGNMENT && right -> type == node_primary_expression 
+    && right -> children[0] -> type == node_CONSTANT;
+}
+
+string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  parsetree *left = root -> children[0] -> children[0];
+  parsetree *right = root -> children[2] -> children[0];
+  string reg = grab_reg_by_id(regs_avail, regs_used, left -> symbol_table_ptr -> id_name);
+  return load_register(reg, right -> str_ptr);
+}
+
+string load_register(string reg, string value) {
+  return LOAD + "\t" + reg + ", =" + value;
+}
+
+string grab_reg_by_id(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id) {
+    string reg = grab_register(regs_avail);
+    if (!reg.empty()) {
+      regs_used -> insert(pair<string, string>(reg, id));
+    }
+    return reg;
+}
+
+string grab_register(set<string> *regs) {
+  string result;
+  if (regs -> size() > 0) {
+    result = *regs -> begin();
+    regs -> erase(regs -> begin());
+  }
+  return result;
+}
+
 

@@ -35,6 +35,9 @@ scanner.o :	scanner.lex y.tab.h parse.h
 symbolTable.o:	symbolTable.cpp symbolTable.h parse.h
 	$(CC) $(COPT) -c symbolTable.cpp
 
+#arm_output.o:	arm_output.cpp symbolTable.h
+#	$(CC) $(COPT) -c arm_output.cpp
+
 nodeNames.o: nodeNames.cpp nodeNames.h
 	$(CC) $(COPT) -c nodeNames.cpp
 
