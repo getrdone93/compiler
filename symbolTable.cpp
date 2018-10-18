@@ -261,7 +261,7 @@ string output_register() {
 }
 
 string update_output(string output, string new_str) {
-  return output + new_str + "\n";
+  return new_str.empty() ? output : output + new_str + "\n";
 }
 
 string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
