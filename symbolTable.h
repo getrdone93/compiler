@@ -2,6 +2,8 @@
 #include <map>
 #include <vector>
 #include <set>
+#include <sstream>
+#include <string>
 #include "parse.h"
 
 using namespace std;
@@ -22,7 +24,12 @@ struct id_attrs {
 const string LOAD = "ldr";
 const string MOV = "mov";
 const string SWI_SEEK = "swi\t0x6b";
+const string ADD = "add";
+const string SUB = "sub";
 
+string load_leafs(parsetree *expr_node, set<string> *regs_avail, set<pair<string, string> > *regs_used);
+pair<string, string> lookup_str(string str, set<pair<string, string> > *regs_used);
+string operator_to_arm(parsetree *op_node);
 bool simple_assign_exp(parsetree *root);
 string we(parsetree *root);
 string output_register();
@@ -32,6 +39,8 @@ string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *
 string grab_reg_by_id(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id);
 string grab_register(set<string> *regs);
 string load_register(string reg, string value);
+string load_register(string reg, int value);
+string load_ident(parsetree *p_expr, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 bool write_exp(parsetree *root);
 string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used,  string *output);
 void test_traverse(parsetree *root);

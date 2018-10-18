@@ -208,6 +208,23 @@ string get_id_type_name(id_type idt) {
   }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void test_traverse(parsetree *root) {
   switch(root -> type) {
     case node_IDENTIFIER:
@@ -227,10 +244,75 @@ void test_traverse(parsetree *root) {
   }
 }
 
+string load_ident(parsetree *p_expr, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  string expr;
+  if (p_expr -> type == node_IDENTIFIER) {
+    pair<string, string> entry = lookup_str(p_expr -> symbol_table_ptr -> id_name, regs_used);
+    if (entry.first.empty()) {
+      string reg = grab_reg_by_id(regs_avail, regs_used, p_expr -> symbol_table_ptr -> id_name);
+      expr = load_register(reg, p_expr -> symbol_table_ptr -> value);
+    }
+  }
+  return expr;
+}
+
+bool ground_expr(parsetree *expr_node) {
+  return expr_node -> children[0] -> type == node_primary_expression
+    && expr_node -> children[2] -> type == node_primary_expression;
+}
+
+string operator_to_arm(parsetree *op_node) {
+  string arm_op;
+  switch(op_node -> type) {
+  case node_SUBTRACT:
+    arm_op = SUB;
+    break;
+  }
+  return arm_op;
+}
+
+string load_leafs(parsetree *expr_node, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  string res;
+  parsetree *left_node = expr_node -> children[0] -> children[0];
+  parsetree *right_node = expr_node -> children[2] -> children[0];
+  res = update_output(res, load_ident(left_node, regs_avail, regs_used));
+  res = update_output(res, load_ident(right_node, regs_avail, regs_used));
+  return res;
+}
+
+string eval_expr(parsetree *expr_node, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  string res;
+  string expr_reg = grab_register(regs_avail); 
+  string op = operator_to_arm(expr_node -> children[1]);
+  parsetree *left_node = expr_node -> children[0] -> children[0];
+  parsetree *right_node = expr_node -> children[2] -> children[0];
+  string fv = left_node -> type == node_IDENTIFIER ? lookup_str(left_node -> symbol_table_ptr -> id_name, regs_used).first
+    : "#" + string(left_node -> str_ptr);
+  string sv = right_node -> type == node_IDENTIFIER ? lookup_str(right_node -> symbol_table_ptr -> id_name, 
+								 regs_used).first
+    : "#" + string(right_node -> str_ptr);
+  
+  string expr = op + "\t" + expr_reg + ", " + fv + ", " + sv;
+  regs_used -> insert(pair<string, string>(expr, expr_reg));
+  return expr;
+}
+
 string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, string *output) {
   switch (root -> type) {
-    case node_assignment_expression:
-      *output = update_output(*output, simple_assignment(root, regs_avail, regs_used));
+   case node_assignment_expression: {
+      parsetree *expr_root = root -> children[2];
+      if (expr_root -> type == node_primary_expression) {
+	//must be basic assignment
+	*output = update_output(*output, simple_assignment(root, regs_avail, regs_used));
+      } else {
+	if (ground_expr(expr_root)) {
+	  *output = update_output(*output, load_leafs(expr_root, regs_avail, regs_used));
+	  string expr = eval_expr(expr_root, regs_avail, regs_used);
+	  *output = update_output(*output, expr);
+	  
+	}
+       }
+     }
       break;
     case node_statement:
       *output = update_output(*output, we(root));
@@ -238,10 +320,21 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
    default:
      for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
        arm_output(root -> children[i], regs_avail, regs_used, output);
-      }
-      break;      
+     }
+     break;      
   }
   return *output;
+}
+
+pair<string, string> lookup_str(string str, set<pair<string, string> > *regs_used) {
+  pair<string, string> res;
+  for (set<pair<string, string> >::iterator i = regs_used -> begin(); i != regs_used -> end(); i++) {
+      if (i -> first == str || i -> second == str) {
+	res = *i;
+	break;
+      }
+  }
+  return res;
 }
 
 bool write_exp(parsetree *root) {
@@ -282,6 +375,12 @@ string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *
   parsetree *right = root -> children[2] -> children[0];
   string reg = grab_reg_by_id(regs_avail, regs_used, left -> symbol_table_ptr -> id_name);
   return load_register(reg, right -> str_ptr);
+}
+
+string load_register(string reg, int value) {
+  stringstream ss;
+  ss << value;
+  return load_register(reg, ss.str());
 }
 
 string load_register(string reg, string value) {
