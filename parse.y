@@ -11,6 +11,7 @@ For:     CSCI 4700
 =========================================================================== */
 
 #include        <iostream>       // Just plain needed...
+#include <fstream>
 #include        <iomanip>        // Needed for setw, hex, ...
 #include        <fstream>        // Needed for ofstream type
 #include        <stdio.h>        // Possibly needed
@@ -889,7 +890,8 @@ int main( int ac, char *av[] )
 	regs_avail.insert("r12");
 	set<pair<string, string> > regs_used;
 	string output;
-	cout << arm_output(root, &regs_avail, &regs_used, &output);
+	ofstream out_file("assembler.s");
+	out_file << arm_output(root, &regs_avail, &regs_used, &output);
 
 	/*cout << "\n---test traverse---\n";
 	  test_traverse(root);*/

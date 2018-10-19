@@ -293,7 +293,7 @@ string eval_expr(parsetree *expr_node, set<string> *regs_avail, set<pair<string,
     : "#" + string(right_node -> str_ptr);
   
   string expr = op + "\t" + expr_reg + ", " + fv + ", " + sv;
-  regs_used -> insert(pair<string, string>(expr, expr_reg));
+  regs_used -> insert(pair<string, string>(expr_reg, expr));
   return expr;
 }
 
@@ -309,13 +309,19 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
 	  *output = update_output(*output, load_leafs(expr_root, regs_avail, regs_used));
 	  string expr = eval_expr(expr_root, regs_avail, regs_used);
 	  *output = update_output(*output, expr);
-	  
+	  string mov_into_left = mov(lookup_str(root -> children[0] -> children[0] -> str_ptr, regs_used).first
+			, lookup_str(expr, regs_used).first);
+	  *output = update_output(*output, mov_into_left);
 	}
        }
      }
       break;
     case node_statement:
-      *output = update_output(*output, we(root));
+      if (write_exp(root)) {
+	*output = update_output(*output, 
+				print_register(lookup_str(root -> children[1] -> 
+							  children[0] -> str_ptr, regs_used).first));	
+      }
       break;
    default:
      for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
@@ -344,13 +350,14 @@ bool write_exp(parsetree *root) {
       && right -> children[0] != NULL && right -> children[0] -> type == node_IDENTIFIER;
 }
 
-string we(parsetree *root) {
-  string res = output_register() + "\n" + SWI_SEEK;
-  return write_exp(root) ? res : "";
+string mov(string to_reg, string from_reg) {
+  return MOV + "\t" + to_reg + ", " + from_reg;
 }
 
-string output_register() {
-  return MOV + "\tr0, #1";  
+string print_register(string reg) {
+  return mov("r1", reg) + "\n"
+    + mov("r0", "#1") + "\n"
+    + SWI_SEEK;
 }
 
 string update_output(string output, string new_str) {
@@ -377,14 +384,14 @@ string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *
   return load_register(reg, right -> str_ptr);
 }
 
-string load_register(string reg, int value) {
+string load_register(string reg, int constant) {
   stringstream ss;
-  ss << value;
+  ss << constant;
   return load_register(reg, ss.str());
 }
 
-string load_register(string reg, string value) {
-  return LOAD + "\t" + reg + ", =" + value;
+string load_register(string reg, string constant) {
+  return LOAD + "\t" + reg + ", =" + constant;
 }
 
 string grab_reg_by_id(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id) {
