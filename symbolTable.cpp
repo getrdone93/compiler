@@ -373,14 +373,7 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
 	  || root -> children[0] -> type == node_multiplicative_expression) {
 	left_expr = arm_output(root -> children[0], regs_avail, regs_used, output);
 	left_expr = lookup_str(left_expr, regs_used).first;
-      } else {
-	// if (root -> children[0] -> children[0] -> type = node_IDENTIFIER) {
-	//   *output = update_output(*output, load_ident(root -> children[0] -> children[0], regs_avail, regs_used));
-	//   left_expr = lookup_str(root -> children[0] -> children[0] -> str_ptr, regs_used).first;
-	// } else {
-	//   left_expr = "#" + string(root -> children[0] -> children[0] -> str_ptr);
-	// }
-	
+      } else {	
 	*output = update_output(*output, load_leaf(root -> children[0] -> children[0], regs_avail, regs_used));
 	left_expr = lookup_str(root -> children[0] -> children[0] -> str_ptr, regs_used).first;
       }
@@ -391,13 +384,6 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
 	right_expr = arm_output(root -> children[2], regs_avail, regs_used, output);
 	right_expr = lookup_str(right_expr, regs_used).first;
       } else {
-	// if (root -> children[2] -> children[0] -> type = node_IDENTIFIER) {
-	//   *output = update_output(*output, load_ident(root -> children[2] -> children[0], regs_avail, regs_used));
-	//   right_expr = lookup_str(root -> children[2] -> children[0] -> str_ptr, regs_used).first;
-	// } else {
-	//   right_expr = "#" + string(root -> children[2] -> children[0] -> str_ptr);
-	// }
-
 	*output = update_output(*output, load_leaf(root -> children[2] -> children[0], regs_avail, regs_used));
 	right_expr = lookup_str(root -> children[2] -> children[0] -> str_ptr, regs_used).first;
       }
