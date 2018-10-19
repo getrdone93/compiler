@@ -349,16 +349,29 @@ int to_int(string str) {
   return num;
 }
 
+int get_value(parsetree *node) {
+  int v;
+  switch (node -> type) {
+  case node_IDENTIFIER:
+    v = node -> symbol_table_ptr -> value;
+    break;
+  case node_CONSTANT:
+    v = to_int(node -> str_ptr);
+    break;
+  }
+  return v;
+}
+
 string eval_unary_expr(parsetree *expr) {
   string res;
   switch (expr -> children[0] -> children[0] -> type) {
   case node_UNARY_MINUS: {
-    int v = to_int(expr -> children[1] -> children[0] -> str_ptr);
+    int v = get_value(expr -> children[1] -> children[0]);
     res = to_string(-v);
   }
     break;
   case node_NEGATE:
-    int v = to_int(expr -> children[1] -> children[0] -> str_ptr);
+    int v = get_value(expr -> children[1] -> children[0]);
     res = to_string(!v);
     break;
   }
@@ -371,7 +384,6 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
     parsetree *expr_root = root -> children[2];
     switch (expr_root -> type) {
     case node_primary_expression:
-      //must be basic assignment
       *output = update_output(*output, simple_assignment(root, regs_avail, regs_used));	
       break;
     case node_additive_expression:
@@ -507,8 +519,13 @@ bool simple_assign_exp(parsetree *root) {
 string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   parsetree *left = root -> children[0] -> children[0];
   parsetree *right = root -> children[2] -> children[0];
+  assign_to_ident(left, right);
   string reg = grab_reg_by_id(regs_avail, regs_used, left -> symbol_table_ptr -> id_name);
   return load_register(reg, right -> str_ptr);
+}
+
+void assign_to_ident(parsetree *ident_node, parsetree *const_node) {
+  ident_node -> symbol_table_ptr -> value = to_int(const_node -> str_ptr);
 }
 
 string to_string(int num) {
