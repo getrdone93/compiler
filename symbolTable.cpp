@@ -361,7 +361,7 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
   case node_additive_expression:
   case node_multiplicative_expression:
     if (ground_expr(root)) {
-      *output = update_output(*output, load_leafs(root, regs_avail, regs_used));
+      *output = update_output_nnl(*output, load_leafs(root, regs_avail, regs_used));
       string expr = eval_expr(root, regs_avail, regs_used);
       *output = update_output(*output, expr);
       release_reg(root -> children[0] -> children[0], regs_avail, regs_used);
@@ -444,6 +444,10 @@ string print_register(string reg) {
 
 string update_output(string output, string new_str) {
   return new_str.empty() ? output : output + new_str + "\n";
+}
+
+string update_output_nnl(string output, string new_str) {
+  return new_str.empty() ? output : output + new_str;
 }
 
 string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
