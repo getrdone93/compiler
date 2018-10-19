@@ -271,7 +271,11 @@ string load_const(parsetree *p_expr, set<string> *regs_avail, set<pair<string, s
 
 bool ground_expr(parsetree *expr_node) {
   return expr_node -> children[0] -> type == node_primary_expression
-    && expr_node -> children[2] -> type == node_primary_expression;
+    && (expr_node -> children[0] -> children[0] -> type == node_CONSTANT 
+	|| expr_node -> children[0] -> children[0] -> type == node_IDENTIFIER)
+    && expr_node -> children[2] -> type == node_primary_expression
+    && (expr_node -> children[2] -> children[0] -> type == node_CONSTANT 
+	|| expr_node -> children[2] -> children[0] -> type == node_IDENTIFIER);
 }
 
 string operator_to_arm(parsetree *op_node) {
@@ -423,7 +427,9 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
     } else {
       string left_expr;      
       if (root -> children[0] -> type == node_additive_expression 
-	  || root -> children[0] -> type == node_multiplicative_expression) {
+	  || root -> children[0] -> type == node_multiplicative_expression
+	  || root -> children[0] -> children[0] -> type == node_additive_expression
+	  || root -> children[0] -> children[0] -> type == node_multiplicative_expression) {
 	left_expr = arm_output(root -> children[0], regs_avail, regs_used, output);
 	left_expr = lookup_str(left_expr, regs_used).first;
       } else {	
@@ -433,7 +439,9 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
 
       string right_expr;
       if (root -> children[2] -> type == node_additive_expression 
-	  || root -> children[2] -> type == node_multiplicative_expression) {
+	  || root -> children[2] -> type == node_multiplicative_expression
+	  || root -> children[2] -> children[0] -> type == node_additive_expression
+	  || root -> children[2] -> children[0] -> type == node_multiplicative_expression) {
 	right_expr = arm_output(root -> children[2], regs_avail, regs_used, output);
 	right_expr = lookup_str(right_expr, regs_used).first;
       } else {
