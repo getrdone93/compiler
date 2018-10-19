@@ -875,8 +875,6 @@ int main( int ac, char *av[] )
 
 	cout << "\n---arm_output---\n";
 	set<string> regs_avail;
-	//	regs_avail.insert("r0"); //used for stdout
-	//regs_avail.insert("r1"); //used for stdout
 	regs_avail.insert("r2");
 	regs_avail.insert("r3");
 	regs_avail.insert("r4");
