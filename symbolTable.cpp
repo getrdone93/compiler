@@ -283,6 +283,9 @@ string operator_to_arm(parsetree *op_node) {
     case node_MULT:
       arm_op = MULT;
       break;
+    case node_ADD:
+      arm_op = ADD;
+      break;
   }
   return arm_op;
 }
@@ -343,18 +346,22 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
   switch (root -> type) {
   case node_assignment_expression: {
     parsetree *expr_root = root -> children[2];
-    if (expr_root -> type == node_primary_expression) {
+    switch (expr_root -> type) {
+      case node_primary_expression:
       //must be basic assignment
-      *output = update_output(*output, simple_assignment(root, regs_avail, regs_used));
-    } else {
-      string expr = arm_output(expr_root, regs_avail, regs_used, output);
-      string expr_reg = lookup_str(expr, regs_used).first;
-      string to_reg = lookup_str(root -> children[0] -> children[0] -> str_ptr, regs_used).first;
-      if (to_reg.empty()) {
-	to_reg = grab_reg_by_id(regs_avail, regs_used, root -> children[0] -> children[0] -> str_ptr);
-      }
-      *output = update_output(*output, mov(to_reg, expr_reg));
-      release_reg(expr_reg, regs_avail, regs_used);
+      *output = update_output(*output, simple_assignment(root, regs_avail, regs_used));	
+      break;
+      case node_additive_expression:
+      case node_multiplicative_expression:
+	string expr = arm_output(expr_root, regs_avail, regs_used, output);
+	string expr_reg = lookup_str(expr, regs_used).first;
+	string to_reg = lookup_str(root -> children[0] -> children[0] -> str_ptr, regs_used).first;
+	if (to_reg.empty()) {
+	  to_reg = grab_reg_by_id(regs_avail, regs_used, root -> children[0] -> children[0] -> str_ptr);
+	}
+	*output = update_output(*output, mov(to_reg, expr_reg));
+	release_reg(expr_reg, regs_avail, regs_used);
+	break;
     }
   }
     break;
