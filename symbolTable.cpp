@@ -427,10 +427,12 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
     } else {
       string left_expr;      
       if (root -> children[0] -> type == node_additive_expression 
-	  || root -> children[0] -> type == node_multiplicative_expression
-	  || root -> children[0] -> children[0] -> type == node_additive_expression
-	  || root -> children[0] -> children[0] -> type == node_multiplicative_expression) {
+	  || root -> children[0] -> type == node_multiplicative_expression) {
 	left_expr = arm_output(root -> children[0], regs_avail, regs_used, output);
+	left_expr = lookup_str(left_expr, regs_used).first;
+      } else if (root -> children[0] -> children[0] -> type == node_additive_expression
+		 || root -> children[0] -> children[0] -> type == node_multiplicative_expression) {
+	left_expr = arm_output(root -> children[0] -> children[0], regs_avail, regs_used, output);
 	left_expr = lookup_str(left_expr, regs_used).first;
       } else {	
 	*output = update_output(*output, load_leaf(root -> children[0] -> children[0], regs_avail, regs_used));
@@ -439,10 +441,12 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
 
       string right_expr;
       if (root -> children[2] -> type == node_additive_expression 
-	  || root -> children[2] -> type == node_multiplicative_expression
-	  || root -> children[2] -> children[0] -> type == node_additive_expression
-	  || root -> children[2] -> children[0] -> type == node_multiplicative_expression) {
+	  || root -> children[2] -> type == node_multiplicative_expression) {
 	right_expr = arm_output(root -> children[2], regs_avail, regs_used, output);
+	right_expr = lookup_str(right_expr, regs_used).first;
+      } else if (root -> children[2] -> children[0] -> type == node_additive_expression
+	  || root -> children[2] -> children[0] -> type == node_multiplicative_expression) {
+	right_expr = arm_output(root -> children[2] -> children[0], regs_avail, regs_used, output);
 	right_expr = lookup_str(right_expr, regs_used).first;
       } else {
 	*output = update_output(*output, load_leaf(root -> children[2] -> children[0], regs_avail, regs_used));
