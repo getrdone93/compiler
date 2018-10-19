@@ -28,6 +28,8 @@ const string ADD = "add";
 const string SUB = "sub";
 const string MULT = "mul";
 
+string to_string(int num);
+int to_int(string str);
 string update_output_nnl(string output, string new_str);
 string load_const(parsetree *p_expr, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string load_leaf(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used);

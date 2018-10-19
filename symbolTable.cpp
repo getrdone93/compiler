@@ -342,13 +342,24 @@ void release_reg(string id, set<string> *regs_avail, set<pair<string, string> > 
     }
 }
 
+int to_int(string str) {
+  int num;
+  stringstream ss(str);
+  ss >> num;
+  return num;
+}
+
 string eval_unary_expr(parsetree *expr) {
   string res;
   switch (expr -> children[0] -> children[0] -> type) {
   case node_UNARY_MINUS: {
-    string val = expr -> children[1] -> children[0] -> str_ptr;
-    res = "-" + val;
+    int v = to_int(expr -> children[1] -> children[0] -> str_ptr);
+    res = to_string(-v);
   }
+    break;
+  case node_NEGATE:
+    int v = to_int(expr -> children[1] -> children[0] -> str_ptr);
+    res = to_string(!v);
     break;
   }
   return res;
@@ -376,7 +387,10 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
     }
       break;
     case node_unary_expression: {
-      string reg = grab_reg_by_id(regs_avail, regs_used, root -> children[0] -> children[0] -> str_ptr);
+      string reg = lookup_str(root -> children[0] -> children[0] -> str_ptr, regs_used).first;
+      if (reg.empty()) {
+	reg = grab_reg_by_id(regs_avail, regs_used, root -> children[0] -> children[0] -> str_ptr);
+      }
       string val = eval_unary_expr(expr_root);
       *output = update_output(*output, load_register(reg, val));
     }
@@ -497,10 +511,14 @@ string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *
   return load_register(reg, right -> str_ptr);
 }
 
-string load_register(string reg, int constant) {
+string to_string(int num) {
   stringstream ss;
-  ss << constant;
-  return load_register(reg, ss.str());
+  ss << num;
+  return ss.str();
+}
+
+string load_register(string reg, int constant) {
+  return load_register(reg, to_string(constant));
 }
 
 string load_register(string reg, string constant) {
