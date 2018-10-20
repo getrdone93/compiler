@@ -471,8 +471,12 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
     }
     break;
   case node_postfix_expression: {
-    string id_reg = lookup_str(root -> children[0] -> children[0] -> str_ptr, regs_used).first;
-    string exp = add_exp(id_reg, id_reg, "#1");
+    string id = root -> children[0] -> children[0] -> str_ptr;
+    string id_reg = lookup_str(id, regs_used).first;
+    if (id_reg.empty()) {
+      id_reg = grab_reg_by_id(regs_avail, regs_used, id);
+    }
+    string exp = basic_exp(root -> children[1] -> type == node_DEC_OP ? SUB : ADD, id_reg, id_reg, "#1");
     *output = update_output(*output, exp);
     return exp;
   }
@@ -486,8 +490,8 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
   return *output;
 }
 
-string add_exp(string exp_reg, string r1, string r2) {
-  return ADD + "\t" + exp_reg + ", " + r1 + ", " + r2;
+string basic_exp(string op, string exp_reg, string r1, string r2) {
+  return op + "\t" + exp_reg + ", " + r1 + ", " + r2;
 }
 
 pair<string, string> lookup_str(string str, set<pair<string, string> > *regs_used) {
