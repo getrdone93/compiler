@@ -28,6 +28,7 @@ const string ADD = "add";
 const string SUB = "sub";
 const string MULT = "mul";
 
+string add_exp(string exp_reg, string r1, string r2);
 int get_value(parsetree *node);
 void assign_to_ident(parsetree *ident_node, parsetree *const_node);
 string to_string(int num);

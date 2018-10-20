@@ -873,7 +873,7 @@ int main( int ac, char *av[] )
 	sym_table.push_back(global_scope);
 	symbol_table(root, &sym_table);
 
-	cout << "\n---arm_output---\n";
+	cout << "\n---arm_output can be seen in ./assembler.s---\n";
 	set<string> regs_avail;
 	regs_avail.insert("r2");
 	regs_avail.insert("r3");
