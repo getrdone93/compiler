@@ -14,8 +14,8 @@ LN=g++
 COPT=-g
 LOPT=-g
 
-parse :	parse.o scanner.o symbolTable.o nodeNames.o
-	$(CC) $(LOPT) -o parse parse.o scanner.o symbolTable.o nodeNames.o
+parse :	parse.o scanner.o symbolTable.o nodeNames.o arm_output.o
+	$(CC) $(LOPT) -o parse parse.o scanner.o symbolTable.o nodeNames.o arm_output.o
 	rm parse.o scanner.o
 
 # Bison has this annoying habit of sending yydebug to stderr
@@ -35,8 +35,8 @@ scanner.o :	scanner.lex y.tab.h parse.h
 symbolTable.o:	symbolTable.cpp symbolTable.h parse.h
 	$(CC) $(COPT) -c symbolTable.cpp
 
-#arm_output.o:	arm_output.cpp symbolTable.h
-#	$(CC) $(COPT) -c arm_output.cpp
+arm_output.o:	arm_output.cpp arm_output.h
+	$(CC) $(COPT) -c arm_output.cpp
 
 nodeNames.o: nodeNames.cpp nodeNames.h
 	$(CC) $(COPT) -c nodeNames.cpp

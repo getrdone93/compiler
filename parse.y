@@ -20,6 +20,7 @@ For:     CSCI 4700
 #include        <ctype.h>        // Possibly needed
 #include        <string.h>       // Possibly needed
 #include        "symbolTable.h"
+#include        "arm_output.h"
 #include        <stack>
 #include        <map>
 

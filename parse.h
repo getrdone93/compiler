@@ -11,6 +11,19 @@ header file for sample Flex/Bison parser.
 
 #include "nodeNames.h"
 
+enum id_type {
+  integer,
+  integer_array,
+  function
+};
+
+struct id_attrs {
+  id_type it;
+  int line;
+  const char *id_name;
+  int value;
+};
+
 struct parsetree {
   enum nodetype type;
   int int_val;
@@ -21,8 +34,8 @@ struct parsetree {
 };
 
 struct yystype {
-    struct parsetree *treeptr;
-    };
+  struct parsetree *treeptr;
+};
 
 #ifdef  YYSTYPE
 #undef  YYSTYPE
