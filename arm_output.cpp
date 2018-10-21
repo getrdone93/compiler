@@ -24,7 +24,7 @@ string load_ident(parsetree *p_expr, set<string> *regs_avail, set<pair<string, s
   if (p_expr -> type == node_IDENTIFIER) {
     pair<string, string> entry = lookup_str(p_expr -> symbol_table_ptr -> id_name, regs_used);
     if (entry.first.empty()) {
-      string reg = grab_reg_by_id(regs_avail, regs_used, p_expr -> symbol_table_ptr -> id_name);
+      string reg = assoc_id_reg(regs_avail, regs_used, p_expr -> symbol_table_ptr -> id_name);
       expr = load_register(reg, p_expr -> symbol_table_ptr -> value);
     }
   }
@@ -43,7 +43,7 @@ pair<string, string> load_into_reg(string id, string value, set<string> *regs_av
     cout << error("load", "id or value or both was empty");
   } else {
     pair<string, string> entry = lookup_str(id, regs_used);
-    into_reg = entry.first.empty() ? grab_reg_by_id(regs_avail, regs_used, id) : entry.first;
+    into_reg = entry.first.empty() ? assoc_id_reg(regs_avail, regs_used, id) : entry.first;
     load_str = load_register(id, value);
   }
   return pair<string, string>(into_reg, load_str);
@@ -55,7 +55,7 @@ string load_const(parsetree *p_expr, set<string> *regs_avail, set<pair<string, s
     string cname = p_expr -> str_ptr;
     string reg = lookup_str(cname, regs_used).first;
     if (reg.empty()) {
-      string reg = grab_reg_by_id(regs_avail, regs_used, cname);
+      string reg = assoc_id_reg(regs_avail, regs_used, cname);
       expr = load_register(reg, p_expr -> str_ptr);
     }
   }
@@ -189,7 +189,7 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
       string expr_reg = lookup_str(expr, regs_used).first;
       string to_reg = lookup_str(root -> children[0] -> children[0] -> str_ptr, regs_used).first;
       if (to_reg.empty()) {
-	to_reg = grab_reg_by_id(regs_avail, regs_used, root -> children[0] -> children[0] -> str_ptr);
+	to_reg = assoc_id_reg(regs_avail, regs_used, root -> children[0] -> children[0] -> str_ptr);
       }
       *output = update_output(*output, mov(to_reg, expr_reg));
       release_reg(expr_reg, regs_avail, regs_used);
@@ -198,7 +198,7 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
     case node_unary_expression: {
       string reg = lookup_str(root -> children[0] -> children[0] -> str_ptr, regs_used).first;
       if (reg.empty()) {
-	reg = grab_reg_by_id(regs_avail, regs_used, root -> children[0] -> children[0] -> str_ptr);
+	reg = assoc_id_reg(regs_avail, regs_used, root -> children[0] -> children[0] -> str_ptr);
       }
       string val = eval_unary_expr(expr_root);
       *output = update_output(*output, load_register(reg, val));
@@ -267,7 +267,7 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
     string id = root -> children[0] -> children[0] -> str_ptr;
     string id_reg = lookup_str(id, regs_used).first;
     if (id_reg.empty()) {
-      id_reg = grab_reg_by_id(regs_avail, regs_used, id);
+      id_reg = assoc_id_reg(regs_avail, regs_used, id);
     }
     string exp = basic_exp(root -> children[1] -> type == node_DEC_OP ? SUB : ADD, id_reg, id_reg, "#1");
     *output = update_output(*output, exp);
@@ -340,7 +340,7 @@ string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *
   parsetree *left = root -> children[0] -> children[0];
   parsetree *right = root -> children[2] -> children[0];
   assign_to_ident(left, right);
-  string reg = grab_reg_by_id(regs_avail, regs_used, left -> symbol_table_ptr -> id_name);
+  string reg = assoc_id_reg(regs_avail, regs_used, left -> symbol_table_ptr -> id_name);
   return load_register(reg, right -> str_ptr);
 }
 
@@ -362,9 +362,11 @@ string load_register(string reg, string constant) {
   return LOAD + "\t" + reg + ", =" + constant;
 }
 
-string grab_reg_by_id(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id) {
+string assoc_id_reg(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id) {
   string reg = first(regs_avail);
-  if (!reg.empty()) {
+  if (reg.empty()) {
+    error("assoc_id_reg", "regs_avail was empty");
+  } else {
     regs_used -> insert(pair<string, string>(reg, id));
   }
   return reg;

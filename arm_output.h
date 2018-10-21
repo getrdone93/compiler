@@ -38,7 +38,7 @@ bool simple_assign_exp(parsetree *root);
 string update_output(string output, string new_str);
 string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
-string grab_reg_by_id(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id);
+string assoc_id_reg(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id);
 string first(set<string> *regs);
 string load_register(string reg, string constant);
 string load_register(string reg, int constant);
