@@ -17,6 +17,8 @@ const string ADD = "add";
 const string SUB = "sub";
 const string MULT = "mul";
 
+pair<string, string> load_into_reg(string id, string value, set<string> *regs_avail, set<pair<string, string> > *regs_used);
+string error(string func, string error);
 void test_traverse(parsetree *root);
 string basic_exp(string op, string exp_reg, string r1, string r2);
 int get_value(parsetree *node);
@@ -37,7 +39,7 @@ string update_output(string output, string new_str);
 string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string grab_reg_by_id(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id);
-string grab_register(set<string> *regs);
+string first(set<string> *regs);
 string load_register(string reg, string constant);
 string load_register(string reg, int constant);
 string print_register(string reg);

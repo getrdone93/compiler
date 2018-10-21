@@ -31,6 +31,24 @@ string load_ident(parsetree *p_expr, set<string> *regs_avail, set<pair<string, s
   return expr;
 }
 
+string error(string func, string error) {
+  return "ERROR in function " + func + ": " + error + "\n";
+}
+
+pair<string, string> load_into_reg(string id, string value, set<string> *regs_avail, 
+				   set<pair<string, string> > *regs_used) {
+  string load_str;
+  string into_reg;
+  if (id.empty() || value.empty()) {
+    cout << error("load", "id or value or both was empty");
+  } else {
+    pair<string, string> entry = lookup_str(id, regs_used);
+    into_reg = entry.first.empty() ? grab_reg_by_id(regs_avail, regs_used, id) : entry.first;
+    load_str = load_register(id, value);
+  }
+  return pair<string, string>(into_reg, load_str);
+}
+
 string load_const(parsetree *p_expr, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   string expr;
   if (p_expr -> type == node_CONSTANT) {
@@ -95,7 +113,7 @@ string load_leafs(parsetree *expr_node, set<string> *regs_avail, set<pair<string
 
 string eval_expr(parsetree *expr_node, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   string res;
-  string expr_reg = grab_register(regs_avail); 
+  string expr_reg = first(regs_avail); 
   string op = operator_to_arm(expr_node -> children[1]);
   parsetree *left_node = expr_node -> children[0] -> children[0];
   parsetree *right_node = expr_node -> children[2] -> children[0];
@@ -228,7 +246,7 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
 	right_expr = lookup_str(root -> children[2] -> children[0] -> str_ptr, regs_used).first;
       }
       
-      string expr_reg = grab_register(regs_avail);
+      string expr_reg = first(regs_avail);
       string final_expr = operator_to_arm(root -> children[1]) + "\t" + expr_reg + ", " + left_expr + ", " + right_expr; 
       regs_used -> insert(pair<string, string>(expr_reg, final_expr));
       *output = update_output(*output, final_expr);
@@ -345,14 +363,14 @@ string load_register(string reg, string constant) {
 }
 
 string grab_reg_by_id(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id) {
-  string reg = grab_register(regs_avail);
+  string reg = first(regs_avail);
   if (!reg.empty()) {
     regs_used -> insert(pair<string, string>(reg, id));
   }
   return reg;
 }
 
-string grab_register(set<string> *regs) {
+string first(set<string> *regs) {
   string result;
   if (regs -> size() > 0) {
     result = *regs -> begin();
