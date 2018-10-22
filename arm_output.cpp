@@ -242,7 +242,7 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
       if (to_reg.empty()) {
 	to_reg = assoc_id_reg(regs_avail, regs_used, root -> children[0] -> children[0] -> str_ptr);
       }
-      *output = update_output(*output, mov(to_reg, expr_reg));
+      *output = update_output_nnl(*output, three_arity(MOV, to_reg, expr_reg));
       release_reg(expr_reg, regs_avail, regs_used);
     }
       break;
@@ -252,7 +252,7 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
 	reg = assoc_id_reg(regs_avail, regs_used, root -> children[0] -> children[0] -> str_ptr);
       }
       string val = eval_unary_expr(expr_root);
-      *output = update_output(*output, three_arity(LOAD, reg, arm_constant(val)));
+      *output = update_output_nnl(*output, three_arity(LOAD, reg, arm_constant(val)));
     }
       break;
     }
@@ -320,8 +320,8 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
     if (id_reg.empty()) {
       id_reg = assoc_id_reg(regs_avail, regs_used, id);
     }
-    string exp = four_arity(root -> children[1] -> type == node_DEC_OP ? SUB : ADD, id_reg, id_reg
-			    , arm_small_constant("1"));
+    string exp = four_arity(root -> children[1] -> type == node_DEC_OP ? SUB : ADD, id_reg, id_reg,
+			    arm_small_constant("1"));
     *output = update_output(*output, exp);
     return exp;
   }
@@ -353,14 +353,10 @@ bool write_exp(parsetree *root) {
     && right -> children[0] != NULL && right -> children[0] -> type == node_IDENTIFIER;
 }
 
-string mov(string to_reg, string from_reg) {
-  return MOV + "\t" + to_reg + ", " + from_reg;
-}
-
-string print_register(string reg) {
-  return mov("r1", reg) + "\n"
-    + mov("r0", "#1") + "\n"
-    + SWI_SEEK;
+string print_register(string reg){
+  return three_arity(MOV, "r1", reg)
+    + three_arity(MOV, "r0", arm_small_constant("1"))
+    + two_arity(SWI, SEEK);
 }
 
 string update_output(string output, string new_str) {

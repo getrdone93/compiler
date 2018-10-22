@@ -14,10 +14,11 @@ using namespace std;
 
 const string LOAD = "ldr";
 const string MOV = "mov";
-const string SWI_SEEK = "swi\t0x6b";
 const string ADD = "add";
 const string SUB = "sub";
 const string MULT = "mul";
+const string SWI = "swi";
+const string SEEK = "0x6b";
 
 string arm_small_constant(string val);
 string arm_constant(string val);
@@ -43,7 +44,6 @@ string load_leaf(parsetree *node, set<string> *regs_avail, set<pair<string, stri
 string load_leafs(parsetree *expr_node, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 void release_reg(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 void release_reg(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used);
-string mov(string to_reg, string from_reg);
 pair<string, string> lookup_str(string str, set<pair<string, string> > *regs_used);
 string operator_to_arm(parsetree *op_node);
 string update_output(string output, string new_str);
