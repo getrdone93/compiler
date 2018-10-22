@@ -226,12 +226,6 @@ parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
     }
 }  
 
-string arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, string output) {
-    switch(root -> type) {
-      
-    }
-}
-
 string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, string *output) {
   switch (root -> type) {
   case node_assignment_expression: {
