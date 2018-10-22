@@ -25,7 +25,7 @@ string load_ident(parsetree *p_expr, set<string> *regs_avail, set<pair<string, s
     pair<string, string> entry = lookup_str(p_expr -> symbol_table_ptr -> id_name, regs_used);
     if (entry.first.empty()) {
       string reg = assoc_id_reg(regs_avail, regs_used, p_expr -> symbol_table_ptr -> id_name);
-      expr = load_register(reg, p_expr -> symbol_table_ptr -> value);
+      expr = three_arity(LOAD, reg, arm_constant(to_string(p_expr -> symbol_table_ptr -> value)));
     }
   }
   return expr;
@@ -44,7 +44,7 @@ pair<string, string> load_into_reg(string id, string value, set<string> *regs_av
   } else {
     pair<string, string> entry = lookup_str(id, regs_used);
     into_reg = entry.first.empty() ? assoc_id_reg(regs_avail, regs_used, id) : entry.first;
-    load_str = load_register(id, value);
+    load_str = three_arity(LOAD, id, arm_constant(value));
   }
   return pair<string, string>(into_reg, load_str);
 }
@@ -56,7 +56,7 @@ string load_const(parsetree *p_expr, set<string> *regs_avail, set<pair<string, s
     string reg = lookup_str(cname, regs_used).first;
     if (reg.empty()) {
       string reg = assoc_id_reg(regs_avail, regs_used, cname);
-      expr = load_register(reg, p_expr -> str_ptr);
+      expr = three_arity(LOAD, reg, arm_constant(p_expr -> str_ptr));
     }
   }
   return expr;
@@ -187,7 +187,7 @@ string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<stri
   } else {
     assign_to_ident(ident, constant);
     string reg = assoc_id_reg(regs_avail, regs_used, ident -> symbol_table_ptr -> id_name);
-    res = load_register(reg, constant -> str_ptr);
+    res = three_arity(LOAD, reg, arm_constant(constant -> str_ptr));
   }
   return res;
 }
@@ -252,7 +252,7 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
 	reg = assoc_id_reg(regs_avail, regs_used, root -> children[0] -> children[0] -> str_ptr);
       }
       string val = eval_unary_expr(expr_root);
-      *output = update_output(*output, load_register(reg, val));
+      *output = update_output(*output, three_arity(LOAD, reg, arm_constant(val)));
     }
       break;
     }
@@ -384,14 +384,6 @@ string to_string(int num) {
   return ss.str();
 }
 
-string load_register(string reg, int constant) {
-  return load_register(reg, to_string(constant));
-}
-
-string load_register(string reg, string constant) {
-  return LOAD + "\t" + reg + ", =" + constant;
-}
-
 string assoc_if_not_used(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   pair<string, string> id_reg = lookup_str(id, regs_used);
   return id_reg.first.empty() ? assoc_id_reg(regs_avail, regs_used, id) : id_reg.first;
@@ -447,4 +439,8 @@ string two_arity(string op, string opd1) {
     error(__FUNCTION__, "opd1 was empty");
   }
   return op + "\t" + opd1 + "\n";
+}
+
+string arm_constant(string val) {
+  return "=" + val;
 }
