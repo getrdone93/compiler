@@ -19,7 +19,7 @@ const string ADD = "add";
 const string SUB = "sub";
 const string MULT = "mul";
 
-
+parsetree * get_const(parsetree *ae);
 parsetree * get_assign(parsetree *ae);
 parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path);
 parsetree * get_ident(parsetree *ae);
@@ -45,7 +45,6 @@ void release_reg(string id, set<string> *regs_avail, set<pair<string, string> > 
 string mov(string to_reg, string from_reg);
 pair<string, string> lookup_str(string str, set<pair<string, string> > *regs_used);
 string operator_to_arm(parsetree *op_node);
-bool simple_assign_exp(parsetree *root);
 string update_output(string output, string new_str);
 string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);

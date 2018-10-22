@@ -177,21 +177,19 @@ string eval_unary_expr(parsetree *expr) {
   return res;
 }
 
-string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
-  parsetree *left = root -> children[0] -> children[0];
-  parsetree *right = root -> children[2] -> children[0];
-  assign_to_ident(left, right);
-  string reg = assoc_id_reg(regs_avail, regs_used, left -> symbol_table_ptr -> id_name);
-  return load_register(reg, right -> str_ptr);
-}
-
-bool simple_assign_exp(parsetree *root) {
-  parsetree *left = root -> children[0];
-  parsetree *mid = root -> children[1];
-  parsetree *right = root -> children[2];
-  return left -> type == node_primary_expression && left -> children[0] -> type == node_IDENTIFIER 
-    && mid -> type == node_ASSIGNMENT && right -> type == node_primary_expression 
-    && right -> children[0] -> type == node_CONSTANT;
+string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  parsetree *ident = get_ident(root);
+  parsetree *assign = get_assign(root);
+  parsetree *constant = get_const(root);
+  string res;
+  if (ident == NULL || assign == NULL || constant == NULL) {
+    //do debug or something
+  } else {
+    assign_to_ident(ident, constant);
+    string reg = assoc_id_reg(regs_avail, regs_used, ident -> symbol_table_ptr -> id_name);
+    res = load_register(reg, constant -> str_ptr);
+  }
+  return res;
 }
 
 parsetree * get_ident(parsetree *ae) {
@@ -374,10 +372,6 @@ string update_output(string output, string new_str) {
 
 string update_output_nnl(string output, string new_str) {
   return new_str.empty() ? output : output + new_str;
-}
-
-string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
-  return simple_assign_exp(root) ? sa(root, regs_avail, regs_used) : "";
 }
 
 void assign_to_ident(parsetree *ident_node, parsetree *const_node) {
