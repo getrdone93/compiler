@@ -20,6 +20,8 @@ const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
 
+string handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
+string complex_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string arm_small_constant(string val);
 string arm_constant(string val);
 parsetree * get_const(parsetree *ae);

@@ -186,7 +186,7 @@ string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<stri
     //do debug or something
   } else {
     assign_to_ident(ident, constant);
-    string reg = assoc_id_reg(regs_avail, regs_used, ident -> symbol_table_ptr -> id_name);
+    string reg = assoc_if_not_used(ident -> symbol_table_ptr -> id_name, regs_avail, regs_used);
     res = three_arity(LOAD, reg, arm_constant(constant -> str_ptr));
   }
   return res;
@@ -226,10 +226,25 @@ parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
     }
 }  
 
+string handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  string res;
+  res += simple_assignment(root, regs_avail, regs_used);
+  res += complex_expression(root, regs_avail, regs_used);
+  return res;
+}
+
+string complex_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  return "";
+}
+
 string arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, string output) {
-    switch(root -> type) {
-      
-    }
+  switch(root -> type) {
+    case node_assignment_expression:
+      output += handle_assignment(root, regs_avail, regs_used);
+      break;
+    default:
+      break;
+  }
 }
 
 string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, string *output) {
