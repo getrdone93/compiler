@@ -83,6 +83,8 @@ string operator_to_arm(parsetree *op_node) {
     case node_ADD:
       arm_op = ADD;
       break;
+    default:
+      break;
   }
   return arm_op;
 }
@@ -362,6 +364,11 @@ string load_register(string reg, string constant) {
   return LOAD + "\t" + reg + ", =" + constant;
 }
 
+string assoc_if_not_used(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  pair<string, string> id_reg = lookup_str(id, regs_used);
+  return id_reg.first.empty() ? assoc_id_reg(regs_avail, regs_used, id) : id_reg.first;
+}
+
 string assoc_id_reg(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id) {
   string reg = first(regs_avail);
   if (reg.empty()) {
@@ -379,4 +386,37 @@ string first(set<string> *regs) {
     regs -> erase(regs -> begin());
   }
   return result;
+}
+
+string four_arity(string op, string opd1, string opd2, string opd3) {
+  if (op.empty()) {
+    error(__FUNCTION__, "op was empty");
+  } else if (opd1.empty()) {
+    error(__FUNCTION__, "opd1 was empty");
+  } else if (opd2.empty()) {
+    error(__FUNCTION__, "opd2 was empty");
+  } else if (opd3.empty()) {
+    error(__FUNCTION__, "opd3 was empty");
+  }
+  return op + "\t" + opd1 + ", " + opd2 + ", " + opd3 + "\n";
+}
+
+string three_arity(string op, string opd1, string opd2) {
+  if (op.empty()) {
+    error(__FUNCTION__, "op was empty");
+  } else if (opd1.empty()) {
+    error(__FUNCTION__, "opd1 was empty");
+  } else if (opd2.empty()) {
+    error(__FUNCTION__, "opd2 was empty");
+  }
+  return op + "\t" + opd1 + ", " + opd2 + "\n";
+}
+
+string two_arity(string op, string opd1) {
+  if (op.empty()) {
+    error(__FUNCTION__, "op was empty");
+  } else if (opd1.empty()) {
+    error(__FUNCTION__, "opd1 was empty");
+  }
+  return op + "\t" + opd1 + "\n";
 }

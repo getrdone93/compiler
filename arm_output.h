@@ -2,6 +2,7 @@
 #include <set>
 #include <iostream>
 #include <sstream>
+#include <map>
 
 #ifndef PARSE_H
 #define PARSE_H
@@ -17,7 +18,12 @@ const string ADD = "add";
 const string SUB = "sub";
 const string MULT = "mul";
 
-pair<string, string> load_into_reg(string id, string value, set<string> *regs_avail, set<pair<string, string> > *regs_used);
+string four_arity(string op, string opd1, string opd2, string opd3);
+string three_arity(string op, string opd1, string opd2);
+string two_arity(string op, string opd1);
+string assoc_if_not_used(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used);
+pair<string, string> load_into_reg(string id, string value, set<string> *regs_avail, 
+				   set<pair<string, string> > *regs_used);
 string error(string func, string error);
 void test_traverse(parsetree *root);
 string basic_exp(string op, string exp_reg, string r1, string r2);
