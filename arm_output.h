@@ -1,5 +1,6 @@
 #include <string>
 #include <set>
+#include <list>
 #include <iostream>
 #include <sstream>
 #include <map>
@@ -18,6 +19,10 @@ const string ADD = "add";
 const string SUB = "sub";
 const string MULT = "mul";
 
+
+parsetree * get_assign(parsetree *ae);
+parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path);
+parsetree * get_ident(parsetree *ae);
 string four_arity(string op, string opd1, string opd2, string opd3);
 string three_arity(string op, string opd1, string opd2);
 string two_arity(string op, string opd1);

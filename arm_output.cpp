@@ -177,6 +177,57 @@ string eval_unary_expr(parsetree *expr) {
   return res;
 }
 
+string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  parsetree *left = root -> children[0] -> children[0];
+  parsetree *right = root -> children[2] -> children[0];
+  assign_to_ident(left, right);
+  string reg = assoc_id_reg(regs_avail, regs_used, left -> symbol_table_ptr -> id_name);
+  return load_register(reg, right -> str_ptr);
+}
+
+bool simple_assign_exp(parsetree *root) {
+  parsetree *left = root -> children[0];
+  parsetree *mid = root -> children[1];
+  parsetree *right = root -> children[2];
+  return left -> type == node_primary_expression && left -> children[0] -> type == node_IDENTIFIER 
+    && mid -> type == node_ASSIGNMENT && right -> type == node_primary_expression 
+    && right -> children[0] -> type == node_CONSTANT;
+}
+
+parsetree * get_ident(parsetree *ae) {
+  list<pair<int, nodetype> > search;
+  search.push_back(pair<int, nodetype> (0, node_primary_expression));
+  search.push_back(pair<int, nodetype> (0, node_IDENTIFIER));
+  return node_search(ae, search);
+}
+
+parsetree * get_assign(parsetree *ae) {
+    list<pair<int, nodetype> > search;
+    search.push_back(pair<int, nodetype> (1, node_ASSIGNMENT));
+    return node_search(ae, search);
+}
+
+parsetree * get_const(parsetree *ae) {
+  list<pair<int, nodetype> > search;
+  search.push_back(pair<int, nodetype> (2, node_primary_expression)); 
+  search.push_back(pair<int, nodetype> (0, node_CONSTANT));
+  return node_search(ae, search);
+}
+
+parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
+    if (path.size() > 0) {
+      parsetree *child = root -> children[path.front().first];
+      if (child != NULL && child -> type == path.front().second) {
+	path.pop_front();
+	return node_search(child, path);
+      } else {
+	return NULL;
+      }
+    } else {
+      return root;
+    }
+}  
+
 string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, string *output) {
   switch (root -> type) {
   case node_assignment_expression: {
@@ -327,23 +378,6 @@ string update_output_nnl(string output, string new_str) {
 
 string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   return simple_assign_exp(root) ? sa(root, regs_avail, regs_used) : "";
-}
-
-bool simple_assign_exp(parsetree *root) {
-  parsetree *left = root -> children[0];
-  parsetree *mid = root -> children[1];
-  parsetree *right = root -> children[2];
-  return left -> type == node_primary_expression && left -> children[0] -> type == node_IDENTIFIER 
-    && mid -> type == node_ASSIGNMENT && right -> type == node_primary_expression 
-    && right -> children[0] -> type == node_CONSTANT;
-}
-
-string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
-  parsetree *left = root -> children[0] -> children[0];
-  parsetree *right = root -> children[2] -> children[0];
-  assign_to_ident(left, right);
-  string reg = assoc_id_reg(regs_avail, regs_used, left -> symbol_table_ptr -> id_name);
-  return load_register(reg, right -> str_ptr);
 }
 
 void assign_to_ident(parsetree *ident_node, parsetree *const_node) {
