@@ -320,7 +320,8 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
     if (id_reg.empty()) {
       id_reg = assoc_id_reg(regs_avail, regs_used, id);
     }
-    string exp = basic_exp(root -> children[1] -> type == node_DEC_OP ? SUB : ADD, id_reg, id_reg, "#1");
+    string exp = four_arity(root -> children[1] -> type == node_DEC_OP ? SUB : ADD, id_reg, id_reg
+			    , arm_small_constant("1"));
     *output = update_output(*output, exp);
     return exp;
   }
@@ -332,10 +333,6 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
     break;      
   }
   return *output;
-}
-
-string basic_exp(string op, string exp_reg, string r1, string r2) {
-  return op + "\t" + exp_reg + ", " + r1 + ", " + r2;
 }
 
 pair<string, string> lookup_str(string str, set<pair<string, string> > *regs_used) {
@@ -443,4 +440,8 @@ string two_arity(string op, string opd1) {
 
 string arm_constant(string val) {
   return "=" + val;
+}
+
+string arm_small_constant(string val) {
+  return "#" + val;
 }

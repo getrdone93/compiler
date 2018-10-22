@@ -19,6 +19,7 @@ const string ADD = "add";
 const string SUB = "sub";
 const string MULT = "mul";
 
+string arm_small_constant(string val);
 string arm_constant(string val);
 parsetree * get_const(parsetree *ae);
 parsetree * get_assign(parsetree *ae);
@@ -32,7 +33,6 @@ pair<string, string> load_into_reg(string id, string value, set<string> *regs_av
 				   set<pair<string, string> > *regs_used);
 string error(string func, string error);
 void test_traverse(parsetree *root);
-string basic_exp(string op, string exp_reg, string r1, string r2);
 int get_value(parsetree *node);
 void assign_to_ident(parsetree *ident_node, parsetree *const_node);
 string to_string(int num);
