@@ -122,7 +122,7 @@ string eval_expr(parsetree *expr_node, set<string> *regs_avail, set<pair<string,
   string fv = lookup_str(left_node -> str_ptr, regs_used).first;
   string sv = lookup_str(right_node -> str_ptr, regs_used).first;
   
-  string expr = op + "\t" + expr_reg + ", " + fv + ", " + sv;
+  string expr = four_arity(op, expr_reg, fv, sv);
   regs_used -> insert(pair<string, string>(expr_reg, expr));
   return expr;
 }
