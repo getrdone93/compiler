@@ -391,7 +391,7 @@ list<pair<string, string> > nested_expression(parsetree *root, set<string> *regs
 	l1.insert(l1.end(), l2.begin(), l2.end());
 	return l1;
       } else {
-	parsetree *id_node = get_ident(root, left_child == NULL ? 0 : 2);
+	parsetree *id_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
 	pair<string, string> reg_load = load_leaf_new(id_node, regs_avail, regs_used);
 	list<pair<string, string> > l1 = nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
 							   regs_used, exp_types);
