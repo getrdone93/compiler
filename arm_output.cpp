@@ -213,6 +213,7 @@ string simple_assignment(parsetree *ident, parsetree *assign, parsetree *constan
 			 set<pair<string, string> > *regs_used) {
   string res;
   if (ident == NULL || assign == NULL || constant == NULL) {
+    cout << "simple assignment, null node\n";
     //do debug or something
   } else {
     assign_to_ident(ident, constant);
@@ -309,7 +310,22 @@ parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
 
 string handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   string res;
+  parsetree *id = get_ident(root, 0);
+  parsetree *assign = get_assign(root);
+  parsetree *con = get_const(root, 2);
+  if (id == NULL) {
+    cout << "id is null\n";
+  }
+    if (assign == NULL) {
+    cout << "assign is null\n";
+  }
+
+  if (con == NULL) {
+    cout << "con is null\n";
+  }
+
   res += simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2), regs_avail, regs_used);
+        cout << "here\n";
   res += nested_expression(root, regs_avail, regs_used, expression_types());
   return res;
 }
@@ -335,20 +351,28 @@ string ground_expression(parsetree *root, set<string> *regs_avail, set<pair<stri
 string nested_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, 
 			 list<nodetype> exp_types) {
   parsetree *left_child = zero_depth_child(root, 0, exp_types);
+  //  parsetree *mid_child = zero_depth_child(root, 1, operator_types());
+  parsetree *mid_child = get_assign(root);
   parsetree *right_child = zero_depth_child(root, 2, exp_types);
-  if (left_child == NULL && right_child == NULL) {
-    return ground_expression(root, regs_avail, regs_used);
+  if (mid_child != NULL) {
+    //do debug or something
+    cout << "not an eggsicutable eggspression\n";
+    return "";
   } else {
-    if (left_child != NULL && right_child != NULL) {
-      return nested_expression(left_child, regs_avail, regs_used, exp_types)
-	+ nested_expression(right_child, regs_avail, regs_used, exp_types);
+    if (left_child == NULL && right_child == NULL) {
+      return ground_expression(root, regs_avail, regs_used);
     } else {
-      parsetree *id_node = get_ident(root, left_child == NULL ? 0 : 2);
-      pair<string, string> reg_load = load_leaf_new(id_node, regs_avail, regs_used);
-      string ret_val = reg_load.second + nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
+      if (left_child != NULL && right_child != NULL) {
+	return nested_expression(left_child, regs_avail, regs_used, exp_types)
+	  + nested_expression(right_child, regs_avail, regs_used, exp_types);
+      } else {
+	parsetree *id_node = get_ident(root, left_child == NULL ? 0 : 2);
+	pair<string, string> reg_load = load_leaf_new(id_node, regs_avail, regs_used);
+	string ret_val = reg_load.second + nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
 							   regs_used, exp_types);
-      release_reg(reg_load.first, regs_avail, regs_used);
-      return ret_val;
+	release_reg(reg_load.first, regs_avail, regs_used);
+	return ret_val;
+      }
     }
   }
 }
@@ -356,22 +380,23 @@ string nested_expression(parsetree *root, set<string> *regs_avail, set<pair<stri
 string arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   string res;
   switch(root -> type) {
-    case node_assignment_expression:
+  case node_assignment_expression:
       res += handle_assignment(root, regs_avail, regs_used);
       break;
     case node_statement:
       if (write_exp(root)) {
-	const string id = root -> children[1] -> children[0] -> str_ptr;
-	res += print_register(lookup_str(id, regs_used).first);	
-	release_reg(id, regs_avail, regs_used);
+      	const string id = root -> children[1] -> children[0] -> str_ptr;
+      	res += print_register(lookup_str(id, regs_used).first);	
+      	release_reg(id, regs_avail, regs_used);
       }
       break;
     default:
       for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-	arm_output_new(root -> children[i], regs_avail, regs_used);
+	res += arm_output_new(root -> children[i], regs_avail, regs_used);
       }      
       break;
   }
+  return res;
 }
 
 string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, string *output) {
