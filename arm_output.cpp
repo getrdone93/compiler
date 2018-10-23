@@ -37,16 +37,13 @@ string error(string func, string error) {
 
 pair<string, string> load_into_reg(string id, string value, set<string> *regs_avail, 
 				   set<pair<string, string> > *regs_used) {
-  string load_str;
-  string into_reg;
   if (id.empty() || value.empty()) {
     cout << error("load", "id or value or both was empty");
+    return pair<string, string>();
   } else {
-    pair<string, string> entry = lookup_str(id, regs_used);
-    into_reg = entry.first.empty() ? assoc_id_reg(regs_avail, regs_used, id) : entry.first;
-    load_str = three_arity(LOAD, id, arm_constant(value));
+    string into_reg = assoc_if_not_used(id, regs_avail, regs_used);
+    return pair<string, string>(into_reg, three_arity(LOAD, into_reg, arm_constant(value)));
   }
-  return pair<string, string>(into_reg, load_str);
 }
 
 string load_const(parsetree *p_expr, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
@@ -71,6 +68,24 @@ bool ground_expr(parsetree *expr_node) {
 	|| expr_node -> children[2] -> children[0] -> type == node_IDENTIFIER);
 }
 
+string operator_to_arm_new(nodetype type) {
+  string arm_op;
+  switch(type) {
+    case node_SUBTRACT:
+      arm_op = SUB;
+      break;
+    case node_MULT:
+      arm_op = MULT;
+      break;
+    case node_ADD:
+      arm_op = ADD;
+      break;
+    default:
+      break;
+  }
+  return arm_op;  
+}
+
 string operator_to_arm(parsetree *op_node) {
   string arm_op;
   switch(op_node -> type) {
@@ -87,6 +102,22 @@ string operator_to_arm(parsetree *op_node) {
       break;
   }
   return arm_op;
+}
+
+pair<string, string> load_leaf_new(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  pair<string, string> reg_expr;
+  switch (node -> type) {
+     case node_IDENTIFIER:
+       reg_expr = load_into_reg(node -> symbol_table_ptr -> id_name, to_string(node -> symbol_table_ptr -> value),
+		     regs_avail, regs_used);
+       break;
+    case node_CONSTANT:
+       reg_expr = load_into_reg(node -> str_ptr, node -> str_ptr, regs_avail, regs_used);
+       break;
+    default:
+      break;
+  }
+  return reg_expr;
 }
 
 string load_leaf(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
@@ -133,12 +164,13 @@ void release_reg(parsetree *root, set<string> *regs_avail, set<pair<string, stri
   }
 }
 
-void release_reg(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+pair<string, string> release_reg(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
     pair<string, string> up = lookup_str(id, regs_used);
     if (!up.first.empty()) {
       regs_avail -> insert(up.first);
       regs_used -> erase(up);
     }
+    return up;
 }
 
 int to_int(string str) {
@@ -177,10 +209,8 @@ string eval_unary_expr(parsetree *expr) {
   return res;
 }
 
-string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
-  parsetree *ident = get_ident(root);
-  parsetree *assign = get_assign(root);
-  parsetree *constant = get_const(root);
+string simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant, set<string> *regs_avail, 
+			 set<pair<string, string> > *regs_used) {
   string res;
   if (ident == NULL || assign == NULL || constant == NULL) {
     //do debug or something
@@ -192,22 +222,73 @@ string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<stri
   return res;
 }
 
-parsetree * get_ident(parsetree *ae) {
+parsetree * get_ident(parsetree *ae, int child) {
   list<pair<int, nodetype> > search;
-  search.push_back(pair<int, nodetype> (0, node_primary_expression));
+  search.push_back(pair<int, nodetype> (child, node_primary_expression));
   search.push_back(pair<int, nodetype> (0, node_IDENTIFIER));
   return node_search(ae, search);
 }
 
-parsetree * get_assign(parsetree *ae) {
-    list<pair<int, nodetype> > search;
-    search.push_back(pair<int, nodetype> (1, node_ASSIGNMENT));
-    return node_search(ae, search);
+parsetree * get_id_or_const(parsetree* root, int child) {
+  parsetree *res = get_ident(root, child);
+  if (res == NULL) {
+    res = get_const(root, child);
+  }
+  return res;
 }
 
-parsetree * get_const(parsetree *ae) {
+parsetree * zero_depth_child(parsetree *root, int child, list<nodetype> poss_types) {
+  if (root == NULL || poss_types.empty()) {
+    return NULL;
+  } else {
+    parsetree *node = zero_depth_child(root, child, poss_types.front());
+    if (node == NULL) {
+      poss_types.pop_front();
+      zero_depth_child(root, child, poss_types);
+    } else {
+      return node;
+    }
+  }
+}
+
+list<nodetype> operator_types() {
+  //please figure out how to do constants
+  list<nodetype> op_types;
+  op_types.push_back(node_ADD);
+  op_types.push_back(node_MULT);
+  op_types.push_back(node_DIVIDE);
+  return op_types;
+}
+
+list<nodetype> expression_types() {
+  //please figure out how to do constants
+  list<nodetype> exp_types;
+  exp_types.push_back(node_additive_expression);
+  exp_types.push_back(node_multiplicative_expression);
+  return exp_types;
+}
+
+list<nodetype> ground_expr_types() {
+  list<nodetype> ground_expr_nt;
+  ground_expr_nt.push_back(node_primary_expression);
+  return ground_expr_nt;
+}
+
+parsetree * zero_depth_child(parsetree *root, int child, nodetype type) {
   list<pair<int, nodetype> > search;
-  search.push_back(pair<int, nodetype> (2, node_primary_expression)); 
+  search.push_back(pair<int, nodetype> (child, type));
+  return node_search(root, search);
+}
+
+parsetree * get_assign(parsetree *ae) {
+  list<pair<int, nodetype> > search;
+  search.push_back(pair<int, nodetype> (1, node_ASSIGNMENT));
+  return node_search(ae, search);
+}
+
+parsetree * get_const(parsetree *ae, int child) {
+  list<pair<int, nodetype> > search;
+  search.push_back(pair<int, nodetype> (child, node_primary_expression)); 
   search.push_back(pair<int, nodetype> (0, node_CONSTANT));
   return node_search(ae, search);
 }
@@ -228,16 +309,52 @@ parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
 
 string handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   string res;
-  res += simple_assignment(root, regs_avail, regs_used);
-  res += complex_expression(root, regs_avail, regs_used);
+  res += simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2), regs_avail, regs_used);
+  res += nested_expression(root, regs_avail, regs_used, expression_types());
   return res;
 }
 
-string complex_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
-  return "";
+string ground_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  parsetree *left_child = get_id_or_const(root, 0);
+  parsetree *right_child = get_id_or_const(root, 2);
+  if (left_child == NULL || right_child == NULL) {
+    //do a warn or something
+    return "";
+  } else {
+    pair<string, string> left = load_leaf_new(left_child, regs_avail, regs_used);
+    pair<string, string> right = load_leaf_new(right_child, regs_avail, regs_used);
+    nodetype op_type = zero_depth_child(root, 1, operator_types()) -> type;
+    //reuse register of left leaf for expression, could reuse right leaf's register as well
+    string expr = four_arity(operator_to_arm_new(op_type), left.first, left.first, right.first);
+    release_reg(left.first, regs_avail, regs_used);
+    release_reg(right.first, regs_avail, regs_used);
+    return left.second + right.second + expr;
+  }
+}
+
+string nested_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, 
+			 list<nodetype> exp_types) {
+  parsetree *left_child = zero_depth_child(root, 0, exp_types);
+  parsetree *right_child = zero_depth_child(root, 2, exp_types);
+  if (left_child == NULL && right_child == NULL) {
+    return ground_expression(root, regs_avail, regs_used);
+  } else {
+    if (left_child != NULL && right_child != NULL) {
+      return nested_expression(left_child, regs_avail, regs_used, exp_types)
+	+ nested_expression(right_child, regs_avail, regs_used, exp_types);
+    } else {
+      parsetree *id_node = get_ident(root, left_child == NULL ? 0 : 2);
+      pair<string, string> reg_load = load_leaf_new(id_node, regs_avail, regs_used);
+      string ret_val = reg_load.second + nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
+							   regs_used, exp_types);
+      release_reg(reg_load.first, regs_avail, regs_used);
+      return ret_val;
+    }
+  }
 }
 
 string arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, string output) {
+  //why not make this just a plain DFS that aggregates the ret_val from the functions? 
   switch(root -> type) {
     case node_assignment_expression:
       output += handle_assignment(root, regs_avail, regs_used);
@@ -253,7 +370,8 @@ string arm_output(parsetree *root, set<string> *regs_avail, set<pair<string, str
     parsetree *expr_root = root -> children[2];
     switch (expr_root -> type) {
     case node_primary_expression:
-      *output = update_output(*output, simple_assignment(root, regs_avail, regs_used));	
+      *output = update_output(*output, simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2), 
+							 regs_avail, regs_used));	
       break;
     case node_additive_expression:
     case node_multiplicative_expression: {

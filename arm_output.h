@@ -20,14 +20,23 @@ const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
 
+string ground_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
+string nested_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, 
+		  list<nodetype> exp_types);
+parsetree * zero_depth_child(parsetree *root, int child, nodetype type);
+parsetree * zero_depth_child(parsetree *root, int child, list<nodetype> poss_types);
+pair<string, string> load_leaf_new(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used);
+parsetree * get_id_or_const(parsetree* root, int child);
+string simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant, set<string> *regs_avail, 
+			 set<pair<string, string> > *regs_used);
 string handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string complex_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string arm_small_constant(string val);
 string arm_constant(string val);
-parsetree * get_const(parsetree *ae);
+parsetree * get_const(parsetree *ae, int child);
 parsetree * get_assign(parsetree *ae);
 parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path);
-parsetree * get_ident(parsetree *ae);
+parsetree * get_ident(parsetree *ae, int child);
 string four_arity(string op, string opd1, string opd2, string opd3);
 string three_arity(string op, string opd1, string opd2);
 string two_arity(string op, string opd1);
@@ -45,11 +54,10 @@ string load_const(parsetree *p_expr, set<string> *regs_avail, set<pair<string, s
 string load_leaf(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string load_leafs(parsetree *expr_node, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 void release_reg(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
-void release_reg(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used);
+pair<string, string> release_reg(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 pair<string, string> lookup_str(string str, set<pair<string, string> > *regs_used);
 string operator_to_arm(parsetree *op_node);
 string update_output(string output, string new_str);
-string simple_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string assoc_id_reg(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id);
 string first(set<string> *regs);
