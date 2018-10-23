@@ -20,6 +20,7 @@ const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
 
+string list_pairs_to_string(list<pair<string, string> > lis);
 void output_node(parsetree *node, string var_name);
 void output_pair(pair<string, string> p, string var_name);
 list<nodetype> expression_types();

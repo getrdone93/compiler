@@ -327,17 +327,21 @@ string handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<stri
     cout << "con is null\n";
   }
 
-  string sa = simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2), regs_avail, regs_used);
-  list<pair<string, string> > lis;
-  if (sa.empty()) {
-    lis = nested_expression(zero_depth_child(root, 2, expression_types()), regs_avail, regs_used, expression_types());
-
-    cout << "printing assembler from ret_val of lis. lis.size(): " << lis.size() << "\n";
-    for (list<pair<string, string> >::iterator it = lis.begin(); it != lis.end(); it++) {
-	cout << it -> second;
-      }
+  res = simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2), regs_avail, regs_used);
+  if (res.empty()) {
+    list<pair<string, string> > lis = nested_expression(zero_depth_child(root, 2, expression_types()), 
+							    regs_avail, regs_used, expression_types());
+    res += list_pairs_to_string(lis);
   }
   return res;
+}
+
+string list_pairs_to_string(list<pair<string, string> > lis) {
+   string res;
+   for (list<pair<string, string> >::iterator it = lis.begin(); it != lis.end(); it++) {
+	res += it -> second;
+   }
+   return res;
 }
 
 void output_pair(pair<string, string> p, string var_name) {
@@ -403,13 +407,13 @@ list<pair<string, string> > nested_expression(parsetree *root, set<string> *regs
 	l1.insert(l1.end(), l2.begin(), l2.end());
 	return l1;
       } else {
-	cout << "made it to inner inner inner else\n";
 	parsetree *id_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
 	pair<string, string> reg_load = load_leaf_new(id_node, regs_avail, regs_used);
 	list<pair<string, string> > l1 = nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
 							   regs_used, exp_types);
-	l1.push_back(reg_load);
-	release_reg(reg_load.first, regs_avail, regs_used);
+	l1.push_front(reg_load);	
+	
+	//release_reg(reg_load.first, regs_avail, regs_used);
 	return l1;
       }
     }
