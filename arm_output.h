@@ -20,6 +20,7 @@ const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
 
+string arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string ground_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string nested_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, 
 		  list<nodetype> exp_types);

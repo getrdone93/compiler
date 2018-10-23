@@ -353,13 +353,23 @@ string nested_expression(parsetree *root, set<string> *regs_avail, set<pair<stri
   }
 }
 
-string arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, string output) {
-  //why not make this just a plain DFS that aggregates the ret_val from the functions? 
+string arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  string res;
   switch(root -> type) {
     case node_assignment_expression:
-      output += handle_assignment(root, regs_avail, regs_used);
+      res += handle_assignment(root, regs_avail, regs_used);
+      break;
+    case node_statement:
+      if (write_exp(root)) {
+	const string id = root -> children[1] -> children[0] -> str_ptr;
+	res += print_register(lookup_str(id, regs_used).first);	
+	release_reg(id, regs_avail, regs_used);
+      }
       break;
     default:
+      for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+	arm_output_new(root -> children[i], regs_avail, regs_used);
+      }      
       break;
   }
 }

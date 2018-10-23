@@ -867,9 +867,9 @@ int main( int ac, char *av[] )
     if ( ! err_count )
     {
         //cout << "Compiled OK\n";
-      dotit(root, 0);
+      //dotit(root, 0);
 
-      /*vector<map<string, id_attrs> > sym_table;
+      vector<map<string, id_attrs> > sym_table;
 	map<string, id_attrs> global_scope;
 	sym_table.push_back(global_scope);
 	symbol_table(root, &sym_table);
@@ -888,9 +888,12 @@ int main( int ac, char *av[] )
 	regs_avail.insert("r11");
 	regs_avail.insert("r12");
 	set<pair<string, string> > regs_used;
-	string output;
+	/*	string output;
 	ofstream out_file("assembler.s");
 	out_file << arm_output(root, &regs_avail, &regs_used, &output);*/
+
+	ofstream out_file("new_assembler.s");
+	out_file << arm_output_new(root, &regs_avail, &regs_used);
 
 	/*cout << "\n---test traverse---\n";
 	  test_traverse(root);*/
