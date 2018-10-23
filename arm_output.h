@@ -20,12 +20,14 @@ const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
 
+void output_pair(pair<string, string> p, string var_name);
 list<nodetype> expression_types();
 list<nodetype> operator_types();
 string arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
-string ground_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
-string nested_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, 
-		  list<nodetype> exp_types);
+list<pair<string, string> > ground_expression(parsetree *root, set<string> *regs_avail, 
+					      set<pair<string, string> > *regs_used);
+list<pair<string, string> > nested_expression(parsetree *root, set<string> *regs_avail, 
+					      set<pair<string, string> > *regs_used, list<nodetype> exp_types);
 parsetree * zero_depth_child(parsetree *root, int child, nodetype type);
 parsetree * zero_depth_child(parsetree *root, int child, list<nodetype> poss_types);
 pair<string, string> load_leaf_new(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used);

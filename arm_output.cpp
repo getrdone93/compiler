@@ -240,17 +240,40 @@ parsetree * get_id_or_const(parsetree* root, int child) {
 
 parsetree * zero_depth_child(parsetree *root, int child, list<nodetype> poss_types) {
   if (root == NULL || poss_types.empty()) {
+    cout << "returning NULL from zdc\n";
     return NULL;
   } else {
     parsetree *node = zero_depth_child(root, child, poss_types.front());
     if (node == NULL) {
       poss_types.pop_front();
-      zero_depth_child(root, child, poss_types);
+      return zero_depth_child(root, child, poss_types);
     } else {
+      cout << "returning this node from zdc: " << node << "\n";
       return node;
     }
   }
 }
+
+parsetree * zero_depth_child(parsetree *root, int child, nodetype type) {
+  list<pair<int, nodetype> > search;
+  search.push_back(pair<int, nodetype> (child, type));
+  return node_search(root, search);
+}
+
+parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
+    if (path.size() > 0) {
+      parsetree *child = root -> children[path.front().first];
+      if (child != NULL && child -> type == path.front().second) {
+	path.pop_front();
+	return node_search(child, path);
+      } else {
+	return NULL;
+      }
+    } else {
+      return root;
+    }
+}  
+
 
 list<nodetype> operator_types() {
   //please figure out how to do constants
@@ -275,12 +298,6 @@ list<nodetype> ground_expr_types() {
   return ground_expr_nt;
 }
 
-parsetree * zero_depth_child(parsetree *root, int child, nodetype type) {
-  list<pair<int, nodetype> > search;
-  search.push_back(pair<int, nodetype> (child, type));
-  return node_search(root, search);
-}
-
 parsetree * get_assign(parsetree *ae) {
   list<pair<int, nodetype> > search;
   search.push_back(pair<int, nodetype> (1, node_ASSIGNMENT));
@@ -293,20 +310,6 @@ parsetree * get_const(parsetree *ae, int child) {
   search.push_back(pair<int, nodetype> (0, node_CONSTANT));
   return node_search(ae, search);
 }
-
-parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
-    if (path.size() > 0) {
-      parsetree *child = root -> children[path.front().first];
-      if (child != NULL && child -> type == path.front().second) {
-	path.pop_front();
-	return node_search(child, path);
-      } else {
-	return NULL;
-      }
-    } else {
-      return root;
-    }
-}  
 
 string handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   string res;
@@ -324,54 +327,77 @@ string handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<stri
     cout << "con is null\n";
   }
 
-  res += simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2), regs_avail, regs_used);
-        cout << "here\n";
-  res += nested_expression(root, regs_avail, regs_used, expression_types());
+  string sa = simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2), regs_avail, regs_used);
+  list<pair<string, string> > lis;
+  if (sa.empty()) {
+    lis = nested_expression(zero_depth_child(root, 2, expression_types()), regs_avail, regs_used, expression_types());
+  }
   return res;
 }
 
-string ground_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+void output_pair(pair<string, string> p, string var_name) {
+  cout << var_name << ".first " << p.first << "\t" << var_name << ".second " << p.second << "\n";
+}
+
+list<pair<string, string> > ground_expression(parsetree *root, set<string> *regs_avail, 
+					      set<pair<string, string> > *regs_used) {
   parsetree *left_child = get_id_or_const(root, 0);
   parsetree *right_child = get_id_or_const(root, 2);
   if (left_child == NULL || right_child == NULL) {
     //do a warn or something
-    return "";
+    list<pair<string, string> > res;
+    return res;
   } else {
     pair<string, string> left = load_leaf_new(left_child, regs_avail, regs_used);
     pair<string, string> right = load_leaf_new(right_child, regs_avail, regs_used);
     nodetype op_type = zero_depth_child(root, 1, operator_types()) -> type;
     //reuse register of left leaf for expression, could reuse right leaf's register as well
-    string expr = four_arity(operator_to_arm_new(op_type), left.first, left.first, right.first);
+    pair<string, string> expr = pair<string, string>(left.first, four_arity(operator_to_arm_new(op_type), 
+									    left.first, left.first, right.first));
     release_reg(left.first, regs_avail, regs_used);
     release_reg(right.first, regs_avail, regs_used);
-    return left.second + right.second + expr;
+
+    list<pair<string, string> > res;
+    res.push_back(left);
+    res.push_back(right);
+    res.push_back(expr);
+    return res;
   }
 }
 
-string nested_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, 
-			 list<nodetype> exp_types) {
+list<pair<string, string> > nested_expression(parsetree *root, set<string> *regs_avail, 
+					      set<pair<string, string> > *regs_used, list<nodetype> exp_types) {
   parsetree *left_child = zero_depth_child(root, 0, exp_types);
-  //  parsetree *mid_child = zero_depth_child(root, 1, operator_types());
-  parsetree *mid_child = get_assign(root);
+  parsetree *mid_child = zero_depth_child(root, 1, operator_types());
+  cout << "calling right_child from nested_expression\n";
   parsetree *right_child = zero_depth_child(root, 2, exp_types);
-  if (mid_child != NULL) {
+
+  cout << "left_child: " << nodenames[left_child -> type] << "\n";
+  cout << "mid_child: " << nodenames[mid_child -> type] << "\n";
+    cout << "right_child: " << right_child << "\n";
+
+  if (root == NULL || mid_child == NULL) {
     //do debug or something
     cout << "not an eggsicutable eggspression\n";
-    return "";
+    list<pair<string, string> > res;
+    return res;
   } else {
     if (left_child == NULL && right_child == NULL) {
       return ground_expression(root, regs_avail, regs_used);
     } else {
       if (left_child != NULL && right_child != NULL) {
-	return nested_expression(left_child, regs_avail, regs_used, exp_types)
-	  + nested_expression(right_child, regs_avail, regs_used, exp_types);
+	list<pair<string, string> > l1 = nested_expression(left_child, regs_avail, regs_used, exp_types);
+	list<pair<string, string> > l2 = nested_expression(right_child, regs_avail, regs_used, exp_types);
+	l1.insert(l1.end(), l2.begin(), l2.end());
+	return l1;
       } else {
 	parsetree *id_node = get_ident(root, left_child == NULL ? 0 : 2);
 	pair<string, string> reg_load = load_leaf_new(id_node, regs_avail, regs_used);
-	string ret_val = reg_load.second + nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
+	list<pair<string, string> > l1 = nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
 							   regs_used, exp_types);
+	l1.push_back(reg_load);
 	release_reg(reg_load.first, regs_avail, regs_used);
-	return ret_val;
+	return l1;
       }
     }
   }
