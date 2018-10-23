@@ -240,7 +240,7 @@ parsetree * get_id_or_const(parsetree* root, int child) {
 
 parsetree * zero_depth_child(parsetree *root, int child, list<nodetype> poss_types) {
   if (root == NULL || poss_types.empty()) {
-    cout << "returning NULL from zdc\n";
+    //    cout << "returning NULL from zdc\n";
     return NULL;
   } else {
     parsetree *node = zero_depth_child(root, child, poss_types.front());
@@ -248,7 +248,7 @@ parsetree * zero_depth_child(parsetree *root, int child, list<nodetype> poss_typ
       poss_types.pop_front();
       return zero_depth_child(root, child, poss_types);
     } else {
-      cout << "returning this node from zdc: " << node << "\n";
+      //cout << "returning this node from zdc: " << node << "\n";
       return node;
     }
   }
@@ -331,6 +331,11 @@ string handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<stri
   list<pair<string, string> > lis;
   if (sa.empty()) {
     lis = nested_expression(zero_depth_child(root, 2, expression_types()), regs_avail, regs_used, expression_types());
+
+    cout << "printing assembler from ret_val of lis. lis.size(): " << lis.size() << "\n";
+    for (list<pair<string, string> >::iterator it = lis.begin(); it != lis.end(); it++) {
+	cout << it -> second;
+      }
   }
   return res;
 }
@@ -365,16 +370,23 @@ list<pair<string, string> > ground_expression(parsetree *root, set<string> *regs
   }
 }
 
+void output_node(parsetree *node, string var_name) {
+  if (node == NULL) {
+    cout << var_name << " is NULL\n";
+  } else {
+    cout << var_name << " -> nodetype: " << nodenames[node -> type] << "\n";
+  }
+}
+
 list<pair<string, string> > nested_expression(parsetree *root, set<string> *regs_avail, 
 					      set<pair<string, string> > *regs_used, list<nodetype> exp_types) {
   parsetree *left_child = zero_depth_child(root, 0, exp_types);
   parsetree *mid_child = zero_depth_child(root, 1, operator_types());
-  cout << "calling right_child from nested_expression\n";
   parsetree *right_child = zero_depth_child(root, 2, exp_types);
 
-  cout << "left_child: " << nodenames[left_child -> type] << "\n";
-  cout << "mid_child: " << nodenames[mid_child -> type] << "\n";
-    cout << "right_child: " << right_child << "\n";
+  output_node(left_child, "left_child");
+  output_node(mid_child, "mid_child");
+  output_node(right_child, "right_child");
 
   if (root == NULL || mid_child == NULL) {
     //do debug or something
@@ -391,6 +403,7 @@ list<pair<string, string> > nested_expression(parsetree *root, set<string> *regs
 	l1.insert(l1.end(), l2.begin(), l2.end());
 	return l1;
       } else {
+	cout << "made it to inner inner inner else\n";
 	parsetree *id_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
 	pair<string, string> reg_load = load_leaf_new(id_node, regs_avail, regs_used);
 	list<pair<string, string> > l1 = nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
