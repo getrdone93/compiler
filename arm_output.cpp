@@ -1,24 +1,5 @@
 #include "arm_output.h"
 
-void test_traverse(parsetree *root) {
-  switch(root -> type) {
-  case node_IDENTIFIER:
-    if (root -> symbol_table_ptr == NULL) {
-      cout << "sym pointer: " << root -> symbol_table_ptr << " id name: " << root -> str_ptr << " line: "
-	   << root -> line << "\n";
-    } else {
-      cout << "ID: " << root -> symbol_table_ptr -> id_name << " line: " << root -> symbol_table_ptr -> line
-	   << " value: " << root -> symbol_table_ptr -> value << "\n";
-    }
-    break;
-  default:
-    for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-      test_traverse(root -> children[i]);
-    }
-    break;
-  }
-}
-
 string error(string func, string error) {
   return "ERROR in function " + func + ": " + error + "\n";
 }
@@ -95,22 +76,6 @@ int get_value(parsetree *node) {
     break;
   }
   return v;
-}
-
-string eval_unary_expr(parsetree *expr) {
-  string res;
-  switch (expr -> children[0] -> children[0] -> type) {
-  case node_UNARY_MINUS: {
-    int v = get_value(expr -> children[1] -> children[0]);
-    res = to_string(-v);
-  }
-    break;
-  case node_NEGATE:
-    int v = get_value(expr -> children[1] -> children[0]);
-    res = to_string(!v);
-    break;
-  }
-  return res;
 }
 
 string simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant, set<string> *regs_avail, 
