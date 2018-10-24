@@ -62,7 +62,6 @@ string assoc_if_not_used(string id, set<string> *regs_avail, set<pair<string, st
 pair<string, string> load_into_reg(string id, string value, set<string> *regs_avail, 
 				   set<pair<string, string> > *regs_used);
 string error(string func, string error);
-void test_traverse(parsetree *root);
 int get_value(parsetree *node);
 void assign_to_ident(parsetree *ident_node, parsetree *const_node);
 string to_string(int num);
