@@ -9,7 +9,10 @@ header file for sample Flex/Bison parser.
 
 #define SYM_LEN         32
 
+#ifndef NODE_NAMES_H
+#define NODE_NAMES_H
 #include "nodeNames.h"
+#endif // NODE_NAMES_H
 
 enum id_type {
   integer,

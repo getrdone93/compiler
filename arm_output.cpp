@@ -57,7 +57,6 @@ pair<string, string> release_reg(string id, set<string> *regs_avail, set<pair<st
     }
     return up;
 }
-
 int to_int(string str) {
   int num;
   stringstream ss(str);
@@ -372,16 +371,6 @@ string first(set<string> *regs) {
   return result;
 }
 
-quad four_arity_quad(nodetype op, string dest, string opd2, string opd3) {
-  quad q = {
-    op,
-    dest,
-    opd2,
-    opd3
-  };
-  return q;
-}
-
 string four_arity(string op, string opd1, string opd2, string opd3) {
   if (op.empty()) {
     error(__FUNCTION__, "op was empty");
@@ -406,10 +395,6 @@ string three_arity(string op, string opd1, string opd2) {
   return op + "\t" + opd1 + ", " + opd2 + "\n";
 }
 
-quad three_arity_quad(nodetype op, string opd1, string opd2) {
-  return four_arity_quad(op, opd1, opd2, "");
-}
-
 string two_arity(string op, string opd1) {
   if (op.empty()) {
     error(__FUNCTION__, "op was empty");
@@ -417,25 +402,6 @@ string two_arity(string op, string opd1) {
     error(__FUNCTION__, "opd1 was empty");
   }
   return op + "\t" + opd1 + "\n";
-}
-
-string dash_if_empty(string s) {
-  return s.empty() ? "-" : s;
-}
-
-void print_quad_list(list<quad> quads) {
-  for (list<quad>::iterator it = quads.begin(); it != quads.end(); it++) {
-    cout << quad_to_string(*it);
-  }
-}
-
-string quad_to_string(quad q) {
-  return "(" + string(nodenames[q.type]) + ", " + string(dash_if_empty(q.dest)) + ", " 
-    + string(dash_if_empty(q.opd2)) + ", " + string(dash_if_empty(q.opd3)) + ", " + string(dash_if_empty(q.opd4)) + ")\n";
-}
-
-quad two_arity_quad(nodetype op, string opd1) {
-  return three_arity_quad(op, opd1, "");
 }
 
 string arm_constant(string val) {

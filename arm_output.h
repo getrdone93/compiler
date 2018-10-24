@@ -5,6 +5,8 @@
 #include <sstream>
 #include <map>
 
+#include "quad.h"
+
 #ifndef PARSE_H
 #define PARSE_H
 #include "parse.h"
@@ -19,14 +21,6 @@ const string SUB = "sub";
 const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
-
-struct quad {
-  nodetype type;
-  string dest;
-  string opd2;
-  string opd3;
-  string opd4;
-};
 
 void print_quad_list(list<quad> quads);
 string quad_to_string(quad q);
