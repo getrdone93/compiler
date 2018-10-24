@@ -22,12 +22,14 @@ const string SEEK = "0x6b";
 
 struct quad {
   nodetype type;
-  string op1;
-  string op2;
-  string op3;
-  string op4;
+  string dest;
+  string opd2;
+  string opd3;
+  string opd4;
 };
 
+string quad_to_string(quad q);
+string dash_if_empty(string s);
 quad two_arity_quad(nodetype op, string opd1);
 quad three_arity_quad(nodetype op, string opd1, string opd2);
 quad four_arity_quad(nodetype op, string opd1, string opd2, string opd3);

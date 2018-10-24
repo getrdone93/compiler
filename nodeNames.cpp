@@ -68,6 +68,8 @@ const char *nodenames[] =
     "ASSIGNMENT",
     "identifier_list",
     "postfix_expression",
-    "int_ident"
+    "int_ident",
+    "STOR",
+    "ERROR"
   };
 

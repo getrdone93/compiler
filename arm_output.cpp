@@ -206,9 +206,9 @@ list<quad> ground_expression(parsetree *root, set<string> *regs_avail,
     quad right = load_leaf_new(right_child, regs_avail, regs_used);
     nodetype op_type = zero_depth_child(root, 1, operator_types()) -> type;
     //reuse register of left leaf for expression, could reuse right leaf's register as well
-    quad expr = four_arity_quad(op_type, left.op1, left.op1, right.op1);
-    release_reg(left.op1, regs_avail, regs_used);
-    release_reg(right.op1, regs_avail, regs_used);
+    quad expr = four_arity_quad(op_type, left.dest, left.dest, right.dest);
+    release_reg(left.dest, regs_avail, regs_used);
+    release_reg(right.dest, regs_avail, regs_used);
 
     list<quad> res;
     res.push_back(left);
@@ -417,6 +417,19 @@ string two_arity(string op, string opd1) {
     error(__FUNCTION__, "opd1 was empty");
   }
   return op + "\t" + opd1 + "\n";
+}
+
+string dash_if_empty(string s) {
+  return s.empty() ? "-" : s;
+}
+
+void print_quad_list(list<quad> quads) {
+  
+}
+
+string quad_to_string(quad q) {
+  return "(" + string(nodenames[q.type]) + ", " + string(dash_if_empty(q.dest)) + ", " 
+    + string(dash_if_empty(q.opd2)) + ", " + string(dash_if_empty(q.opd3)) + ", " + string(dash_if_empty(q.opd4)) + ")\n";
 }
 
 quad two_arity_quad(nodetype op, string opd1) {
