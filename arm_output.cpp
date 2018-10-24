@@ -230,9 +230,9 @@ list<quad> nested_expression(parsetree *root, set<string> *regs_avail,
   parsetree *mid_child = zero_depth_child(root, 1, operator_types());
   parsetree *right_child = zero_depth_child(root, 2, exp_types);
 
-  output_node(left_child, "left_child");
-  output_node(mid_child, "mid_child");
-  output_node(right_child, "right_child");
+  // output_node(left_child, "left_child");
+  // output_node(mid_child, "mid_child");
+  // output_node(right_child, "right_child");
 
   if (root == NULL || mid_child == NULL) {
     //do debug or something
@@ -267,20 +267,19 @@ list<quad> handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<
   parsetree *id = get_ident(root, 0);
   parsetree *assign = get_assign(root);
   parsetree *con = get_const(root, 2);
-  if (id == NULL) {
-    cout << "id is null\n";
-  }
-  if (assign == NULL) {
-    cout << "assign is null\n";
-  }
+  // if (id == NULL) {
+  //   cout << "id is null\n";
+  // }
+  // if (assign == NULL) {
+  //   cout << "assign is null\n";
+  // }
 
-  if (con == NULL) {
-    cout << "con is null\n";
-  }
+  // if (con == NULL) {
+  //   cout << "con is null\n";
+  // }
 
   quad sa = simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2), regs_avail, regs_used);
   if (sa.type == node_ERROR) {
-    cout << "going into nested_expression\n";
     list<quad> lis = nested_expression(zero_depth_child(root, 2, expression_types()), 
 		     regs_avail, regs_used, expression_types());
     res.insert(res.end(), lis.begin(), lis.end());
@@ -296,17 +295,16 @@ list<quad> arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<str
   switch(root -> type) {
     case node_assignment_expression: {
       list<quad> assign = handle_assignment(root, regs_avail, regs_used);
-      // res.insert(res.end(), assign.begin(), assign.end());
-      //     return ret_val;
       return assign;
     }
     break;
     default:
+      list<quad> recur_ret;
       for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-	list<quad> recur_res = arm_output_new(root -> children[i], regs_avail, regs_used, res);
-	res.insert(res.end(), recur_res.begin(), recur_res.end());
-      }      
-      //return res;
+	list<quad> child_quads = arm_output_new(root -> children[i], regs_avail, regs_used, res);
+	recur_ret.insert(recur_ret.end(), child_quads.begin(), child_quads.end());
+      }
+      res.insert(res.begin(), recur_ret.begin(), recur_ret.end());
       break;
   }
   return res;
