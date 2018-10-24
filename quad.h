@@ -17,6 +17,7 @@ struct quad {
   string opd3;
 };
 
+string quad_list_to_str(list<quad> quads);
 string test_for_error(nodetype type, int nodenames_size, string og);
 string to_str(int num);
 quad three_arity_quad(nodetype op, string opd1, string opd2);

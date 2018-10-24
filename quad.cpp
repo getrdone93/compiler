@@ -29,6 +29,14 @@ void print_quad_list(list<quad> quads) {
   }
 }
 
+string quad_list_to_str(list<quad> quads) {
+  string res;
+  for (list<quad>::iterator it = quads.begin(); it != quads.end(); it++) {
+    res += quad_to_string(*it);
+  }
+  return res;
+}
+
 // string quad_to_string(quad q) {
 //   return "(" + string(nodenames[q.type]) + ", " + string(dash_if_empty(q.dest)) + ", " 
 //     + string(dash_if_empty(q.opd2)) + ", " + string(dash_if_empty(q.opd3)) + ", " + string(dash_if_empty(q.opd4)) + ")\n";

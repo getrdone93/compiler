@@ -894,12 +894,10 @@ int main( int ac, char *av[] )
       	ofstream out_file("assembler.s");
       	out_file << arm_output(root, &regs_avail, &regs_used, &output);*/
 
-      	ofstream out_file("new_assembler.s");
-      	cout << "calling arm_output_new\n";
+      	ofstream out_file("output.quad");
       	list<quad> quads;
       	quads = arm_output_new(root, &regs_avail, &regs_used, quads);
-      	cout << "quads.size(): " << quads.size() << "\n";
-      	print_quad_list(quads);
+      	out_file << quad_list_to_str(quads);
 
 	/*cout << "\n---test traverse---\n";
 	  test_traverse(root);*/
