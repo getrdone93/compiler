@@ -15,7 +15,6 @@ struct quad {
   string dest;
   string opd2;
   string opd3;
-  string opd4;
 };
 
 string test_for_error(nodetype type, int nodenames_size, string og);
