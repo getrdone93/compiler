@@ -544,12 +544,7 @@ string three_arity(string op, string opd1, string opd2) {
 }
 
 quad three_arity_quad(nodetype op, string opd1, string opd2) {
-  quad q = {
-    op,
-    opd1,
-    opd2
-  };
-  return q;
+  return four_arity_quad(op, opd1, opd2, "");
 }
 
 string two_arity(string op, string opd1) {
@@ -562,11 +557,7 @@ string two_arity(string op, string opd1) {
 }
 
 quad two_arity_quad(nodetype op, string opd1) {
-  quad q = {
-    op,
-    opd1
-  };
-  return q;
+  return three_arity_quad(op, opd1, "");
 }
 
 string arm_constant(string val) {
