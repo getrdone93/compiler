@@ -69,5 +69,6 @@ enum nodetype {
   node_postfix_expression,
   node_int_ident,
   node_STOR,
+  node_ERROR,
   node_end_of_nodes
 };

@@ -36,18 +36,18 @@ void output_node(parsetree *node, string var_name);
 void output_pair(pair<string, string> p, string var_name);
 list<nodetype> expression_types();
 list<nodetype> operator_types();
-string arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
-list<pair<string, string> > ground_expression(parsetree *root, set<string> *regs_avail, 
+list<quad> arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, list<quad> res);
+list<quad> ground_expression(parsetree *root, set<string> *regs_avail, 
 					      set<pair<string, string> > *regs_used);
-list<pair<string, string> > nested_expression(parsetree *root, set<string> *regs_avail, 
+list<quad> nested_expression(parsetree *root, set<string> *regs_avail, 
 					      set<pair<string, string> > *regs_used, list<nodetype> exp_types);
 parsetree * zero_depth_child(parsetree *root, int child, nodetype type);
 parsetree * zero_depth_child(parsetree *root, int child, list<nodetype> poss_types);
-pair<string, string> load_leaf_new(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used);
+quad load_leaf_new(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 parsetree * get_id_or_const(parsetree* root, int child);
-string simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant, set<string> *regs_avail, 
+quad simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant, set<string> *regs_avail, 
 			 set<pair<string, string> > *regs_used);
-string handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
+list<quad> handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string complex_expression(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string arm_small_constant(string val);
 string arm_constant(string val);
@@ -59,7 +59,7 @@ string four_arity(string op, string opd1, string opd2, string opd3);
 string three_arity(string op, string opd1, string opd2);
 string two_arity(string op, string opd1);
 string assoc_if_not_used(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used);
-pair<string, string> load_into_reg(string id, string value, set<string> *regs_avail, 
+quad load_into_reg(string id, string value, set<string> *regs_avail, 
 				   set<pair<string, string> > *regs_used);
 string error(string func, string error);
 int get_value(parsetree *node);

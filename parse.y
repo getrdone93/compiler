@@ -894,7 +894,9 @@ int main( int ac, char *av[] )
 
       	ofstream out_file("new_assembler.s");
       	cout << "calling arm_output_new\n";
-      	out_file << arm_output_new(root, &regs_avail, &regs_used);
+      	list<quad> quads;
+	quads = arm_output_new(root, &regs_avail, &regs_used, quads);
+	cout << "ending size of quads list: " << quads.size() << "\n";
 
 	/*cout << "\n---test traverse---\n";
 	  test_traverse(root);*/
