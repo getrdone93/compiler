@@ -876,6 +876,8 @@ int main( int ac, char *av[] )
 
       	cout << "\n---arm_output can be seen in ./assembler.s---\n";
       	set<string> regs_avail;
+      	regs_avail.insert("r0");
+      	regs_avail.insert("r1");
       	regs_avail.insert("r2");
       	regs_avail.insert("r3");
       	regs_avail.insert("r4");
@@ -895,9 +897,9 @@ int main( int ac, char *av[] )
       	ofstream out_file("new_assembler.s");
       	cout << "calling arm_output_new\n";
       	list<quad> quads;
-	quads = arm_output_new(root, &regs_avail, &regs_used, quads);
-	cout << "quads.size(): " << quads.size() << "\n";
-	print_quad_list(quads);
+      	quads = arm_output_new(root, &regs_avail, &regs_used, quads);
+      	cout << "quads.size(): " << quads.size() << "\n";
+      	print_quad_list(quads);
 
 	/*cout << "\n---test traverse---\n";
 	  test_traverse(root);*/

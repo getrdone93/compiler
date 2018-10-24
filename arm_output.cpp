@@ -81,8 +81,7 @@ quad simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant,
 			 set<pair<string, string> > *regs_used) {
   quad res;
   if (ident == NULL || assign == NULL || constant == NULL) {
-    cout << "simple assignment, null node\n";
-    //do debug or something
+    res = two_arity_quad(node_ERROR, "simple_assignment saw a null input");
   } else {
     assign_to_ident(ident, constant);
     string reg = assoc_if_not_used(ident -> symbol_table_ptr -> id_name, regs_avail, regs_used);
@@ -280,11 +279,13 @@ list<quad> handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<
   }
 
   quad sa = simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2), regs_avail, regs_used);
-  res.push_back(sa);
-  if (res.empty()) {
+  if (sa.type == node_ERROR) {
+    cout << "going into nested_expression\n";
     list<quad> lis = nested_expression(zero_depth_child(root, 2, expression_types()), 
-							    regs_avail, regs_used, expression_types());
+		     regs_avail, regs_used, expression_types());
     res.insert(res.end(), lis.begin(), lis.end());
+  } else {
+    res.push_back(sa);
   }
   return res;
 }
@@ -293,25 +294,23 @@ list<quad> handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<
 list<quad> arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, 
 			  list<quad> res) {
   switch(root -> type) {
-  case node_assignment_expression:
-      return handle_assignment(root, regs_avail, regs_used);
-      break;
-    case node_statement:
-      // if (write_exp(root)) {
-      // 	const string id = root -> children[1] -> children[0] -> str_ptr;
-      // 	print_register(lookup_str(id, regs_used).first);	
-      // 	release_reg(id, regs_avail, regs_used);
-      // }
-      break;
+    case node_assignment_expression: {
+      list<quad> assign = handle_assignment(root, regs_avail, regs_used);
+      // res.insert(res.end(), assign.begin(), assign.end());
+      //     return ret_val;
+      return assign;
+    }
+    break;
     default:
       for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-	return arm_output_new(root -> children[i], regs_avail, regs_used, res);
+	list<quad> recur_res = arm_output_new(root -> children[i], regs_avail, regs_used, res);
+	res.insert(res.end(), recur_res.begin(), recur_res.end());
       }      
+      //return res;
       break;
   }
   return res;
 }
-
 
 pair<string, string> lookup_str(string str, set<pair<string, string> > *regs_used) {
   pair<string, string> res;
