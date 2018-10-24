@@ -372,6 +372,16 @@ string first(set<string> *regs) {
   return result;
 }
 
+quad four_arity_quad(nodetype op, string opd1, string opd2, string opd3) {
+  quad q = {
+    op,
+    opd1,
+    opd2,
+    opd3
+  };
+  return q;
+}
+
 string four_arity(string op, string opd1, string opd2, string opd3) {
   if (op.empty()) {
     error(__FUNCTION__, "op was empty");
@@ -383,16 +393,6 @@ string four_arity(string op, string opd1, string opd2, string opd3) {
     error(__FUNCTION__, "opd3 was empty");
   }
   return op + "\t" + opd1 + ", " + opd2 + ", " + opd3 + "\n";
-}
-
-quad four_arity_quad(nodetype op, string opd1, string opd2, string opd3) {
-  quad q = {
-    op,
-    opd1,
-    opd2,
-    opd3
-  };
-  return q;
 }
 
 string three_arity(string op, string opd1, string opd2) {
