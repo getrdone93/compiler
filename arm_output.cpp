@@ -372,10 +372,10 @@ string first(set<string> *regs) {
   return result;
 }
 
-quad four_arity_quad(nodetype op, string opd1, string opd2, string opd3) {
+quad four_arity_quad(nodetype op, string dest, string opd2, string opd3) {
   quad q = {
     op,
-    opd1,
+    dest,
     opd2,
     opd3
   };
@@ -424,7 +424,9 @@ string dash_if_empty(string s) {
 }
 
 void print_quad_list(list<quad> quads) {
-  
+  for (list<quad>::iterator it = quads.begin(); it != quads.end(); it++) {
+    cout << quad_to_string(*it);
+  }
 }
 
 string quad_to_string(quad q) {

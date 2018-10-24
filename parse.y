@@ -896,7 +896,8 @@ int main( int ac, char *av[] )
       	cout << "calling arm_output_new\n";
       	list<quad> quads;
 	quads = arm_output_new(root, &regs_avail, &regs_used, quads);
-	cout << "ending size of quads list: " << quads.size() << "\n";
+	cout << "quads.size(): " << quads.size() << "\n";
+	print_quad_list(quads);
 
 	/*cout << "\n---test traverse---\n";
 	  test_traverse(root);*/

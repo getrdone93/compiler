@@ -28,6 +28,7 @@ struct quad {
   string opd4;
 };
 
+void print_quad_list(list<quad> quads);
 string quad_to_string(quad q);
 string dash_if_empty(string s);
 quad two_arity_quad(nodetype op, string opd1);
