@@ -141,7 +141,6 @@ parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
     }
 }  
 
-
 list<nodetype> operator_types() {
   //please figure out how to do constants
   list<nodetype> op_types;
@@ -178,7 +177,6 @@ parsetree * get_const(parsetree *ae, int child) {
   return node_search(ae, search);
 }
 
-
 string list_pairs_to_string(list<pair<string, string> > lis) {
    string res;
    for (list<pair<string, string> >::iterator it = lis.begin(); it != lis.end(); it++) {
@@ -205,6 +203,7 @@ list<quad> ground_expression(parsetree *root, set<string> *regs_avail,
     nodetype op_type = zero_depth_child(root, 1, operator_types()) -> type;
     //reuse register of left leaf for expression, could reuse right leaf's register as well
     quad expr = four_arity_quad(op_type, left.dest, left.dest, right.dest);
+
     release_reg(left.dest, regs_avail, regs_used);
     release_reg(right.dest, regs_avail, regs_used);
 
@@ -249,13 +248,14 @@ list<quad> nested_expression(parsetree *root, set<string> *regs_avail,
 	l1.insert(l1.end(), l2.begin(), l2.end());
 	return l1;
       } else {
-	parsetree *id_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
-	quad reg_load = load_leaf_new(id_node, regs_avail, regs_used);
+	parsetree *ground_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
+	quad reg_load = load_leaf_new(ground_node, regs_avail, regs_used);
 	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
 							   regs_used, exp_types);
-	l1.push_front(reg_load);	
-	
-	//release_reg(reg_load.first, regs_avail, regs_used);
+	quad expr = four_arity_quad(mid_child -> type, reg_load.dest, reg_load.dest, l1.back().dest);
+
+	l1.push_back(reg_load);	
+	l1.push_back(expr);
 	return l1;
       }
     }
