@@ -20,6 +20,17 @@ const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
 
+struct quad {
+  nodetype type;
+  string op1;
+  string op2;
+  string op3;
+  string op4;
+};
+
+quad two_arity_quad(nodetype op, string opd1);
+quad three_arity_quad(nodetype op, string opd1, string opd2);
+quad four_arity_quad(nodetype op, string opd1, string opd2, string opd3);
 string list_pairs_to_string(list<pair<string, string> > lis);
 void output_node(parsetree *node, string var_name);
 void output_pair(pair<string, string> p, string var_name);
