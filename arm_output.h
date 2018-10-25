@@ -22,6 +22,7 @@ const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
 
+void output_reg_sets(set<string> *regs_avail, set<pair<string, string> > *regs_used);
 void print_quad_list(list<quad> quads);
 string quad_to_string(quad q);
 string dash_if_empty(string s);
@@ -73,7 +74,8 @@ pair<string, string> lookup_str(string str, set<pair<string, string> > *regs_use
 string operator_to_arm(parsetree *op_node);
 string update_output(string output, string new_str);
 string sa(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used);
-string assoc_id_reg(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id);
+string assoc_id_reg(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used);
+string assoc_id_reg(string id, string reg, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string first(set<string> *regs);
 string print_register(string reg);
 string load_ident(parsetree *p_expr, set<string> *regs_avail, set<pair<string, string> > *regs_used);

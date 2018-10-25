@@ -147,6 +147,7 @@ list<nodetype> operator_types() {
   op_types.push_back(node_ADD);
   op_types.push_back(node_MULT);
   op_types.push_back(node_DIVIDE);
+  op_types.push_back(node_SUBTRACT);
   return op_types;
 }
 
@@ -189,6 +190,18 @@ void output_pair(pair<string, string> p, string var_name) {
   cout << var_name << ".first " << p.first << "\t" << var_name << ".second " << p.second << "\n";
 }
 
+void output_reg_sets(set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  cout << "regs_used:\n";
+    for (set<pair<string, string> >::iterator it = regs_used -> begin(); it != regs_used -> end(); it++) {
+      output_pair(*it, "entry");
+    }
+
+    cout << "\nregs_avail:\n";
+    for (set<string>::iterator it = regs_avail -> begin(); it != regs_avail -> end(); it++) {
+      cout << *it << " ";
+    }
+}
+
 list<quad> ground_expression(parsetree *root, set<string> *regs_avail, 
 					      set<pair<string, string> > *regs_used) {
   parsetree *left_child = get_id_or_const(root, 0);
@@ -201,16 +214,19 @@ list<quad> ground_expression(parsetree *root, set<string> *regs_avail,
     quad left = load_leaf_new(left_child, regs_avail, regs_used);
     quad right = load_leaf_new(right_child, regs_avail, regs_used);
     nodetype op_type = zero_depth_child(root, 1, operator_types()) -> type;
-    //reuse register of left leaf for expression, could reuse right leaf's register as well
-    quad expr = four_arity_quad(op_type, left.dest, left.dest, right.dest);
 
     release_reg(left.dest, regs_avail, regs_used);
     release_reg(right.dest, regs_avail, regs_used);
+    string expr_dest = first(regs_avail);
+    quad expr = four_arity_quad(op_type, expr_dest, left.dest, right.dest);
+    
+    assoc_id_reg(quad_to_string(expr), expr_dest, regs_avail, regs_used);
 
     list<quad> res;
     res.push_back(left);
     res.push_back(right);
     res.push_back(expr);
+
     return res;
   }
 }
@@ -229,13 +245,9 @@ list<quad> nested_expression(parsetree *root, set<string> *regs_avail,
   parsetree *mid_child = zero_depth_child(root, 1, operator_types());
   parsetree *right_child = zero_depth_child(root, 2, exp_types);
 
-  // output_node(left_child, "left_child");
-  // output_node(mid_child, "mid_child");
-  // output_node(right_child, "right_child");
-
   if (root == NULL || mid_child == NULL) {
     //do debug or something
-    cout << "not an eggsicutable eggspression\n";
+    cout << "not an eggsicutable eggspression, mid_child: " << mid_child << "\n";
     list<quad> res;
     return res;
   } else {
@@ -245,13 +257,21 @@ list<quad> nested_expression(parsetree *root, set<string> *regs_avail,
       if (left_child != NULL && right_child != NULL) {
 	list<quad> l1 = nested_expression(left_child, regs_avail, regs_used, exp_types);
 	list<quad> l2 = nested_expression(right_child, regs_avail, regs_used, exp_types);
+
+	pair<string, string> l1_reg = lookup_str(quad_to_string(l1.back()), regs_used);
+	pair<string, string> l2_reg = lookup_str(quad_to_string(l2.back()), regs_used);
+	quad expr = four_arity_quad(mid_child -> type, l2_reg.first, l1_reg.first, l2_reg.first);
+
+	output_reg_sets(regs_avail, regs_used);
+
 	l1.insert(l1.end(), l2.begin(), l2.end());
+	l1.push_back(expr);
 	return l1;
       } else {
-	parsetree *ground_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
-	quad reg_load = load_leaf_new(ground_node, regs_avail, regs_used);
 	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
 							   regs_used, exp_types);
+	parsetree *ground_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
+	quad reg_load = load_leaf_new(ground_node, regs_avail, regs_used);
 	quad expr = four_arity_quad(mid_child -> type, reg_load.dest, reg_load.dest, l1.back().dest);
 
 	l1.push_back(reg_load);	
@@ -264,19 +284,6 @@ list<quad> nested_expression(parsetree *root, set<string> *regs_avail,
 
 list<quad> handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   list<quad> res;
-  parsetree *id = get_ident(root, 0);
-  parsetree *assign = get_assign(root);
-  parsetree *con = get_const(root, 2);
-  // if (id == NULL) {
-  //   cout << "id is null\n";
-  // }
-  // if (assign == NULL) {
-  //   cout << "assign is null\n";
-  // }
-
-  // if (con == NULL) {
-  //   cout << "con is null\n";
-  // }
 
   quad sa = simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2), regs_avail, regs_used);
   if (sa.type == node_ERROR) {
@@ -346,19 +353,23 @@ string to_string(int num) {
 
 string assoc_if_not_used(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   pair<string, string> id_reg = lookup_str(id, regs_used);
-  return id_reg.first.empty() ? assoc_id_reg(regs_avail, regs_used, id) : id_reg.first;
+  return id_reg.first.empty() ? assoc_id_reg(id, regs_avail, regs_used) : id_reg.first;
 }
 
-string assoc_id_reg(set<string> *regs_avail, set<pair<string, string> > *regs_used, string id) {
+string assoc_id_reg(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   string reg = first(regs_avail);
-  if (reg.empty()) {
-    error("assoc_id_reg", "regs_avail was empty");
+  return assoc_id_reg(id, reg, regs_avail, regs_used);
+}
+
+string assoc_id_reg(string id, string reg, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  if (reg.empty() || id.empty()) {
+    error("assoc_id_reg", "reg or id was empty");
   } else {
     regs_used -> insert(pair<string, string>(reg, id));
   }
   return reg;
 }
-
+ 
 string first(set<string> *regs) {
   string result;
   if (regs -> size() > 0) {

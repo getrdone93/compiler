@@ -11,13 +11,13 @@ my $outDir = "output";
 
 foreach (my $i = 1; $i < $numFiles; $i++) {
     my $inputProg = $programFile . $i . $suffix;
-    my $command = "../parse $progDir/$inputProg";
+    my $command = "./parse testFiles/$progDir/$inputProg";
     my $out = `$command`;
     #print $out;
-    my $outputFile = $outDir . "/" . $inputProg . "_" . "quad";
+    my $outputFile = "testFiles/" . $outDir . "/" . $inputProg . "_" . "quad";
     `cp $quadFile $outputFile`;
     `echo >> $outputFile`;
-    `cat $progDir/$inputProg >> $outputFile`;
+    `cat testFiles/$progDir/$inputProg >> $outputFile`;
     $out = `cat $outputFile`;
     print "-" x 40 . $inputProg . "-" x 40 . "\n";
     print $out;
