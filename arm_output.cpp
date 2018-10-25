@@ -260,22 +260,31 @@ list<quad> nested_expression(parsetree *root, set<string> *regs_avail,
 
 	pair<string, string> l1_reg = lookup_str(quad_to_string(l1.back()), regs_used);
 	pair<string, string> l2_reg = lookup_str(quad_to_string(l2.back()), regs_used);
-	quad expr = four_arity_quad(mid_child -> type, l2_reg.first, l1_reg.first, l2_reg.first);
-
-	output_reg_sets(regs_avail, regs_used);
+	release_reg(l1_reg.second, regs_avail, regs_used);
+	release_reg(l2_reg.second, regs_avail, regs_used);
+	string expr_dest = first(regs_avail);
+	quad expr = four_arity_quad(mid_child -> type, expr_dest, l1_reg.first, l2_reg.first);
 
 	l1.insert(l1.end(), l2.begin(), l2.end());
 	l1.push_back(expr);
+	//register expr
+	assoc_id_reg(quad_to_string(expr), expr_dest, regs_avail, regs_used);
 	return l1;
       } else {
 	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
 							   regs_used, exp_types);
 	parsetree *ground_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
 	quad reg_load = load_leaf_new(ground_node, regs_avail, regs_used);
-	quad expr = four_arity_quad(mid_child -> type, reg_load.dest, reg_load.dest, l1.back().dest);
+	string expr_dest = first(regs_avail);
+	quad expr = four_arity_quad(mid_child -> type, expr_dest, reg_load.dest, l1.back().dest);
 
 	l1.push_back(reg_load);	
 	l1.push_back(expr);
+
+	//register expr and release l1 reg
+	string l1_expr = quad_to_string(l1.back());
+	release_reg(l1_expr, regs_avail, regs_used);
+	assoc_id_reg(l1_expr, expr_dest, regs_avail, regs_used);
 	return l1;
       }
     }
