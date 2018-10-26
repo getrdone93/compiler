@@ -13,10 +13,6 @@ void push_scope(vector<map<string, id_attrs> > *symTable) {
 }
 
 void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
-  // cout << "top of symbol_table at node: " << nodenames[root -> type] << "\n";
-  // if (sym_table -> front().find("a_0") != sym_table -> front().end()) {
-  //    cout << "top of symbol_table: a_0 in symbol table: " << sym_table -> front().find("a_0") -> second.id_name << "\n";
-  // }
   if (root == NULL) {
     cout << "null root, returning\n";
     return;
@@ -60,7 +56,6 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
     break;
   case node_IDENTIFIER: {
     id_attrs atts = in_scope(root -> str_ptr, sym_table);
-    //cout << "sym_table id_name at node_IDENTIFIER: " << sym_table -> front().find("a_0") -> second.id_name << "\n";
     if (atts.line == -1) {
       cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
     } else {
@@ -70,24 +65,12 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
       root -> symbol_table_ptr -> id_name = (char*) calloc(256 * sizeof(char), 0);
       strcpy(root -> symbol_table_ptr -> id_name, atts.id_name);
       root -> symbol_table_ptr -> value = atts.value;
-      //      cout << "root -> stp: " << root -> symbol_table_ptr << "\n";
     }
   }
     break;
   default: 
     for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-        // cout << "at node: " << nodenames[root -> type] << " before recursive call\n";
-	// if (sym_table -> front().find("a_0") != sym_table -> front().end()) {
-	//   cout << "a_0 in symbol table before recursive call: " << sym_table -> front().find("a_0") 
-	//     -> second.id_name << "\n";
-	// }
 	symbol_table(root -> children[i], sym_table);
-
-        // cout << "at node: " << nodenames[root -> type] << " after recursive call\n";
-	// if (sym_table -> front().find("a_0") != sym_table -> front().end()) {
-	//   cout << "a_0 in symbol table after recursive call: " << sym_table -> front().find("a_0") 
-	//     -> second.id_name << "\n";
-	// }
     }
     break;
   }
@@ -97,9 +80,7 @@ id_attrs in_scope(string id, vector<map<string, id_attrs> > *sym_table) {
   for (vector<map<string, id_attrs> >::iterator t = --sym_table -> end(); t >= sym_table -> begin(); t--) {
     pair<bool, string> exists = key_exists(id, *t);
     if (exists.first) {
-      cout << "here\n";
       id_attrs ret = t -> find(exists.second) -> second;
-      cout << "can i get here\n";
       return ret;
       break;
     }
