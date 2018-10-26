@@ -875,6 +875,7 @@ int main( int ac, char *av[] )
       sym_table.push_back(global_scope);
       symbol_table(root, &sym_table);
 
+      cout << "calling arm_output_new\n";
       ofstream out_file("output.quad");
       list<quad> quads;
       quads = arm_output_new(root, quads);

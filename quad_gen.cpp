@@ -15,7 +15,6 @@ quad store_leaf(parsetree *node) {
   switch (node -> type) {
      case node_IDENTIFIER:
        cout << "node pointer " << node << "\n";
-       cout << "sym pointer " << node -> symbol_table_ptr << "\n";
        cout << "id_name " << node -> symbol_table_ptr -> id_name << "\n";
        cout << "done refing the id_name\n";
        reg_expr = three_arity_quad(node_STOR, next_reg(), node -> symbol_table_ptr -> id_name);

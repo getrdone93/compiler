@@ -9,6 +9,10 @@ header file for sample Flex/Bison parser.
 
 #define SYM_LEN         32
 
+#include <string>
+
+using namespace std;
+
 #ifndef NODE_NAMES_H
 #define NODE_NAMES_H
 #include "nodeNames.h"
@@ -23,7 +27,7 @@ enum id_type {
 struct id_attrs {
   id_type it;
   int line;
-  const char *id_name;
+  char* id_name;
   int value;
 };
 

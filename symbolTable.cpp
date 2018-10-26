@@ -60,6 +60,7 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
       cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
     } else {
       root -> symbol_table_ptr = atts;
+      cout << "root -> stp: " << root -> symbol_table_ptr << "\n";
     }
   }
     break;
