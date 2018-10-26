@@ -42,16 +42,6 @@ quad store_leaf(parsetree *node, set<string> *regs_avail, set<pair<string, strin
   return reg_expr;
 }
 
-//move to gen funcs
-pair<string, string> release_reg(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
-    pair<string, string> up = lookup_str(id, regs_used);
-    if (!up.first.empty()) {
-      regs_avail -> insert(up.first);
-      regs_used -> erase(up);
-    }
-    return up;
-}
-
 int get_value(parsetree *node) {
   int v;
   switch (node -> type) {
@@ -174,14 +164,8 @@ list<quad> ground_expression(parsetree *root, set<string> *regs_avail,
     quad left = store_leaf(left_child, regs_avail, regs_used);
     quad right = store_leaf(right_child, regs_avail, regs_used);
     nodetype op_type = zero_depth_child(root, 1, operator_types()) -> type;
-
-    release_reg(left.dest, regs_avail, regs_used);
-    release_reg(right.dest, regs_avail, regs_used);
-    string expr_dest = first(regs_avail);
-    quad expr = four_arity_quad(op_type, expr_dest, left.dest, right.dest);
+    quad expr = four_arity_quad(op_type, next_reg(), left.dest, right.dest);
     
-    assoc_id_reg(quad_to_string(expr), expr_dest, regs_avail, regs_used);
-
     list<quad> res;
     res.push_back(left);
     res.push_back(right);
@@ -218,34 +202,21 @@ list<quad> nested_expression(parsetree *root, set<string> *regs_avail,
       if (left_child != NULL && right_child != NULL) {
 	list<quad> l1 = nested_expression(left_child, regs_avail, regs_used, exp_types);
 	list<quad> l2 = nested_expression(right_child, regs_avail, regs_used, exp_types);
-
-	pair<string, string> l1_reg = lookup_str(quad_to_string(l1.back()), regs_used);
-	pair<string, string> l2_reg = lookup_str(quad_to_string(l2.back()), regs_used);
-	release_reg(l1_reg.second, regs_avail, regs_used);
-	release_reg(l2_reg.second, regs_avail, regs_used);
-	string expr_dest = first(regs_avail);
-	quad expr = four_arity_quad(mid_child -> type, expr_dest, l1_reg.first, l2_reg.first);
+	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, l2.back().dest);
 
 	l1.insert(l1.end(), l2.begin(), l2.end());
 	l1.push_back(expr);
-	//register expr
-	assoc_id_reg(quad_to_string(expr), expr_dest, regs_avail, regs_used);
 	return l1;
       } else {
 	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
 							   regs_used, exp_types);
 	parsetree *ground_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
 	quad reg_load = store_leaf(ground_node, regs_avail, regs_used);
-	string expr_dest = first(regs_avail);
-	quad expr = four_arity_quad(mid_child -> type, expr_dest, reg_load.dest, l1.back().dest);
+	quad expr = four_arity_quad(mid_child -> type, next_reg(), reg_load.dest, l1.back().dest);
 
 	l1.push_back(reg_load);	
 	l1.push_back(expr);
 
-	//register expr and release l1 reg
-	string l1_expr = quad_to_string(l1.back());
-	release_reg(l1_expr, regs_avail, regs_used);
-	assoc_id_reg(l1_expr, expr_dest, regs_avail, regs_used);
 	return l1;
       }
     }
@@ -293,17 +264,6 @@ list<quad> arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<str
   return res;
 }
 
-pair<string, string> lookup_str(string str, set<pair<string, string> > *regs_used) {
-  pair<string, string> res;
-  for (set<pair<string, string> >::iterator i = regs_used -> begin(); i != regs_used -> end(); i++) {
-    if (i -> first == str || i -> second == str) {
-      res = *i;
-      break;
-    }
-  }
-  return res;
-}
-
 bool write_exp(parsetree *root) {
   parsetree *left = root -> children[0];
   parsetree *right = root -> children[1];
@@ -320,35 +280,7 @@ string print_register(string reg) {
 void assign_to_ident(parsetree *ident_node, parsetree *const_node) {
   ident_node -> symbol_table_ptr -> value = to_int(const_node -> str_ptr);
 }
-
-string assoc_if_not_used(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
-  pair<string, string> id_reg = lookup_str(id, regs_used);
-  return id_reg.first.empty() ? assoc_id_reg(id, regs_avail, regs_used) : id_reg.first;
-}
-
-string assoc_id_reg(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
-  string reg = first(regs_avail);
-  return assoc_id_reg(id, reg, regs_avail, regs_used);
-}
-
-string assoc_id_reg(string id, string reg, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
-  if (reg.empty() || id.empty()) {
-    error("assoc_id_reg", "reg or id was empty");
-  } else {
-    regs_used -> insert(pair<string, string>(reg, id));
-  }
-  return reg;
-}
  
-string first(set<string> *regs) {
-  string result;
-  if (regs -> size() > 0) {
-    result = *regs -> begin();
-    regs -> erase(regs -> begin());
-  }
-  return result;
-}
-
 string four_arity(string op, string opd1, string opd2, string opd3) {
   if (op.empty()) {
     error(__FUNCTION__, "op was empty");
