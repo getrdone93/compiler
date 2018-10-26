@@ -70,5 +70,6 @@ enum nodetype {
   node_int_ident,
   node_STOR,
   node_ERROR,
+  node_LOAD,
   node_end_of_nodes
 };

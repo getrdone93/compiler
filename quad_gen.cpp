@@ -13,11 +13,11 @@ quad store_leaf(parsetree *node) {
   quad reg_expr;
   switch (node -> type) {
      case node_IDENTIFIER:
-       reg_expr = three_arity_quad(node_STOR, next_reg(), node -> symbol_table_ptr -> id_name);
+       reg_expr = three_arity_quad(node_LOAD, next_reg(), node -> symbol_table_ptr -> id_name);
        break;
     case node_CONSTANT:
         cout << "node constant\n";
-       reg_expr = three_arity_quad(node_STOR, next_reg(), node -> str_ptr);
+       reg_expr = three_arity_quad(node_LOAD, next_reg(), node -> str_ptr);
        break;
     default:
         cout << "hit default uh oh\n";
@@ -29,7 +29,7 @@ quad store_leaf(parsetree *node) {
 quad simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant) {
   return ident == NULL || assign == NULL || constant == NULL ? 
     two_arity_quad(node_ERROR, "simple_assignment saw a null input") 
-    : three_arity_quad(node_STOR, next_reg(), constant -> str_ptr);
+    : three_arity_quad(node_LOAD, ident -> symbol_table_ptr -> id_name, constant -> str_ptr);
 }
 
 parsetree * get_ident(parsetree *ae, int child) {
@@ -209,6 +209,16 @@ list<quad> handle_assignment(parsetree *root) {
   return res;
 }
 
+list<quad> write_expression(parsetree *write_node, parsetree *pe, parsetree *ident) {
+  list<quad> res;
+  if (write_node == NULL || pe == NULL || ident == NULL) {
+    //do a warn or something
+  } else {
+    res.push_back(two_arity_quad(node_WRITE, ident -> symbol_table_ptr -> id_name));
+  }
+  return res;
+}
+
 
 list<quad> make_quads(parsetree *root, list<quad> res) {
   switch(root -> type) {
@@ -216,6 +226,9 @@ list<quad> make_quads(parsetree *root, list<quad> res) {
       list<quad> assign = handle_assignment(root);
       return assign;
     }
+    break;
+  case node_statement:
+    
     break;
     default:
       list<quad> recur_ret;

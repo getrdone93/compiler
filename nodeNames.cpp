@@ -70,6 +70,7 @@ const char *nodenames[] =
     "postfix_expression",
     "int_ident",
     "STOR",
-    "ERROR"
+    "ERROR",
+    "LOAD"
   };
 
