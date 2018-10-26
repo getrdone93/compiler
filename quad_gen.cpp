@@ -68,20 +68,6 @@ parsetree * zero_depth_child(parsetree *root, int child, nodetype type) {
   return node_search(root, search);
 }
 
-parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
-    if (path.size() > 0) {
-      parsetree *child = root -> children[path.front().first];
-      if (child != NULL && child -> type == path.front().second) {
-	path.pop_front();
-	return node_search(child, path);
-      } else {
-	return NULL;
-      }
-    } else {
-      return root;
-    }
-}  
-
 list<nodetype> operator_types() {
   //please figure out how to do constants
   list<nodetype> op_types;
@@ -107,11 +93,6 @@ list<nodetype> ground_expr_types() {
   return ground_expr_nt;
 }
 
-parsetree * get_assign(parsetree *ae) {
-  list<pair<int, nodetype> > search;
-  search.push_back(pair<int, nodetype> (1, node_ASSIGNMENT));
-  return node_search(ae, search);
-}
 
 parsetree * get_const(parsetree *ae, int child) {
   list<pair<int, nodetype> > search;
@@ -127,6 +108,7 @@ list<quad> ground_expression(parsetree *root) {
 
   if (left_child == NULL || right_child == NULL) {
     //do a warn or something
+    cout << "ground expression sees nulls\n";
     list<quad> res;
     return res;
   } else {
@@ -152,10 +134,51 @@ void output_node(parsetree *node, string var_name) {
   }
 }
 
+parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
+    if (path.size() > 0) {
+      parsetree *child = root -> children[path.front().first];
+      if (child != NULL && child -> type == path.front().second) {
+	path.pop_front();
+	return node_search(child, path);
+      } else {
+	return NULL;
+      }
+    } else {
+      return root;
+    }
+}  
+
+parsetree * get_assign(parsetree *ae) {
+  list<pair<int, nodetype> > search;
+  search.push_back(pair<int, nodetype> (1, node_ASSIGNMENT));
+  return node_search(ae, search);
+}
+
+parsetree * search_nested_expr(parsetree *root, int child, nodetype exp_type) {
+  list<pair<int, nodetype> > search;
+  search.push_back(pair<int, nodetype> (child, node_primary_expression));
+  search.push_back(pair<int, nodetype> (0, exp_type));
+  return node_search(root, search);
+}
+
+parsetree * nested_expr_child(parsetree *root, int child, list<nodetype> exp_types) {
+  parsetree *res = zero_depth_child(root, child, exp_types);
+  list<nodetype> copy = exp_types;
+  while (res == NULL) {
+    copy.pop_back();
+    res = search_nested_expr(root, child, copy.back());
+  }
+  return res;
+}
+
 list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
-  parsetree *left_child = zero_depth_child(root, 0, exp_types);
+  parsetree *left_child = nested_expr_child(root, 0, exp_types);
+  output_node(left_child, "left_child");
   parsetree *mid_child = zero_depth_child(root, 1, operator_types());
-  parsetree *right_child = zero_depth_child(root, 2, exp_types);
+  output_node(mid_child, "mid_child");
+  parsetree *right_child = nested_expr_child(root, 2, exp_types);
+  //  cout << "right_child strptr: " << right_child -> str_ptr << "\n";
+  output_node(right_child, "right_child");
 
   if (root == NULL || mid_child == NULL) {
     //do debug or something
@@ -199,7 +222,7 @@ list<quad> handle_assignment(parsetree *root) {
   if (sa.type == node_ERROR) {
     list<quad> lis = nested_expression(right_child, expr_types);
     if (lis.back().type == node_ERROR) {
-      
+
     } else {
       lis.push_back(three_arity_quad(node_STOR, ident -> symbol_table_ptr -> id_name, lis.back().dest));
       res.insert(res.end(), lis.begin(), lis.end());      
@@ -223,9 +246,12 @@ quad write_exp_quad(parsetree *write_node, parsetree *ident) {
 }
 
 list<quad> make_quads(parsetree *root, list<quad> res) {
+  cout << "at node " << nodenames[root -> type] << "\n";
   switch(root -> type) {
     case node_assignment_expression: {
+      cout << "here\n";
       list<quad> assign = handle_assignment(root);
+      cout << "assign returned with " << assign.size() << "things\n";
       return assign;
     }
     break;
