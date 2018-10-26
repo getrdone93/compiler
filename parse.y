@@ -11,7 +11,7 @@ For:     CSCI 4700
 =========================================================================== */
 
 #include        <iostream>       // Just plain needed...
-#include <fstream>
+#include        <fstream>
 #include        <iomanip>        // Needed for setw, hex, ...
 #include        <fstream>        // Needed for ofstream type
 #include        <stdio.h>        // Possibly needed
@@ -20,7 +20,7 @@ For:     CSCI 4700
 #include        <ctype.h>        // Possibly needed
 #include        <string.h>       // Possibly needed
 #include        "symbolTable.h"
-#include        "arm_output.h"
+#include        "quad_gen.h"
 #include        <stack>
 #include        <map>
 
