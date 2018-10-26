@@ -29,7 +29,7 @@ quad store_leaf(parsetree *node) {
 quad simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant) {
   return ident == NULL || assign == NULL || constant == NULL ? 
     two_arity_quad(node_ERROR, "simple_assignment saw a null input") 
-    : three_arity_quad(node_LOAD, ident -> symbol_table_ptr -> id_name, constant -> str_ptr);
+    : three_arity_quad(node_STOR, ident -> symbol_table_ptr -> id_name, constant -> str_ptr);
 }
 
 parsetree * get_ident(parsetree *ae, int child) {
@@ -194,14 +194,15 @@ list<quad> handle_assignment(parsetree *root) {
 
   list<nodetype> expr_types = expression_types();
   parsetree *right_child = zero_depth_child(root, 2, expr_types);
-  quad sa = simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2));
+  parsetree *ident = get_ident(root, 0);
+  quad sa = simple_assignment(ident, get_assign(root), get_const(root, 2));
   if (sa.type == node_ERROR) {
     list<quad> lis = nested_expression(right_child, expr_types);
     if (lis.back().type == node_ERROR) {
       
     } else {
-      res.insert(res.end(), lis.begin(), lis.end());
-      
+      lis.push_back(three_arity_quad(node_STOR, ident -> symbol_table_ptr -> id_name, lis.back().dest));
+      res.insert(res.end(), lis.begin(), lis.end());      
     }
   } else {
     res.push_back(sa);
