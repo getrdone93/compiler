@@ -2,6 +2,32 @@
 
 using namespace std;
 
+// bool write_exp(parsetree *root) {
+//   parsetree *left = root -> children[0];
+//   parsetree *right = root -> children[1];
+//   return left != NULL && left -> type == node_WRITE && right != NULL && right -> type == node_primary_expression
+//     && right -> children[0] != NULL && right -> children[0] -> type == node_IDENTIFIER;
+// }
+
+// string print_register(string reg) {
+//   return three_arity(MOV, "r1", reg)
+//     + three_arity(MOV, "r0", arm_small_constant("1"))
+//     + two_arity(SWI, SEEK);
+// }
+
+// void assign_to_ident(parsetree *ident_node, parsetree *const_node) {
+//   ident_node -> symbol_table_ptr -> value = to_int(const_node -> str_ptr);
+// }
+ 
+// string arm_constant(string val) {
+//   return "=" + val;
+// }
+
+// string arm_small_constant(string val) {
+//   return "#" + val;
+// }
+
+
 string four_arity(string op, string opd1, string opd2, string opd3) {
   if (op.empty()) {
     //error(__FUNCTION__, "op was empty");
