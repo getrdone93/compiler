@@ -27,8 +27,6 @@ const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
 
-parsetree * nested_expr_child(parsetree *root, int child, list<nodetype> exp_types);
-parsetree * search_nested_expr(parsetree *root, int child, list<nodetype> exp_types);
 quad store_leaf(parsetree *node);
 string next_reg();
 void output_node(parsetree *node, string var_name);
