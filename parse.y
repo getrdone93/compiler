@@ -869,34 +869,14 @@ int main( int ac, char *av[] )
         //cout << "Compiled OK\n";
       //dotit(root, 0);
 
-      vector<map<string, id_attrs> > sym_table;
+        vector<map<string, id_attrs> > sym_table;
       	map<string, id_attrs> global_scope;
       	sym_table.push_back(global_scope);
       	symbol_table(root, &sym_table);
 
-      	cout << "\n---arm_output can be seen in ./assembler.s---\n";
-      	set<string> regs_avail;
-      	regs_avail.insert("r0");
-      	regs_avail.insert("r1");
-      	regs_avail.insert("r2");
-      	regs_avail.insert("r3");
-      	regs_avail.insert("r4");
-      	regs_avail.insert("r5");
-      	regs_avail.insert("r6");
-      	regs_avail.insert("r7");
-      	regs_avail.insert("r8");
-      	regs_avail.insert("r9");
-      	regs_avail.insert("r10");
-      	regs_avail.insert("r11");
-      	regs_avail.insert("r12");
-      	set<pair<string, string> > regs_used;
-      	/*	string output;
-      	ofstream out_file("assembler.s");
-      	out_file << arm_output(root, &regs_avail, &regs_used, &output);*/
-
       	ofstream out_file("output.quad");
       	list<quad> quads;
-      	quads = arm_output_new(root, &regs_avail, &regs_used, quads);
+      	quads = arm_output_new(root, quads);
       	out_file << quad_list_to_str(quads);
 
 	/*cout << "\n---test traverse---\n";

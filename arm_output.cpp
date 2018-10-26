@@ -9,25 +9,7 @@ string error(string func, string error) {
   return "ERROR in function " + func + ": " + error + "\n";
 }
 
-string operator_to_arm_new(nodetype type) {
-  string arm_op;
-  switch(type) {
-    case node_SUBTRACT:
-      arm_op = SUB;
-      break;
-    case node_MULT:
-      arm_op = MULT;
-      break;
-    case node_ADD:
-      arm_op = ADD;
-      break;
-    default:
-      break;
-  }
-  return arm_op;  
-}
-
-quad store_leaf(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+quad store_leaf(parsetree *node) {
   quad reg_expr;
   switch (node -> type) {
      case node_IDENTIFIER:
@@ -42,22 +24,7 @@ quad store_leaf(parsetree *node, set<string> *regs_avail, set<pair<string, strin
   return reg_expr;
 }
 
-int get_value(parsetree *node) {
-  int v;
-  switch (node -> type) {
-  case node_IDENTIFIER:
-    v = node -> symbol_table_ptr -> value;
-    break;
-  case node_CONSTANT:
-    v = to_int(node -> str_ptr);
-    break;
-  }
-  return v;
-}
-
-
-quad simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant, set<string> *regs_avail, 
-			 set<pair<string, string> > *regs_used) {
+quad simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant) {
   return ident == NULL || assign == NULL || constant == NULL ? 
     two_arity_quad(node_ERROR, "simple_assignment saw a null input") 
     : three_arity_quad(node_STOR, next_reg(), arm_constant(constant -> str_ptr));
@@ -152,8 +119,7 @@ parsetree * get_const(parsetree *ae, int child) {
 }
 
 
-list<quad> ground_expression(parsetree *root, set<string> *regs_avail, 
-					      set<pair<string, string> > *regs_used) {
+list<quad> ground_expression(parsetree *root) {
   parsetree *left_child = get_id_or_const(root, 0);
   parsetree *right_child = get_id_or_const(root, 2);
   if (left_child == NULL || right_child == NULL) {
@@ -161,8 +127,8 @@ list<quad> ground_expression(parsetree *root, set<string> *regs_avail,
     list<quad> res;
     return res;
   } else {
-    quad left = store_leaf(left_child, regs_avail, regs_used);
-    quad right = store_leaf(right_child, regs_avail, regs_used);
+    quad left = store_leaf(left_child);
+    quad right = store_leaf(right_child);
     nodetype op_type = zero_depth_child(root, 1, operator_types()) -> type;
     quad expr = four_arity_quad(op_type, next_reg(), left.dest, right.dest);
     
@@ -183,8 +149,7 @@ void output_node(parsetree *node, string var_name) {
   }
 }
 
-list<quad> nested_expression(parsetree *root, set<string> *regs_avail, 
-					      set<pair<string, string> > *regs_used, list<nodetype> exp_types) {
+list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
   parsetree *left_child = zero_depth_child(root, 0, exp_types);
   parsetree *mid_child = zero_depth_child(root, 1, operator_types());
   parsetree *right_child = zero_depth_child(root, 2, exp_types);
@@ -197,21 +162,20 @@ list<quad> nested_expression(parsetree *root, set<string> *regs_avail,
     return res;
   } else {
     if (left_child == NULL && right_child == NULL) {
-      return ground_expression(root, regs_avail, regs_used);
+      return ground_expression(root);
     } else {
       if (left_child != NULL && right_child != NULL) {
-	list<quad> l1 = nested_expression(left_child, regs_avail, regs_used, exp_types);
-	list<quad> l2 = nested_expression(right_child, regs_avail, regs_used, exp_types);
+	list<quad> l1 = nested_expression(left_child, exp_types);
+	list<quad> l2 = nested_expression(right_child, exp_types);
 	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, l2.back().dest);
 
 	l1.insert(l1.end(), l2.begin(), l2.end());
 	l1.push_back(expr);
 	return l1;
       } else {
-	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
-							   regs_used, exp_types);
+	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, exp_types);
 	parsetree *ground_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
-	quad reg_load = store_leaf(ground_node, regs_avail, regs_used);
+	quad reg_load = store_leaf(ground_node);
 	quad expr = four_arity_quad(mid_child -> type, next_reg(), reg_load.dest, l1.back().dest);
 
 	l1.push_back(reg_load);	
@@ -223,14 +187,14 @@ list<quad> nested_expression(parsetree *root, set<string> *regs_avail,
   }
 }
 
-list<quad> handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+list<quad> handle_assignment(parsetree *root) {
   list<quad> res;
 
   list<nodetype> expr_types = expression_types();
   parsetree *right_child = zero_depth_child(root, 2, expr_types);
-  quad sa = simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2), regs_avail, regs_used);
+  quad sa = simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2));
   if (sa.type == node_ERROR) {
-    list<quad> lis = nested_expression(right_child, regs_avail, regs_used, expr_types);
+    list<quad> lis = nested_expression(right_child, expr_types);
     if (lis.back().type == node_ERROR) {
       
     } else {
@@ -244,18 +208,17 @@ list<quad> handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<
 }
 
 
-list<quad> arm_output_new(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used, 
-			  list<quad> res) {
+list<quad> arm_output_new(parsetree *root, list<quad> res) {
   switch(root -> type) {
     case node_assignment_expression: {
-      list<quad> assign = handle_assignment(root, regs_avail, regs_used);
+      list<quad> assign = handle_assignment(root);
       return assign;
     }
     break;
     default:
       list<quad> recur_ret;
       for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-	list<quad> child_quads = arm_output_new(root -> children[i], regs_avail, regs_used, res);
+	list<quad> child_quads = arm_output_new(root -> children[i], res);
 	recur_ret.insert(recur_ret.end(), child_quads.begin(), child_quads.end());
       }
       res.insert(res.begin(), recur_ret.begin(), recur_ret.end());
