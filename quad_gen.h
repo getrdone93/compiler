@@ -29,9 +29,6 @@ const string SEEK = "0x6b";
 
 quad store_leaf(parsetree *node);
 string next_reg();
-quad two_arity_quad(nodetype op, string opd1);
-quad three_arity_quad(nodetype op, string opd1, string opd2);
-quad four_arity_quad(nodetype op, string opd1, string opd2, string opd3);
 void output_node(parsetree *node, string var_name);
 list<nodetype> expression_types();
 list<nodetype> operator_types();

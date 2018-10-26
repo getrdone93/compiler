@@ -35,7 +35,7 @@ scanner.o :	scanner.lex y.tab.h parse.h
 symbolTable.o:	symbolTable.cpp symbolTable.h parse.h
 	$(CC) $(COPT) -c symbolTable.cpp
 
-quad_gen.o:	quad_gen.cpp quad_gen.h
+quad_gen.o:	quad.cpp quad.h quad_gen.cpp quad_gen.h
 	$(CC) $(COPT) -c quad_gen.cpp
 
 helper_funcs.o:	helper_funcs.cpp helper_funcs.h

@@ -18,7 +18,6 @@ quad four_arity_quad(nodetype op, string dest, string opd2, string opd3) {
   return q;
 }
 
-
 string dash_if_empty(string s) {
   return s.empty() ? "-" : s;
 }
@@ -36,11 +35,6 @@ string quad_list_to_str(list<quad> quads) {
   }
   return res;
 }
-
-// string quad_to_string(quad q) {
-//   return "(" + string(nodenames[q.type]) + ", " + string(dash_if_empty(q.dest)) + ", " 
-//     + string(dash_if_empty(q.opd2)) + ", " + string(dash_if_empty(q.opd3)) + ", " + string(dash_if_empty(q.opd4)) + ")\n";
-// }
 
 string to_str(int num) {
   stringstream ss;

@@ -869,7 +869,7 @@ int main( int ac, char *av[] )
       
       ofstream tree_file("tree.dat");
       dotit(root, 0, &tree_file);
-      
+
       vector<map<string, id_attrs> > sym_table;
       map<string, id_attrs> global_scope;
       sym_table.push_back(global_scope);

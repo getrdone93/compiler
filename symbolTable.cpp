@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include "symbolTable.h"
+#include <boost/algorithm/string/predicate.hpp>
 
 using namespace std;
 
@@ -90,7 +91,14 @@ bool in_top_scope(string id, vector<map<string, id_attrs> > *sym_table) {
 }
 
 bool key_exists(string id, map<string, id_attrs> m) {
-  return m.find(id) != m.end();
+  bool exists = false;
+  for (map<string, id_attrs>::const_iterator it = m.begin(); it != m.end(); it++) {
+    if (boost::starts_with(it -> first, id)) {
+      exists = true;
+      break;
+    }
+  }
+  return exists;
 }
 
 void output_map(map<string, id_attrs> m) {
@@ -181,10 +189,11 @@ bool id_array(parsetree *node, int startChild) {
 
 void insert_sym_table(parsetree *node, id_type type, vector<map<string, id_attrs> > *sym_table) {
   static int seq_num = 0;
+  char* node_under = strcat((char*) node -> str_ptr, "_");
   id_attrs atts = {
     type,
     node -> line,
-    strcat(strcat((char*) node -> str_ptr, "_"), to_string(seq_num++).c_str()),
+    strcat(node_under, to_string(seq_num++).c_str()),
     0 //initialize variables to 0
   };
   if (in_top_scope(atts.id_name, sym_table)) {
