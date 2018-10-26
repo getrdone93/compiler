@@ -49,12 +49,8 @@ quad.o: quad.cpp quad.h nodeNames.h
 
 # Run some tests - all should parse OK
 test :	parse
-	-./parse ../Tests/phase1test.c-
-	-./parse ../Tests/phase2test1.c-
-	-./parse ../Tests/phase3test.c-
-	-./parse ../Tests/phase4test1.c-
-	-./parse ../Tests/phase4test2.c-
-	-./parse ../Tests/phase4test3.c-
+	-./parse testFiles/input_progs/a_test1.c-
+	./makeTree.sh
 
 # Mostly clean (leave executable)
 mostly :

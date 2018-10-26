@@ -34,7 +34,7 @@ int my_input( char *buf, int max_size );
 void detab( char *line );
 int yylex( void );
 void dumpit( parsetree *root, int level );
-void dotit( parsetree *root, int level );
+void dotit( parsetree *root, int level, ofstream *out_file);
 extern "C" int yywrap( void );
 extern char *yytext; // In the scanner
 
@@ -866,22 +866,20 @@ int main( int ac, char *av[] )
 
     if ( ! err_count )
     {
-        //cout << "Compiled OK\n";
-      //dotit(root, 0);
+      
+      ofstream tree_file("tree.dat");
+      dotit(root, 0, &tree_file);
+      
+      vector<map<string, id_attrs> > sym_table;
+      map<string, id_attrs> global_scope;
+      sym_table.push_back(global_scope);
+      symbol_table(root, &sym_table);
 
-        vector<map<string, id_attrs> > sym_table;
-      	map<string, id_attrs> global_scope;
-      	sym_table.push_back(global_scope);
-      	symbol_table(root, &sym_table);
-
-      	ofstream out_file("output.quad");
-      	list<quad> quads;
-      	quads = arm_output_new(root, quads);
-      	out_file << quad_list_to_str(quads);
-
-	/*cout << "\n---test traverse---\n";
-	  test_traverse(root);*/
-        return( 0 );
+      ofstream out_file("output.quad");
+      list<quad> quads;
+      quads = arm_output_new(root, quads);
+      out_file << quad_list_to_str(quads);
+      return( 0 );
     }
     else
     {
@@ -1080,29 +1078,30 @@ void dumpit( parsetree *root, int level )
         cout << " - no children" << endl;
 }
 
-void dotit( parsetree *root, int level )
+void dotit( parsetree *root, int level, ofstream *out_file)
 {
     char name[ 32 ], cname[ 32 ];
 
     if ( level == 0 )
-        cout << "digraph g {" << endl;
+        *out_file << "digraph g {" << endl;
 
     sprintf( name, "%p", root );
     name[ 0 ] = 'x'; // It's a dot thing
     if ( root -> type == node_IDENTIFIER )
-        cout << "    " << name << " [label=\"" << nodenames[ root -> type ] << "\\n" << root -> str_ptr << "\"];" << endl;
+        *out_file << "    " << name << " [label=\"" << nodenames[ root -> type ] 
+		 << "\\n" << root -> str_ptr << "\"];" << endl;
     else
-        cout << "    " << name << " [label=\"" << nodenames[ root -> type ] << "\"];" << endl;
+        *out_file << "    " << name << " [label=\"" << nodenames[ root -> type ] << "\"];" << endl;
     for( int i = 0; root -> children[ i ]; i++ )
     {
         sprintf( cname, "%p", root -> children[ i ] );
         cname[ 0 ] = 'x'; // It's a dot thing
-        cout << "    " << name << " -> " << cname << ";" << endl;
-        dotit( root -> children[ i ], level + 1 );
+        *out_file << "    " << name << " -> " << cname << ";" << endl;
+        dotit( root -> children[ i ], level + 1, out_file);
     }
 
     if ( level == 0 )
-        cout << "}" << endl;
+        *out_file << "}" << endl;
 
 }
  
