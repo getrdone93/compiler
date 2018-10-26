@@ -16,7 +16,6 @@ quad store_leaf(parsetree *node) {
        reg_expr = three_arity_quad(node_LOAD, next_reg(), node -> symbol_table_ptr -> id_name);
        break;
     case node_CONSTANT:
-        cout << "node constant\n";
        reg_expr = three_arity_quad(node_LOAD, next_reg(), node -> str_ptr);
        break;
     default:
@@ -90,6 +89,7 @@ list<nodetype> operator_types() {
   op_types.push_back(node_MULT);
   op_types.push_back(node_DIVIDE);
   op_types.push_back(node_SUBTRACT);
+  op_types.push_back(node_MOD);
   return op_types;
 }
 
@@ -179,7 +179,7 @@ list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
 	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, exp_types);
 	parsetree *ground_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
 	quad reg_load = store_leaf(ground_node);
-	quad expr = four_arity_quad(mid_child -> type, next_reg(), reg_load.dest, l1.back().dest);
+	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, reg_load.dest);
 
 	l1.push_back(reg_load);	
 	l1.push_back(expr);
