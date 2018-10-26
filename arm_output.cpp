@@ -9,18 +9,6 @@ string error(string func, string error) {
   return "ERROR in function " + func + ": " + error + "\n";
 }
 
-//delete this
-quad load_into_reg(string id, string value, set<string> *regs_avail, 
-				   set<pair<string, string> > *regs_used) {
-  if (id.empty() || value.empty()) {
-    cout << error("load", "id or value or both was empty");
-    return two_arity_quad(node_ERROR, "");
-  } else {
-    string into_reg = assoc_if_not_used(id, regs_avail, regs_used);
-    return three_arity_quad(node_STOR, into_reg, arm_constant(value));
-  }
-}
-
 string operator_to_arm_new(nodetype type) {
   string arm_op;
   switch(type) {
