@@ -2,6 +2,39 @@
 
 using namespace std;
 
+string four_arity(string op, string opd1, string opd2, string opd3) {
+  if (op.empty()) {
+    //error(__FUNCTION__, "op was empty");
+  } else if (opd1.empty()) {
+    //error(__FUNCTION__, "opd1 was empty");
+  } else if (opd2.empty()) {
+    //error(__FUNCTION__, "opd2 was empty");
+  } else if (opd3.empty()) {
+    //error(__FUNCTION__, "opd3 was empty");
+  }
+  return op + "\t" + opd1 + ", " + opd2 + ", " + opd3 + "\n";
+}
+
+string three_arity(string op, string opd1, string opd2) {
+  if (op.empty()) {
+    //error(__FUNCTION__, "op was empty");
+  } else if (opd1.empty()) {
+    //error(__FUNCTION__, "opd1 was empty");
+  } else if (opd2.empty()) {
+    //error(__FUNCTION__, "opd2 was empty");
+  }
+  return op + "\t" + opd1 + ", " + opd2 + "\n";
+}
+
+string two_arity(string op, string opd1) {
+  if (op.empty()) {
+    //error(__FUNCTION__, "op was empty");
+  } else if (opd1.empty()) {
+    //error(__FUNCTION__, "opd1 was empty");
+  }
+  return op + "\t" + opd1 + "\n";
+}
+
 string to_string(int num) {
   stringstream ss;
   ss << num;
