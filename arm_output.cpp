@@ -1,9 +1,15 @@
 #include "arm_output.h"
 
+string next_reg() {
+  static int reg_seq = 0;
+  return "R" + to_string(reg_seq++);
+}
+
 string error(string func, string error) {
   return "ERROR in function " + func + ": " + error + "\n";
 }
 
+//delete this
 quad load_into_reg(string id, string value, set<string> *regs_avail, 
 				   set<pair<string, string> > *regs_used) {
   if (id.empty() || value.empty()) {
@@ -33,6 +39,7 @@ string operator_to_arm_new(nodetype type) {
   return arm_op;  
 }
 
+//move to gen funcs
 quad load_leaf_new(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   quad reg_expr;
   switch (node -> type) {
@@ -49,6 +56,22 @@ quad load_leaf_new(parsetree *node, set<string> *regs_avail, set<pair<string, st
   return reg_expr;
 }
 
+quad store_leaf(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
+  quad reg_expr;
+  switch (node -> type) {
+     case node_IDENTIFIER:
+       reg_expr = three_arity_quad(node_STOR, next_reg(), node -> symbol_table_ptr -> id_name);
+       break;
+    case node_CONSTANT:
+       reg_expr = three_arity_quad(node_STOR, next_reg(), node -> str_ptr);
+       break;
+    default:
+      break;
+  }
+  return reg_expr;
+}
+
+//move to gen funcs
 pair<string, string> release_reg(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
     pair<string, string> up = lookup_str(id, regs_used);
     if (!up.first.empty()) {
@@ -56,12 +79,6 @@ pair<string, string> release_reg(string id, set<string> *regs_avail, set<pair<st
       regs_used -> erase(up);
     }
     return up;
-}
-int to_int(string str) {
-  int num;
-  stringstream ss(str);
-  ss >> num;
-  return num;
 }
 
 int get_value(parsetree *node) {
@@ -77,17 +94,12 @@ int get_value(parsetree *node) {
   return v;
 }
 
+
 quad simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant, set<string> *regs_avail, 
 			 set<pair<string, string> > *regs_used) {
-  quad res;
-  if (ident == NULL || assign == NULL || constant == NULL) {
-    res = two_arity_quad(node_ERROR, "simple_assignment saw a null input");
-  } else {
-    assign_to_ident(ident, constant);
-    string reg = assoc_if_not_used(ident -> symbol_table_ptr -> id_name, regs_avail, regs_used);
-    res = three_arity_quad(node_STOR, reg, arm_constant(constant -> str_ptr));
-  }
-  return res;
+  return ident == NULL || assign == NULL || constant == NULL ? 
+    two_arity_quad(node_ERROR, "simple_assignment saw a null input") 
+    : three_arity_quad(node_STOR, next_reg(), arm_constant(constant -> str_ptr));
 }
 
 parsetree * get_ident(parsetree *ae, int child) {
@@ -178,29 +190,6 @@ parsetree * get_const(parsetree *ae, int child) {
   return node_search(ae, search);
 }
 
-string list_pairs_to_string(list<pair<string, string> > lis) {
-   string res;
-   for (list<pair<string, string> >::iterator it = lis.begin(); it != lis.end(); it++) {
-	res += it -> second;
-   }
-   return res;
-}
-
-void output_pair(pair<string, string> p, string var_name) {
-  cout << var_name << ".first " << p.first << "\t" << var_name << ".second " << p.second << "\n";
-}
-
-void output_reg_sets(set<string> *regs_avail, set<pair<string, string> > *regs_used) {
-  cout << "regs_used:\n";
-    for (set<pair<string, string> >::iterator it = regs_used -> begin(); it != regs_used -> end(); it++) {
-      output_pair(*it, "entry");
-    }
-
-    cout << "\nregs_avail:\n";
-    for (set<string>::iterator it = regs_avail -> begin(); it != regs_avail -> end(); it++) {
-      cout << *it << " ";
-    }
-}
 
 list<quad> ground_expression(parsetree *root, set<string> *regs_avail, 
 					      set<pair<string, string> > *regs_used) {

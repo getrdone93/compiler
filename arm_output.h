@@ -27,6 +27,8 @@ const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
 
+quad store_leaf(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used);
+string next_reg();
 void output_reg_sets(set<string> *regs_avail, set<pair<string, string> > *regs_used);
 void print_quad_list(list<quad> quads);
 string quad_to_string(quad q);
