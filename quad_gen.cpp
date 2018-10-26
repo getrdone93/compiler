@@ -11,12 +11,8 @@ string error(string func, string error) {
 
 quad store_leaf(parsetree *node) {
   quad reg_expr;
-  cout << "just before switch\n";
   switch (node -> type) {
      case node_IDENTIFIER:
-       cout << "node pointer " << node << "\n";
-       cout << "id_name " << node -> symbol_table_ptr -> id_name << "\n";
-       cout << "done refing the id_name\n";
        reg_expr = three_arity_quad(node_STOR, next_reg(), node -> symbol_table_ptr -> id_name);
        break;
     case node_CONSTANT:
@@ -129,8 +125,6 @@ list<quad> ground_expression(parsetree *root) {
   parsetree *left_child = get_id_or_const(root, 0);
   parsetree *right_child = get_id_or_const(root, 2);
 
-  cout << "left_child: " << left_child << "\n";
-  cout << "right_child: " << right_child << "\n";
   if (left_child == NULL || right_child == NULL) {
     //do a warn or something
     list<quad> res;
@@ -138,10 +132,8 @@ list<quad> ground_expression(parsetree *root) {
   } else {
     quad left = store_leaf(left_child);
     quad right = store_leaf(right_child);
-    cout << "loaded leafs\n";
     nodetype op_type = zero_depth_child(root, 1, operator_types()) -> type;
     quad expr = four_arity_quad(op_type, next_reg(), left.dest, right.dest);
-    cout << "made four_arity_quad\n";
 
     list<quad> res;
     res.push_back(left);
@@ -164,8 +156,6 @@ list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
   parsetree *left_child = zero_depth_child(root, 0, exp_types);
   parsetree *mid_child = zero_depth_child(root, 1, operator_types());
   parsetree *right_child = zero_depth_child(root, 2, exp_types);
-
-  cout << "at node: " << nodenames[root -> type] << "\n";
 
   if (root == NULL || mid_child == NULL) {
     //do debug or something
@@ -221,7 +211,6 @@ list<quad> handle_assignment(parsetree *root) {
 
 
 list<quad> arm_output_new(parsetree *root, list<quad> res) {
-  cout << "at node: " << nodenames[root -> type] << "\n";
   switch(root -> type) {
     case node_assignment_expression: {
       list<quad> assign = handle_assignment(root);
