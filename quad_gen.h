@@ -32,7 +32,7 @@ string next_reg();
 void output_node(parsetree *node, string var_name);
 list<nodetype> expression_types();
 list<nodetype> operator_types();
-list<quad> arm_output_new(parsetree *root, list<quad> res);
+list<quad> make_quads(parsetree *root, list<quad> res);
 list<quad> ground_expression(parsetree *root);
 list<quad> nested_expression(parsetree *root, list<nodetype> exp_types);
 parsetree * zero_depth_child(parsetree *root, int child, nodetype type);

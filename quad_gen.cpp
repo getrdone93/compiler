@@ -210,7 +210,7 @@ list<quad> handle_assignment(parsetree *root) {
 }
 
 
-list<quad> arm_output_new(parsetree *root, list<quad> res) {
+list<quad> make_quads(parsetree *root, list<quad> res) {
   switch(root -> type) {
     case node_assignment_expression: {
       list<quad> assign = handle_assignment(root);
@@ -220,7 +220,7 @@ list<quad> arm_output_new(parsetree *root, list<quad> res) {
     default:
       list<quad> recur_ret;
       for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-	list<quad> child_quads = arm_output_new(root -> children[i], res);
+	list<quad> child_quads = make_quads(root -> children[i], res);
 	recur_ret.insert(recur_ret.end(), child_quads.begin(), child_quads.end());
       }
       res.insert(res.begin(), recur_ret.begin(), recur_ret.end());
