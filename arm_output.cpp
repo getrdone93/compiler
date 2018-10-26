@@ -249,6 +249,7 @@ list<quad> nested_expression(parsetree *root, set<string> *regs_avail,
     //do debug or something
     cout << "not an eggsicutable eggspression, mid_child: " << mid_child << "\n";
     list<quad> res;
+    res.push_back(two_arity_quad(node_ERROR, "nested_expression saw a null input"));
     return res;
   } else {
     if (left_child == NULL && right_child == NULL) {
@@ -294,11 +295,17 @@ list<quad> nested_expression(parsetree *root, set<string> *regs_avail,
 list<quad> handle_assignment(parsetree *root, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   list<quad> res;
 
+  list<nodetype> expr_types = expression_types();
+  parsetree *right_child = zero_depth_child(root, 2, expr_types);
   quad sa = simple_assignment(get_ident(root, 0), get_assign(root), get_const(root, 2), regs_avail, regs_used);
   if (sa.type == node_ERROR) {
-    list<quad> lis = nested_expression(zero_depth_child(root, 2, expression_types()), 
-		     regs_avail, regs_used, expression_types());
-    res.insert(res.end(), lis.begin(), lis.end());
+    list<quad> lis = nested_expression(right_child, regs_avail, regs_used, expr_types);
+    if (lis.back().type == node_ERROR) {
+      
+    } else {
+      res.insert(res.end(), lis.begin(), lis.end());
+      
+    }
   } else {
     res.push_back(sa);
   }
@@ -352,12 +359,6 @@ string print_register(string reg) {
 
 void assign_to_ident(parsetree *ident_node, parsetree *const_node) {
   ident_node -> symbol_table_ptr -> value = to_int(const_node -> str_ptr);
-}
-
-string to_string(int num) {
-  stringstream ss;
-  ss << num;
-  return ss.str();
 }
 
 string assoc_if_not_used(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used) {

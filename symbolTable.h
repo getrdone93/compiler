@@ -4,11 +4,17 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <string.h>
 
 #ifndef PARSE_H
 #define PARSE_H
 #include "parse.h"
 #endif // PARSE_H
+
+#ifndef HELPER_H
+#define HELPER_H
+#include "helper_funcs.h"
+#endif // HELPER_H
 
 using namespace std;
 
@@ -16,7 +22,7 @@ bool id_array(parsetree *node, int start_child);
 void push_scope(vector<map<string, id_attrs> > *sym_table);
 void output_map(map<string, id_attrs> m);
 void process_formal_list(parsetree *root, vector<map<string, id_attrs> > *sym_table);
-void insert_sym_table(parsetree *node, id_type type, int seq, vector<map<string, id_attrs> > *sym_table);
+void insert_sym_table(parsetree *node, id_type type, vector<map<string, id_attrs> > *sym_table);
 void process_decl_list(parsetree *root, vector<map<string, id_attrs> > *sym_table);
 void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table);
 id_attrs* in_scope(string id, vector<map<string, id_attrs> > *sym_table);

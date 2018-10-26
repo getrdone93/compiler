@@ -12,6 +12,11 @@
 #include "parse.h"
 #endif // PARSE_H
 
+#ifndef HELPER_H
+#define HELPER_H
+#include "helper_funcs.h"
+#endif // HELPER_H
+
 using namespace std;
 
 const string LOAD = "ldr";
@@ -62,7 +67,6 @@ quad load_into_reg(string id, string value, set<string> *regs_avail,
 string error(string func, string error);
 int get_value(parsetree *node);
 void assign_to_ident(parsetree *ident_node, parsetree *const_node);
-string to_string(int num);
 int to_int(string str);
 string update_output_nnl(string output, string new_str);
 string load_const(parsetree *p_expr, set<string> *regs_avail, set<pair<string, string> > *regs_used);

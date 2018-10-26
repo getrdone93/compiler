@@ -28,7 +28,7 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
     break;
   case node_external_declaration:
     push_scope(sym_table);
-    insert_sym_table(root -> children[0] -> children[1], function, 0, sym_table);
+    insert_sym_table(root -> children[0] -> children[1], function, sym_table);
     process_formal_list(root -> children[1], sym_table);
 
     //run block statements
@@ -108,10 +108,10 @@ void process_formal_list(parsetree *root, vector<map<string, id_attrs> > *sym_ta
     }
     break;
   case node_int_ident:
-    insert_sym_table(root -> children[1], integer, 0, sym_table);
+    insert_sym_table(root -> children[1], integer, sym_table);
     break;
   case node_formal:
-    insert_sym_table(root -> children[0] -> children[1], integer_array, 0, sym_table);
+    insert_sym_table(root -> children[0] -> children[1], integer_array, sym_table);
     break;
   default:
     cout << "Error process_formal_list, arrived at node " << nodenames[root -> type] << "\n";
@@ -132,9 +132,9 @@ void process_decl_list(parsetree *root, vector<map<string, id_attrs> > *sym_tabl
     break;
   case node_decl:
     if (id_array(root, 1)) {
-      insert_sym_table(root -> children[0] -> children[1], integer_array, 0, sym_table);
+      insert_sym_table(root -> children[0] -> children[1], integer_array, sym_table);
     } else {
-      insert_sym_table(root -> children[0] -> children[1], integer, 0, sym_table);
+      insert_sym_table(root -> children[0] -> children[1], integer, sym_table);
     }
 
     if (root -> children[1] -> type == node_i_list) {
@@ -147,9 +147,9 @@ void process_decl_list(parsetree *root, vector<map<string, id_attrs> > *sym_tabl
     }
     if (root -> children[0] -> type == node_subs) {
       if (id_array(root, 2)) {
-	insert_sym_table(root -> children[1], integer_array, 0, sym_table);
+	insert_sym_table(root -> children[1], integer_array, sym_table);
       } else {
-	insert_sym_table(root -> children[1], integer, 0, sym_table);
+	insert_sym_table(root -> children[1], integer, sym_table);
       }
 
       if (root -> children[2] -> type == node_i_list) {
@@ -157,9 +157,9 @@ void process_decl_list(parsetree *root, vector<map<string, id_attrs> > *sym_tabl
       }
     } else {
       if (id_array(root, 1)) {
-	insert_sym_table(root -> children[0], integer_array, 0, sym_table);
+	insert_sym_table(root -> children[0], integer_array, sym_table);
       } else {
-	insert_sym_table(root -> children[0], integer, 0, sym_table);
+	insert_sym_table(root -> children[0], integer, sym_table);
       }
 
       if (root -> children[1] -> type == node_i_list) {
@@ -179,11 +179,12 @@ bool id_array(parsetree *node, int startChild) {
     || grandChildExists && node -> children[startChild] -> type == node_subs;
 }
 
-void insert_sym_table(parsetree *node, id_type type, int seq, vector<map<string, id_attrs> > *sym_table) {
+void insert_sym_table(parsetree *node, id_type type, vector<map<string, id_attrs> > *sym_table) {
+  static int seq_num = 0;
   id_attrs atts = {
     type,
     node -> line,
-    node -> str_ptr,
+    strcat(strcat((char*) node -> str_ptr, "_"), to_string(seq_num++).c_str()),
     0 //initialize variables to 0
   };
   if (in_top_scope(atts.id_name, sym_table)) {
