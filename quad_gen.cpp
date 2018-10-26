@@ -209,16 +209,17 @@ list<quad> handle_assignment(parsetree *root) {
   return res;
 }
 
-list<quad> write_expression(parsetree *write_node, parsetree *pe, parsetree *ident) {
-  list<quad> res;
-  if (write_node == NULL || pe == NULL || ident == NULL) {
+quad write_exp_quad(parsetree *write_node, parsetree *ident) {
+  quad res;
+  if (write_node == NULL || ident == NULL) {
     //do a warn or something
+    res.type = node_ERROR;
+    res.dest = "write_expression saw a null input";
   } else {
-    res.push_back(two_arity_quad(node_WRITE, ident -> symbol_table_ptr -> id_name));
+    res = two_arity_quad(node_WRITE, ident -> symbol_table_ptr -> id_name);
   }
   return res;
 }
-
 
 list<quad> make_quads(parsetree *root, list<quad> res) {
   switch(root -> type) {
@@ -228,7 +229,7 @@ list<quad> make_quads(parsetree *root, list<quad> res) {
     }
     break;
   case node_statement:
-    
+    res.push_back(write_exp_quad(zero_depth_child(root, 0, node_WRITE), get_ident(root, 1)));
     break;
     default:
       list<quad> recur_ret;

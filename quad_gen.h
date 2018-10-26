@@ -47,4 +47,4 @@ parsetree * get_assign(parsetree *ae);
 parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path);
 parsetree * get_ident(parsetree *ae, int child);
 string error(string func, string error);
-list<quad> write_expression(parsetree *write_node, parsetree *pe, parsetree *ident);
+quad write_exp_quad(parsetree *write_node, parsetree *ident);
