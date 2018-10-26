@@ -39,23 +39,6 @@ string operator_to_arm_new(nodetype type) {
   return arm_op;  
 }
 
-//move to gen funcs
-quad load_leaf_new(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
-  quad reg_expr;
-  switch (node -> type) {
-     case node_IDENTIFIER:
-       reg_expr = load_into_reg(node -> symbol_table_ptr -> id_name, to_string(node -> symbol_table_ptr -> value),
-		     regs_avail, regs_used);
-       break;
-    case node_CONSTANT:
-       reg_expr = load_into_reg(node -> str_ptr, node -> str_ptr, regs_avail, regs_used);
-       break;
-    default:
-      break;
-  }
-  return reg_expr;
-}
-
 quad store_leaf(parsetree *node, set<string> *regs_avail, set<pair<string, string> > *regs_used) {
   quad reg_expr;
   switch (node -> type) {
@@ -200,8 +183,8 @@ list<quad> ground_expression(parsetree *root, set<string> *regs_avail,
     list<quad> res;
     return res;
   } else {
-    quad left = load_leaf_new(left_child, regs_avail, regs_used);
-    quad right = load_leaf_new(right_child, regs_avail, regs_used);
+    quad left = store_leaf(left_child, regs_avail, regs_used);
+    quad right = store_leaf(right_child, regs_avail, regs_used);
     nodetype op_type = zero_depth_child(root, 1, operator_types()) -> type;
 
     release_reg(left.dest, regs_avail, regs_used);
@@ -264,7 +247,7 @@ list<quad> nested_expression(parsetree *root, set<string> *regs_avail,
 	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, regs_avail, 
 							   regs_used, exp_types);
 	parsetree *ground_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
-	quad reg_load = load_leaf_new(ground_node, regs_avail, regs_used);
+	quad reg_load = store_leaf(ground_node, regs_avail, regs_used);
 	string expr_dest = first(regs_avail);
 	quad expr = four_arity_quad(mid_child -> type, expr_dest, reg_load.dest, l1.back().dest);
 
