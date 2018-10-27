@@ -46,49 +46,6 @@ parsetree * get_id_or_const(parsetree* root, int child) {
   return res;
 }
 
-parsetree * zero_depth_child(parsetree *root, int child, list<nodetype> poss_types) {
-  if (root == NULL || poss_types.empty()) {
-    //    cout << "returning NULL from zdc\n";
-    return NULL;
-  } else {
-    parsetree *node = zero_depth_child(root, child, poss_types.front());
-    if (node == NULL) {
-      poss_types.pop_front();
-      return zero_depth_child(root, child, poss_types);
-    } else {
-      //cout << "returning this node from zdc: " << node << "\n";
-      return node;
-    }
-  }
-}
-
-parsetree * zero_depth_child(parsetree *root, int child, nodetype type) {
-  list<pair<int, nodetype> > search;
-  search.push_back(pair<int, nodetype> (child, type));
-  return node_search(root, search);
-}
-
-
-
-list<nodetype> operator_types() {
-  //please figure out how to do constants
-  list<nodetype> op_types;
-  op_types.push_back(node_ADD);
-  op_types.push_back(node_MULT);
-  op_types.push_back(node_DIVIDE);
-  op_types.push_back(node_SUBTRACT);
-  op_types.push_back(node_MOD);
-  return op_types;
-}
-
-list<nodetype> expression_types() {
-  //please figure out how to do constants
-  list<nodetype> exp_types;
-  exp_types.push_back(node_additive_expression);
-  exp_types.push_back(node_multiplicative_expression);
-  return exp_types;
-}
-
 list<nodetype> ground_expr_types() {
   list<nodetype> ground_expr_nt;
   ground_expr_nt.push_back(node_primary_expression);
@@ -110,8 +67,16 @@ parsetree * get_const(parsetree *ae, int child) {
 
 
 list<quad> ground_expression(parsetree *root) {
-  parsetree *left_child = get_id_or_const(root, 0);
-  parsetree *right_child = get_id_or_const(root, 2);
+  parsetree *lc = root -> children[0];
+  parsetree *lcc = lc == NULL ? NULL : lc -> children[0];
+  parsetree *left_child = lc != NULL && lc -> type == node_primary_expression && lcc != NULL
+    && (lcc -> type == node_IDENTIFIER || lcc -> type == node_CONSTANT) ? lcc : NULL;
+
+
+  parsetree *rc = root -> children[2];
+  parsetree *rcc = rc == NULL ? NULL : rc -> children[0];
+  parsetree *right_child = rc != NULL && rc -> type == node_primary_expression && rcc != NULL
+    && (rcc -> type == node_IDENTIFIER || rcc -> type == node_CONSTANT) ? rcc : NULL;
 
   if (left_child == NULL || right_child == NULL) {
     //do a warn or something
@@ -140,10 +105,59 @@ void output_node(parsetree *node, string var_name) {
   }
 }
 
+parsetree * zero_depth_child(parsetree *root, int child, list<nodetype> poss_types) {
+  if (root == NULL || poss_types.empty()) {
+    //    cout << "returning NULL from zdc\n";
+    return NULL;
+  } else {
+    parsetree *node = zero_depth_child(root, child, poss_types.front());
+    if (node == NULL) {
+      poss_types.pop_front();
+      return zero_depth_child(root, child, poss_types);
+    } else {
+      //cout << "returning this node from zdc: " << node << "\n";
+      return node;
+    }
+  }
+}
+
+parsetree * zero_depth_child(parsetree *root, int child, nodetype type) {
+  list<pair<int, nodetype> > search;
+  search.push_back(pair<int, nodetype> (child, type));
+  return node_search(root, search);
+}
+
+list<nodetype> expression_types() {
+  //please figure out how to do constants
+  list<nodetype> exp_types;
+  exp_types.push_back(node_additive_expression);
+  exp_types.push_back(node_multiplicative_expression);
+  return exp_types;
+}
+
+list<nodetype> operator_types() {
+  //please figure out how to do constants
+  list<nodetype> op_types;
+  op_types.push_back(node_ADD);
+  op_types.push_back(node_MULT);
+  op_types.push_back(node_DIVIDE);
+  op_types.push_back(node_SUBTRACT);
+  op_types.push_back(node_MOD);
+  return op_types;
+}
+
 list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
-  parsetree *left_child = zero_depth_child(root, 0, exp_types);
-  parsetree *mid_child = zero_depth_child(root, 1, operator_types());
-  parsetree *right_child = zero_depth_child(root, 2, exp_types);
+  parsetree *lc = root -> children[0];
+  parsetree *left_child = lc != NULL && lc -> type == node_additive_expression 
+    || lc -> type == node_multiplicative_expression ? lc : NULL;
+
+  parsetree *mc = root -> children[1];
+  parsetree *mid_child = mc -> type == node_ADD || mc -> type == node_MULT || mc -> type == node_DIVIDE 
+    || mc -> type == node_SUBTRACT || mc -> type == node_MOD ? mc : NULL;
+
+  parsetree *rc = root -> children[2];
+  parsetree *right_child = rc != NULL && rc -> type == node_additive_expression 
+    || rc -> type == node_multiplicative_expression ? rc : NULL;
   
   if (root == NULL || mid_child == NULL) {
     //do debug or something
@@ -165,7 +179,11 @@ list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
 	return l1;
       } else {
 	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, exp_types);
-	parsetree *ground_node = get_id_or_const(root, left_child == NULL ? 0 : 2);
+
+	int child = left_child == NULL ? 0 : 2;
+	parsetree *ground_node = left_child == NULL ? root -> children[0] -> children[0]
+	  : root -> children[2] -> children[0];
+
 	quad reg_load = store_leaf(ground_node);
 	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, reg_load.dest);
 
@@ -221,7 +239,7 @@ list<quad> make_quads(parsetree *root, list<quad> res) {
     break;
   case node_statement:
     cout << "made it to node_statement\n";
-    res.push_back(write_exp_quad(zero_depth_child(root, 0, node_WRITE), get_ident(root, 1)));
+    res.push_back(write_exp_quad(root -> children[0], root -> children[1] -> children[0]));
     cout << "here now\n";
     break;
     default:
