@@ -109,6 +109,7 @@ set<nodetype> set_op_types() {
   op_types.insert(node_LESS_THAN);
   op_types.insert(node_GREATER_EQUAL);
   op_types.insert(node_GREATER_THAN);
+  op_types.insert(node_EQUAL);
   return op_types;
 }
 
