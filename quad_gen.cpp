@@ -224,15 +224,16 @@ list<quad> handle_assignment(parsetree *root) {
   list<quad> res;
 
   list<nodetype> expr_types = expression_types();
-  parsetree *right_child = zero_depth_child(root, 2, expr_types);
-  parsetree *ident = get_ident(root, 0);
-  quad sa = simple_assignment(ident, get_assign(root), get_const(root, 2));
+  parsetree *lc = root -> children[0];
+  parsetree *rc = root -> children[2];
+  quad sa = simple_assignment(lc -> children[0], root -> children[1], rc -> children[0] -> type == node_CONSTANT ? 
+			      rc -> children[0] : NULL);
   if (sa.type == node_ERROR) {
-    list<quad> lis = nested_expression(right_child, expr_types);
+    list<quad> lis = nested_expression(root -> children[2], expr_types);
     if (lis.back().type == node_ERROR) {
       
     } else {
-      lis.push_back(three_arity_quad(node_STOR, ident -> symbol_table_ptr -> id_name, lis.back().dest));
+      lis.push_back(three_arity_quad(node_STOR, lc -> children[0] -> symbol_table_ptr -> id_name, lis.back().dest));
       res.insert(res.end(), lis.begin(), lis.end());      
     }
   } else {
