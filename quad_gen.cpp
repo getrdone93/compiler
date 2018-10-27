@@ -159,19 +159,32 @@ list<nodetype> operator_types() {
 }
 
 list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
-  set<nodetype> set_exp = set_expression_types();
-  parsetree *lc = root -> children[0];
-  parsetree *left_child = lc != NULL && contains(set_exp, lc -> type) ? lc : NULL;
+    set<nodetype> set_exp = set_expression_types();
+    parsetree *lc = root -> children[0];
+    parsetree *left_child = NULL;
+    if (lc == NULL) {
+      left_child = NULL;
+    } else if (contains(set_exp, lc -> type)) {
+      left_child = lc;
+    } else if (lc -> type == node_primary_expression && contains(set_exp, lc -> children[0] -> type)) {
+      left_child = lc -> children[0];
+    }
 
-  parsetree *mc = root -> children[1];
-  parsetree *mid_child = mc -> type == node_ADD || mc -> type == node_MULT || mc -> type == node_DIVIDE 
+    parsetree *mc = root -> children[1];
+    parsetree *mid_child = mc -> type == node_ADD || mc -> type == node_MULT || mc -> type == node_DIVIDE 
     || mc -> type == node_SUBTRACT || mc -> type == node_MOD ? mc : NULL;
 
-  parsetree *rc = root -> children[2];
-  parsetree *right_child = rc != NULL && rc -> type == node_additive_expression 
-    || rc -> type == node_multiplicative_expression ? rc : NULL;
-  
-  if (root == NULL || mid_child == NULL) {
+    parsetree *rc = root -> children[2];
+    parsetree *right_child = NULL;
+    if (rc == NULL) {
+      right_child = NULL;
+    } else if (contains(set_exp, rc -> type)) {
+      right_child = rc;
+    } else if (rc -> type == node_primary_expression && contains(set_exp, rc -> children[0] -> type)) {
+      right_child = rc -> children[0];
+    }
+
+    if (root == NULL || mid_child == NULL) {
     //do debug or something
     cout << "not an eggsicutable eggspression, mid_child: " << mid_child << "\n";
     list<quad> res;
