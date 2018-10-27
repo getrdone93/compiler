@@ -65,6 +65,7 @@ list<quad> ground_expression(parsetree *root) {
     res.push_back(right);
     res.push_back(expr);
 
+    cout << "returning this many in quad list: " << res.size() << "\n";
     return res;
   }
 }
@@ -90,6 +91,7 @@ set<nodetype> set_expression_types() {
   exp_types.insert(node_additive_expression);
   exp_types.insert(node_multiplicative_expression);
   exp_types.insert(node_relational_expression);
+  exp_types.insert(node_inclusive_or_expression);
   return exp_types;
 }
 
@@ -111,10 +113,12 @@ set<nodetype> set_op_types() {
   op_types.insert(node_GREATER_THAN);
   op_types.insert(node_EQUAL);
   op_types.insert(node_NOT_EQUAL);
+  op_types.insert(node_BITWISE_OR);
   return op_types;
 }
 
 list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetype> ops) {
+    cout << "at node: " << nodenames[root -> type] << "\n";
     parsetree *lc = root -> children[0];
     parsetree *left_child = NULL;
     if (lc == NULL) {
@@ -157,21 +161,39 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
 	l1.push_back(expr);
 	return l1;
       } else {
+	cout << "called into else part of ne\n";
 	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, set_exp, ops);
 
-	int child = left_child == NULL ? 0 : 2;
-	parsetree *ground_node = left_child == NULL ? root -> children[0] -> children[0]
-	  : root -> children[2] -> children[0];
+	parsetree *ground_node = left_child == NULL ? root -> children[0] : root -> children[2];
+	list<quad> ge = handle_ground_node(ground_node); 
 
-	quad reg_load = store_leaf(ground_node);
-	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, reg_load.dest);
 
-	l1.push_back(reg_load);	
-	l1.push_back(expr);
+	//	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, ge.back().dest);
+	
+	//cout << "inserting into list\n";
+	l1.insert(l1.end(), ge.begin(), ge.end());
+	//	l1.push_back(expr);
+	//	cout << "returning\n";
 	return l1;
       }
     }
   }
+}
+
+list<quad> handle_ground_node(parsetree *node) {
+  cout << "called hgn\n";
+  list<quad> res;
+  if (node -> type == node_unary_expression) {
+      parsetree *lc = node -> children[0];
+      parsetree *rc = node -> children[1];
+      res.push_back(store_leaf(rc -> children[0]));
+      res.push_back(three_arity_quad(lc -> children[0] -> type, next_reg(), 
+				     rc -> children[0] -> symbol_table_ptr -> id_name));
+      //need another instruction here for increments
+  } else {
+    res.push_back(store_leaf(node -> children[0]));
+  }
+  return res;
 }
 
 list<quad> handle_assignment(parsetree *root) {
