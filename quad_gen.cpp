@@ -68,19 +68,7 @@ parsetree * zero_depth_child(parsetree *root, int child, nodetype type) {
   return node_search(root, search);
 }
 
-parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
-    if (path.size() > 0) {
-      parsetree *child = root -> children[path.front().first];
-      if (child != NULL && child -> type == path.front().second) {
-	path.pop_front();
-	return node_search(child, path);
-      } else {
-	return NULL;
-      }
-    } else {
-      return root;
-    }
-}  
+
 
 list<nodetype> operator_types() {
   //please figure out how to do constants
@@ -156,7 +144,7 @@ list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
   parsetree *left_child = zero_depth_child(root, 0, exp_types);
   parsetree *mid_child = zero_depth_child(root, 1, operator_types());
   parsetree *right_child = zero_depth_child(root, 2, exp_types);
-
+  
   if (root == NULL || mid_child == NULL) {
     //do debug or something
     cout << "not an eggsicutable eggspression, mid_child: " << mid_child << "\n";
@@ -223,14 +211,18 @@ quad write_exp_quad(parsetree *write_node, parsetree *ident) {
 }
 
 list<quad> make_quads(parsetree *root, list<quad> res) {
+  cout << "at node: " << nodenames[root -> type] << "\n";
   switch(root -> type) {
     case node_assignment_expression: {
       list<quad> assign = handle_assignment(root);
+      cout << "done with handle_assignment\n";
       return assign;
     }
     break;
   case node_statement:
+    cout << "made it to node_statement\n";
     res.push_back(write_exp_quad(zero_depth_child(root, 0, node_WRITE), get_ident(root, 1)));
+    cout << "here now\n";
     break;
     default:
       list<quad> recur_ret;
@@ -243,3 +235,31 @@ list<quad> make_quads(parsetree *root, list<quad> res) {
   }
   return res;
 }
+
+// parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
+//   parsetree *recur = root;
+//   for (list<pair<int, nodetype> >::iterator it = path.begin(); it != path.end(); it++) {
+//     if (recur -> children[it -> first] == NULL || recur -> children[it -> first] -> type != it -> second) {
+//       return NULL;
+//     } else {
+//       recur = recur -> children[it -> first];
+//     }
+//   }
+//   return recur;
+// }
+
+parsetree * node_search(parsetree *root, list<pair<int, nodetype> > path) {
+    if (path.size() > 0) {
+      int child = path.front().first;
+      if (root -> children[child] != NULL 
+	  && root -> children[child] -> type == path.front().second) {
+	path.pop_front();
+	return node_search(root -> children[child], path);
+      } else {
+	return NULL;
+      }
+    } else {
+       //try a copy here or rewrite other funcs to traverse tree
+      return root;
+    }
+}  
