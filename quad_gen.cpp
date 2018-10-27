@@ -106,6 +106,7 @@ set<nodetype> set_op_types() {
   op_types.insert(node_SUBTRACT);
   op_types.insert(node_MOD);
   op_types.insert(node_LESS_EQUAL);
+  op_types.insert(node_LESS_THAN);
   return op_types;
 }
 
