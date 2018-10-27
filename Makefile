@@ -61,16 +61,17 @@ test :	parse
 	# 	./makeTree.sh
 	# cat output.quad
 
-	echo "\na_test3.c"
-	-./parse testFiles/input_progs/a_test3.c- > /dev/null
-		cat testFiles/input_progs/a_test3.c-
+	# echo "\na_test3.c"
+	# -./parse testFiles/input_progs/a_test3.c- > /dev/null
+	# 	cat testFiles/input_progs/a_test3.c-
+	# ./makeTree.sh
+	# cat output.quad
+
+	echo "\na_test4.c"
+	-./parse testFiles/input_progs/a_test4.c- > /dev/null
+		cat testFiles/input_progs/a_test4.c-
 	./makeTree.sh
 	cat output.quad
-
-	# echo "\na_test4.c"
-	# -./parse testFiles/input_progs/a_test4.c- > /dev/null
-	# 	cat testFiles/input_progs/a_test4.c-
-	# cat output.quad
 
 	# echo "\na_test5.c"
 	# -./parse testFiles/input_progs/a_test5.c- > /dev/null
