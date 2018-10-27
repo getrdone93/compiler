@@ -97,18 +97,7 @@ bool contains(set<nodetype> types, nodetype type) {
   return types.find(type) != types.end();
 }
 
-list<nodetype> operator_types() {
-  //please figure out how to do constants
-  list<nodetype> op_types;
-  op_types.push_back(node_ADD);
-  op_types.push_back(node_MULT);
-  op_types.push_back(node_DIVIDE);
-  op_types.push_back(node_SUBTRACT);
-  op_types.push_back(node_MOD);
-  return op_types;
-}
-
-set<nodetype> op_types() {
+set<nodetype> set_op_types() {
   //please figure out how to do constants
   set<nodetype> op_types;
   op_types.insert(node_ADD);
@@ -184,7 +173,7 @@ list<quad> handle_assignment(parsetree *root) {
   list<quad> res;
 
   set<nodetype> expr_types = set_expression_types();
-  set<nodetype> ops = op_types();
+  set<nodetype> ops = set_op_types();
   parsetree *lc = root -> children[0];
   parsetree *rc = root -> children[2];
   quad sa = simple_assignment(lc -> children[0], root -> children[1], rc -> children[0] -> type == node_CONSTANT ? 
