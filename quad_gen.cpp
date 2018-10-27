@@ -204,18 +204,15 @@ quad write_exp_quad(parsetree *write_node, parsetree *ident) {
 }
 
 list<quad> make_quads(parsetree *root, list<quad> res) {
-  cout << "at node: " << nodenames[root -> type] << "\n";
+  //  cout << "at node: " << nodenames[root -> type] << "\n";
   switch(root -> type) {
     case node_assignment_expression: {
       list<quad> assign = handle_assignment(root);
-      cout << "done with handle_assignment, size: " << assign.size() << "\n";
       return assign;
     }
     break;
   case node_statement:
-    cout << "made it to node_statement\n";
     res.push_back(write_exp_quad(root -> children[0], root -> children[1] -> children[0]));
-    cout << "here now\n";
     break;
     default:
       list<quad> recur_ret;
