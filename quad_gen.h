@@ -27,6 +27,8 @@ const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
 
+bool contains(set<nodetype> types, nodetype type);
+set<nodetype> set_expression_types();
 quad store_leaf(parsetree *node);
 string next_reg();
 void output_node(parsetree *node, string var_name);

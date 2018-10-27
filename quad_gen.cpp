@@ -80,6 +80,7 @@ list<quad> ground_expression(parsetree *root) {
 
   if (left_child == NULL || right_child == NULL) {
     //do a warn or something
+    cout << "ground expression sees nulls\n";
     list<quad> res;
     return res;
   } else {
@@ -135,6 +136,17 @@ list<nodetype> expression_types() {
   return exp_types;
 }
 
+set<nodetype> set_expression_types() {
+  set<nodetype> exp_types;
+  exp_types.insert(node_additive_expression);
+  exp_types.insert(node_multiplicative_expression);
+  return exp_types;
+}
+
+bool contains(set<nodetype> types, nodetype type) {
+  return types.find(type) != types.end();
+}
+
 list<nodetype> operator_types() {
   //please figure out how to do constants
   list<nodetype> op_types;
@@ -147,9 +159,9 @@ list<nodetype> operator_types() {
 }
 
 list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
+  set<nodetype> set_exp = set_expression_types();
   parsetree *lc = root -> children[0];
-  parsetree *left_child = lc != NULL && lc -> type == node_additive_expression 
-    || lc -> type == node_multiplicative_expression ? lc : NULL;
+  parsetree *left_child = lc != NULL && contains(set_exp, lc -> type) ? lc : NULL;
 
   parsetree *mc = root -> children[1];
   parsetree *mid_child = mc -> type == node_ADD || mc -> type == node_MULT || mc -> type == node_DIVIDE 
@@ -233,7 +245,7 @@ list<quad> make_quads(parsetree *root, list<quad> res) {
   switch(root -> type) {
     case node_assignment_expression: {
       list<quad> assign = handle_assignment(root);
-      cout << "done with handle_assignment\n";
+      cout << "done with handle_assignment, size: " << assign.size() << "\n";
       return assign;
     }
     break;
