@@ -89,6 +89,7 @@ set<nodetype> set_expression_types() {
   set<nodetype> exp_types;
   exp_types.insert(node_additive_expression);
   exp_types.insert(node_multiplicative_expression);
+  exp_types.insert(node_relational_expression);
   return exp_types;
 }
 
@@ -107,8 +108,19 @@ list<nodetype> operator_types() {
   return op_types;
 }
 
-list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
-    set<nodetype> set_exp = set_expression_types();
+set<nodetype> op_types() {
+  //please figure out how to do constants
+  set<nodetype> op_types;
+  op_types.insert(node_ADD);
+  op_types.insert(node_MULT);
+  op_types.insert(node_DIVIDE);
+  op_types.insert(node_SUBTRACT);
+  op_types.insert(node_MOD);
+  op_types.insert(node_LESS_EQUAL);
+  return op_types;
+}
+
+list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetype> ops) {
     parsetree *lc = root -> children[0];
     parsetree *left_child = NULL;
     if (lc == NULL) {
@@ -120,8 +132,7 @@ list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
     }
 
     parsetree *mc = root -> children[1];
-    parsetree *mid_child = mc -> type == node_ADD || mc -> type == node_MULT || mc -> type == node_DIVIDE 
-    || mc -> type == node_SUBTRACT || mc -> type == node_MOD ? mc : NULL;
+    parsetree *mid_child = contains(ops, mc -> type) ? mc : NULL;
 
     parsetree *rc = root -> children[2];
     parsetree *right_child = NULL;
@@ -144,15 +155,15 @@ list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
       return ground_expression(root);
     } else {
       if (left_child != NULL && right_child != NULL) {
-	list<quad> l1 = nested_expression(left_child, exp_types);
-	list<quad> l2 = nested_expression(right_child, exp_types);
+	list<quad> l1 = nested_expression(left_child, set_exp, ops);
+	list<quad> l2 = nested_expression(right_child, set_exp, ops);
 	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, l2.back().dest);
 
 	l1.insert(l1.end(), l2.begin(), l2.end());
 	l1.push_back(expr);
 	return l1;
       } else {
-	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, exp_types);
+	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, set_exp, ops);
 
 	int child = left_child == NULL ? 0 : 2;
 	parsetree *ground_node = left_child == NULL ? root -> children[0] -> children[0]
@@ -172,15 +183,16 @@ list<quad> nested_expression(parsetree *root, list<nodetype> exp_types) {
 list<quad> handle_assignment(parsetree *root) {
   list<quad> res;
 
-  list<nodetype> expr_types = expression_types();
+  set<nodetype> expr_types = set_expression_types();
+  set<nodetype> ops = op_types();
   parsetree *lc = root -> children[0];
   parsetree *rc = root -> children[2];
   quad sa = simple_assignment(lc -> children[0], root -> children[1], rc -> children[0] -> type == node_CONSTANT ? 
 			      rc -> children[0] : NULL);
   if (sa.type == node_ERROR) {
-    list<quad> lis = nested_expression(root -> children[2], expr_types);
+    list<quad> lis = nested_expression(root -> children[2], expr_types, ops);
     if (lis.back().type == node_ERROR) {
-      
+
     } else {
       lis.push_back(three_arity_quad(node_STOR, lc -> children[0] -> symbol_table_ptr -> id_name, lis.back().dest));
       res.insert(res.end(), lis.begin(), lis.end());      

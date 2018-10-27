@@ -27,6 +27,7 @@ const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
 
+set<nodetype> op_types();
 bool contains(set<nodetype> types, nodetype type);
 set<nodetype> set_expression_types();
 quad store_leaf(parsetree *node);
@@ -36,7 +37,7 @@ list<nodetype> expression_types();
 list<nodetype> operator_types();
 list<quad> make_quads(parsetree *root, list<quad> res);
 list<quad> ground_expression(parsetree *root);
-list<quad> nested_expression(parsetree *root, list<nodetype> exp_types);
+list<quad> nested_expression(parsetree *root, set<nodetype> exp_types);
 quad simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant);
 list<quad> handle_assignment(parsetree *root);
 string arm_small_constant(string val);
