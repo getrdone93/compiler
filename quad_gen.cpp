@@ -112,6 +112,7 @@ set<nodetype> set_expression_types() {
   exp_types.insert(node_and_expression);
   exp_types.insert(node_exclusive_or_expression);
   exp_types.insert(node_logical_and_expression);
+  exp_types.insert(node_logical_or_expression);
   return exp_types;
 }
 
@@ -137,6 +138,7 @@ set<nodetype> set_op_types() {
   op_types.insert(node_BITWISE_AND);
   op_types.insert(node_BITWISE_XOR);
   op_types.insert(node_LOGICAL_AND);
+  op_types.insert(node_LOGICAL_OR);
   return op_types;
 }
 
