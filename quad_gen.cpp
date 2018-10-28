@@ -56,7 +56,6 @@ list<quad> ground_expression(parsetree *root, set<nodetype> ground_exp) {
     left_child = lc;
   }
 
-
   parsetree *rc = root -> children[2];
   parsetree *rcc = rc == NULL ? NULL : rc -> children[0];
   parsetree *right_child = NULL;
@@ -112,6 +111,7 @@ set<nodetype> set_expression_types() {
   exp_types.insert(node_inclusive_or_expression);
   exp_types.insert(node_and_expression);
   exp_types.insert(node_exclusive_or_expression);
+  exp_types.insert(node_logical_and_expression);
   return exp_types;
 }
 
@@ -136,6 +136,7 @@ set<nodetype> set_op_types() {
   op_types.insert(node_BITWISE_OR);
   op_types.insert(node_BITWISE_AND);
   op_types.insert(node_BITWISE_XOR);
+  op_types.insert(node_LOGICAL_AND);
   return op_types;
 }
 
