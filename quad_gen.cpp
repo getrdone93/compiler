@@ -110,6 +110,7 @@ set<nodetype> set_expression_types() {
   exp_types.insert(node_multiplicative_expression);
   exp_types.insert(node_relational_expression);
   exp_types.insert(node_inclusive_or_expression);
+  exp_types.insert(node_and_expression);
   return exp_types;
 }
 
