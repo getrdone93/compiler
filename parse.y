@@ -700,7 +700,7 @@ and_expression
 	  $$ -> type = node_and_expression;
 	  $$ -> children[0] = $1;
 	  $$ -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> children[1] -> type = node_BITWISE_OR;
+	  $$ -> children[1] -> type = node_BITWISE_AND;
 	  $$ -> children[1] -> str_ptr = "&";
 	  $$ -> children[2] = $3;
 	}

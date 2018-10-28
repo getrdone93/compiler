@@ -132,6 +132,7 @@ set<nodetype> set_op_types() {
   op_types.insert(node_EQUAL);
   op_types.insert(node_NOT_EQUAL);
   op_types.insert(node_BITWISE_OR);
+  op_types.insert(node_BITWISE_AND);
   return op_types;
 }
 
@@ -195,7 +196,6 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
 }
 
 list<quad> handle_ground_node(parsetree *node) {
-  cout << "called hgn\n";
   list<quad> res;
   if (node -> type == node_unary_expression) {
       parsetree *lc = node -> children[0];
@@ -223,7 +223,7 @@ list<quad> handle_assignment(parsetree *root) {
   if (sa.type == node_ERROR) {
     list<quad> lis = nested_expression(root -> children[2], expr_types, ops, ge);
     if (lis.back().type == node_ERROR) {
-
+      
     } else {
       lis.push_back(three_arity_quad(node_STOR, lc -> children[0] -> symbol_table_ptr -> id_name, lis.back().dest));
       res.insert(res.end(), lis.begin(), lis.end());      
