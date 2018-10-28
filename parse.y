@@ -21,6 +21,7 @@ For:     CSCI 4700
 #include        <string.h>       // Possibly needed
 #include        "symbolTable.h"
 #include        "quad_gen.h"
+#include        "arm_output.h"
 #include        <stack>
 #include        <map>
 
@@ -876,10 +877,16 @@ int main( int ac, char *av[] )
       symbol_table(root, &sym_table);
 
       cout << "calling make quads\n";
-      ofstream out_file("output.quad");
+      ofstream quad_file("output.quad");
       list<quad> quads;
       quads = make_quads(root, quads);
-      out_file << quad_list_to_str(quads);
+      quad_file << quad_list_to_str(quads);
+
+      cout << "calling process quads\n";
+      ofstream asm_file("program.s");
+      list<string> assembler = process_quads(quads);
+      asm_file << list_to_string(assembler);
+      
       return( 0 );
     }
     else

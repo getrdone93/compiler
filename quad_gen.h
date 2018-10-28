@@ -5,7 +5,10 @@
 #include <sstream>
 #include <map>
 
+#ifndef QUAD_H
+#define QUAD_H
 #include "quad.h"
+#endif // QUAD_H
 
 #ifndef PARSE_H
 #define PARSE_H
@@ -19,13 +22,6 @@
 
 using namespace std;
 
-const string LOAD = "ldr";
-const string MOV = "mov";
-const string ADD = "add";
-const string SUB = "sub";
-const string MULT = "mul";
-const string SWI = "swi";
-const string SEEK = "0x6b";
 
 list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops);
 set<nodetype> unary_ops();

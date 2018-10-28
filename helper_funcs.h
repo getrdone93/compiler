@@ -6,6 +6,7 @@
 
 using namespace std;
 
+string list_to_string(list<string> str_list);
 pair<string, string> release_reg(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string assoc_if_not_used(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 pair<string, string> lookup_str(string str, set<pair<string, string> > *regs_used);

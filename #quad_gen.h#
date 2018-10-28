@@ -5,7 +5,10 @@
 #include <sstream>
 #include <map>
 
+#ifndef QUAD_H
+#define QUAD_H
 #include "quad.h"
+#endif // QUAD_H
 
 #ifndef PARSE_H
 #define PARSE_H
