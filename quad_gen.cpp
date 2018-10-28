@@ -175,7 +175,6 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
     return res;
   } else {
     if (left_child == NULL && right_child == NULL) {
-      cout << "going to ground expression\n";
       return ground_expression(root, ge);
     } else {
       if (left_child != NULL && right_child != NULL) {
