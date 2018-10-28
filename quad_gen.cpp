@@ -201,21 +201,6 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
   }
 }
 
-list<quad> handle_ground_node(parsetree *node) {
-  list<quad> res;
-  if (node -> type == node_unary_expression) {
-      parsetree *lc = node -> children[0];
-      parsetree *rc = node -> children[1];
-      res.push_back(store_leaf(rc -> children[0]));
-      res.push_back(three_arity_quad(lc -> children[0] -> type, next_reg(), 
-				     rc -> children[0] -> symbol_table_ptr -> id_name));
-      //need another instruction here for increments
-  } else {
-    res.push_back(store_leaf(node -> children[0]));
-  }
-  return res;
-}
-
 list<quad> handle_assignment(parsetree *root) {
   list<quad> res;
 
@@ -252,6 +237,28 @@ quad write_exp_quad(parsetree *write_node, parsetree *ident) {
   return res;
 }
 
+list<quad> handle_ground_node(parsetree *node) {
+  list<quad> res;
+  if (node -> type == node_unary_expression) {
+      parsetree *lc = node -> children[0];
+      parsetree *rc = node -> children[1];
+      res.push_back(store_leaf(rc -> children[0]));
+      res.push_back(three_arity_quad(lc -> children[0] -> type, next_reg(), 
+				     rc -> children[0] -> symbol_table_ptr -> id_name));
+  } else if (node -> type == node_postfix_expression) {
+      parsetree *lc = node -> children[0];
+      parsetree *rc = node -> children[1];
+      res.push_back(store_leaf(lc -> children[0]));
+      if (rc -> type == node_INC_OP) {
+	res.push_back(four_arity_quad(node_ADD, next_reg(), lc -> children[0] -> symbol_table_ptr -> id_name, "1"));
+      }
+      res.push_back(three_arity_quad(node_STOR, lc -> children[0] -> symbol_table_ptr -> id_name, res.back().dest));
+  } else {
+    res.push_back(store_leaf(node -> children[0]));
+  }
+  return res;
+}
+
 list<quad> make_quads(parsetree *root, list<quad> res) {
   //  cout << "at node: " << nodenames[root -> type] << "\n";
   switch(root -> type) {
@@ -259,6 +266,11 @@ list<quad> make_quads(parsetree *root, list<quad> res) {
       list<quad> assign = handle_assignment(root);
       return assign;
     }
+    break;
+  case node_postfix_expression: {
+    list<quad> postfix = handle_ground_node(root);
+    return postfix;
+  }
     break;
   case node_statement:
     res.push_back(write_exp_quad(root -> children[0], root -> children[1] -> children[0]));
