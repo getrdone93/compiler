@@ -249,9 +249,8 @@ list<quad> handle_ground_node(parsetree *node) {
       parsetree *lc = node -> children[0];
       parsetree *rc = node -> children[1];
       res.push_back(store_leaf(lc -> children[0]));
-      if (rc -> type == node_INC_OP) {
-	res.push_back(four_arity_quad(node_ADD, next_reg(), lc -> children[0] -> symbol_table_ptr -> id_name, "1"));
-      }
+      res.push_back(four_arity_quad(rc -> type == node_INC_OP ? node_ADD : node_SUBTRACT, 
+				    next_reg(), lc -> children[0] -> symbol_table_ptr -> id_name, "1"));
       res.push_back(three_arity_quad(node_STOR, lc -> children[0] -> symbol_table_ptr -> id_name, res.back().dest));
   } else {
     res.push_back(store_leaf(node -> children[0]));
