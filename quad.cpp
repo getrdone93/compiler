@@ -48,6 +48,6 @@ nodetype test_for_error(nodetype type, int nodenames_size) {
 
 string quad_to_string(quad q) {
   return "(" + string(nodenames[test_for_error(q.type, 300)]) + ", " + string(dash_if_empty(q.dest)) + ", " 
-    + string(dash_if_empty(q.opd2)) + ", " + string(dash_if_empty(q.opd3)) + ")\n";
+    + string(dash_if_empty(q.opd1)) + ", " + string(dash_if_empty(q.opd2)) + ")\n";
 }
 

@@ -13,8 +13,8 @@ using namespace std;
 struct quad {
   nodetype type;
   string dest;
+  string opd1;
   string opd2;
-  string opd3;
 };
 
 string quad_list_to_str(list<quad> quads);
