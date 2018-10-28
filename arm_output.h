@@ -37,6 +37,8 @@ struct arm_register {
   int number;
 };
 
+string nt_to_arm(nodetype type);
+string load(quad load, arm_register *value_reg);
 string regify(int num);
 vector<int> regs_with_dt(vector<arm_register> regs, data_type filter);
 string at_address(string reg);

@@ -58,6 +58,26 @@ list<string> stor(quad store, arm_register *id_add, arm_register *value_reg) {
   return res;
 }
 
+string load(quad load, arm_register *value_reg) {
+  value_reg -> dt = DATA;
+  return three_arity(nt_to_arm(load.type), regify(value_reg -> number), arm_constant(load.opd1));
+}
+
+string nt_to_arm(nodetype type) {
+  string res;
+  switch(type) {
+    case node_STOR:
+      res = STOR;
+      break;
+    case node_LOAD:
+      res = LOAD;
+    default:
+      res = "*NM";
+      break;
+  }
+  return res;
+}
+
 vector<int> regs_with_dt(vector<arm_register> regs, data_type filter) {
   vector<int> res;
   for (vector<arm_register>::iterator ar = regs.begin(); ar != regs.end(); ar++) {
@@ -81,7 +101,11 @@ list<string> process_quads(list<quad> quads, vector<arm_register> *regs) {
 	  list<string> stor_asm = stor(cq, &(regs -> at(free_regs.at(0))), &(regs -> at(free_regs.at(1))));
 	  res.insert(res.end(), stor_asm.begin(), stor_asm.end());
 	}
+       case node_LOAD: {
+	int fr = regs_with_dt(*regs, NONE).at(0);
+	//res.push_back(load(cq, &(regs -> at(fr))));
 	break;
+       }
       default:
 	cout << "dont have rule for nodetype: " << nodenames[cq.type] << "\n";
 	break;
