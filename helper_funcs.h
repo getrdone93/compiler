@@ -6,6 +6,10 @@
 
 using namespace std;
 
+string four_arity(string op, string dest, string opd1, string opd2);
+string three_arity(string op, string dest, string opd1);
+string two_arity(string op, string dest);
+string three_arity_nc(string op, string dest, string opd1);
 string list_to_string(list<string> str_list);
 pair<string, string> release_reg(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used);
 string assoc_if_not_used(string id, set<string> *regs_avail, set<pair<string, string> > *regs_used);

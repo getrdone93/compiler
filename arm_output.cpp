@@ -114,6 +114,19 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
   return res;
 }
 
+string quad_to_arm(quad q) {
+  string res;
+  switch (q.type) {
+    case node_LOAD:
+      //      res = three_arity()
+      break;
+    default:
+      res = "default";
+      break;
+  }
+  return res;
+}
+
 string arm_constant(string val) {
   return "=" + val;
 }
