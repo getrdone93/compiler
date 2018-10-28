@@ -43,11 +43,11 @@ list<string> process_quads(list<quad> quads) {
 
 list<string> stor(quad store, arm_register *id_add, arm_register *value_reg) {
   id_add -> dt = MEM_ADD;
-  value_reg -> dt = CONST;
 
   list<string> res;
   res.push_back(three_arity(LOAD, regify(id_add -> number), arm_constant(store.dest)));
   if (!boost::starts_with(store.opd1, "R")) {
+    value_reg -> dt = CONST;
     res.push_back(three_arity(LOAD, regify(value_reg -> number), arm_constant(store.opd1)));
   }
   res.push_back(three_arity(STOR, regify(value_reg -> number), at_address(regify(id_add -> number))));
