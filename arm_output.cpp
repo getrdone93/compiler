@@ -26,31 +26,31 @@ set<string> get_idents(list<quad> quads) {
   return vars;
 }
 
-list<string> declare_idents(set<string> idents) {
-  list<string> decs;
+list<quad> declare_idents(set<string> idents) {
+  list<quad> decs;
   for (set<string>::iterator it = idents.begin(); it != idents.end(); it++) {
     string id = *it;
-    decs.push_back(three_arity_nc(make_label(id), WORD, DEFAULT_VALUE));
+    decs.push_back(four_arity_quad(node_LABEL, id, WORD, DEFAULT_VALUE));
   }
 
   return decs;
 }
 
-list<string> process_quads(list<quad> quads) {
+list<quad> quads_to_asm(list<quad> quads) {
   vector<arm_register> arms = make_registers(10);
-  return process_quads(quads, &arms);
+  return quads_to_asm(quads, &arms);
 }
 
-list<string> stor(quad store, arm_register *id_add, arm_register *value_reg) {
+list<quad> stor(quad store, arm_register *id_add, arm_register *value_reg) {
   id_add -> dt = MEM_ADD;
 
-  list<string> res;
-  res.push_back(three_arity(LOAD, regify(id_add -> number), arm_constant(store.dest)));
+  list<quad> res;
+  res.push_back(three_arity_quad(node_LOAD, regify(id_add -> number), arm_constant(store.dest)));
   if (!boost::starts_with(store.opd1, "R")) {
     value_reg -> dt = CONST;
-    res.push_back(three_arity(LOAD, regify(value_reg -> number), arm_constant(store.opd1)));
+    res.push_back(three_arity_quad(node_LOAD, regify(value_reg -> number), arm_constant(store.opd1)));
   }
-  res.push_back(three_arity(STOR, regify(value_reg -> number), at_address(regify(id_add -> number))));
+  res.push_back(three_arity_quad(node_STOR, regify(value_reg -> number), at_address(regify(id_add -> number))));
 
   //value has been stored in identifier so regs are free
   id_add -> dt = NONE;
@@ -58,9 +58,9 @@ list<string> stor(quad store, arm_register *id_add, arm_register *value_reg) {
   return res;
 }
 
-string load(quad load, arm_register *value_reg) {
+quad load(quad load, arm_register *value_reg) {
   value_reg -> dt = DATA;
-  return three_arity(nt_to_arm(load.type), regify(value_reg -> number), arm_constant(load.opd1));
+  return three_arity_quad(load.type, regify(value_reg -> number), arm_constant(load.opd1));
 }
 
 string nt_to_arm(nodetype type) {
@@ -88,9 +88,9 @@ vector<int> regs_with_dt(vector<arm_register> regs, data_type filter) {
   return res;
 }
 
-list<string> process_quads(list<quad> quads, vector<arm_register> *regs) {
-  list<string> res;
-  list<string> decs = declare_idents(get_idents(quads));
+list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
+  list<quad> res;
+  list<quad> decs = declare_idents(get_idents(quads));
   res.insert(res.end(), decs.begin(), decs.end());
 
   for (list<quad>::iterator it = quads.begin(); it != quads.end(); it++) {
@@ -98,7 +98,7 @@ list<string> process_quads(list<quad> quads, vector<arm_register> *regs) {
     switch(cq.type) {
         case node_STOR: {
 	  vector<int> free_regs = regs_with_dt(*regs, NONE);
-	  list<string> stor_asm = stor(cq, &(regs -> at(free_regs.at(0))), &(regs -> at(free_regs.at(1))));
+	  list<quad> stor_asm = stor(cq, &(regs -> at(free_regs.at(0))), &(regs -> at(free_regs.at(1))));
 	  res.insert(res.end(), stor_asm.begin(), stor_asm.end());
 	}
        case node_LOAD: {
@@ -112,22 +112,6 @@ list<string> process_quads(list<quad> quads, vector<arm_register> *regs) {
     }
   }
   return res;
-}
-
-string four_arity(string op, string dest, string opd1, string opd2) {
-  return op + "\t" + dest + ", " + opd1 + ", " + opd2 + "\n";
-}
-
-string three_arity(string op, string dest, string opd1) {
-  return op + "\t" + dest + ", " + opd1 + "\n";
-}
-
-string three_arity_nc(string op, string dest, string opd1) {
-  return op + "\t" + dest + " " + opd1 + "\n";
-}
-
-string two_arity(string op, string dest) {
-  return op + "\t" + dest + "\n";
 }
 
 string arm_constant(string val) {
@@ -153,7 +137,5 @@ string regify(int num) {
 string make_label(string id) {
   return id + ":";
 }
-
-
 
 

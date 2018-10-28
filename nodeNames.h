@@ -71,5 +71,6 @@ enum nodetype {
   node_STOR,
   node_ERROR,
   node_LOAD,
+  node_LABEL,
   node_end_of_nodes
 };

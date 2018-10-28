@@ -10,6 +10,22 @@ string list_to_string(list<string> str_list) {
   return res;
 }
 
+string four_arity(string op, string dest, string opd1, string opd2) {
+  return op + "\t" + dest + ", " + opd1 + ", " + opd2 + "\n";
+}
+
+string three_arity(string op, string dest, string opd1) {
+  return op + "\t" + dest + ", " + opd1 + "\n";
+}
+
+string three_arity_nc(string op, string dest, string opd1) {
+  return op + "\t" + dest + " " + opd1 + "\n";
+}
+
+string two_arity(string op, string dest) {
+  return op + "\t" + dest + "\n";
+}
+
 string to_string(int num) {
   stringstream ss;
   ss << num;
