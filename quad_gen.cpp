@@ -47,8 +47,6 @@ set<nodetype> set_ground_exp() {
 list<quad> ground_expression(parsetree *root, set<nodetype> ground_exp) {
   parsetree *lc = root -> children[0];
   parsetree *lcc = lc == NULL ? NULL : lc -> children[0];
-  // parsetree *left_child = lc != NULL && lc -> type == node_primary_expression && lcc != NULL
-  //   && (lcc -> type == node_IDENTIFIER || lcc -> type == node_CONSTANT) ? lcc : NULL;
   parsetree *left_child = NULL;
   if (lc == NULL) {
     left_child = NULL;
@@ -61,8 +59,6 @@ list<quad> ground_expression(parsetree *root, set<nodetype> ground_exp) {
 
   parsetree *rc = root -> children[2];
   parsetree *rcc = rc == NULL ? NULL : rc -> children[0];
-  // parsetree *right_child = rc != NULL && rc -> type == node_primary_expression && rcc != NULL
-  //   && (rcc -> type == node_IDENTIFIER || rcc -> type == node_CONSTANT) ? rcc : NULL;
   parsetree *right_child = NULL;
   if (rc == NULL) {
     right_child = NULL;
@@ -88,7 +84,6 @@ list<quad> ground_expression(parsetree *root, set<nodetype> ground_exp) {
     res.insert(res.end(), right.begin(), right.end());
     res.push_back(expr);
 
-    cout << "returning this many in quad list: " << res.size() << "\n";
     return res;
   }
 }
@@ -141,7 +136,7 @@ set<nodetype> set_op_types() {
 }
 
 list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetype> ops, set<nodetype> ge) {
-    cout << "at node: " << nodenames[root -> type] << "\n";
+  //    cout << "at node: " << nodenames[root -> type] << "\n";
     parsetree *lc = root -> children[0];
     parsetree *left_child = NULL;
     if (lc == NULL) {
@@ -184,18 +179,14 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
 	l1.push_back(expr);
 	return l1;
       } else {
-	cout << "called into else part of ne\n";
 	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, set_exp, ops, ge);
 
 	parsetree *ground_node = left_child == NULL ? root -> children[0] : root -> children[2];
 	list<quad> ge = handle_ground_node(ground_node); 
 
-	cout << nodenames[mid_child -> type] << "\n";
 	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, ge.back().dest);
 	
-	//cout << "inserting into list\n";
 	l1.insert(l1.end(), ge.begin(), ge.end());
-	//cout << quad_to_string(expr) << "\n";
 	l1.push_back(expr);
 	return l1;
       }
