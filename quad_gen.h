@@ -27,6 +27,8 @@ const string MULT = "mul";
 const string SWI = "swi";
 const string SEEK = "0x6b";
 
+list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops);
+set<nodetype> unary_ops();
 set<nodetype> set_ground_exp();
 list<quad> handle_ground_node(parsetree *node);
 set<nodetype> set_op_types();

@@ -207,6 +207,7 @@ list<quad> handle_assignment(parsetree *root) {
   set<nodetype> expr_types = set_expression_types();
   set<nodetype> ops = set_op_types();
   set<nodetype> ge = set_ground_exp();
+  set<nodetype> unary = unary_ops();
   parsetree *lc = root -> children[0];
   parsetree *rc = root -> children[2];
   quad sa = simple_assignment(lc -> children[0], root -> children[1], rc -> children[0] -> type == node_CONSTANT ? 
@@ -214,7 +215,11 @@ list<quad> handle_assignment(parsetree *root) {
   if (sa.type == node_ERROR) {
     list<quad> lis = nested_expression(root -> children[2], expr_types, ops, ge);
     if (lis.back().type == node_ERROR) {
-      
+      if (rc -> type == node_unary_expression) {
+	list<quad> expr = prefix_postfix_exp(rc, unary);
+	expr.push_back(three_arity_quad(node_STOR, lc -> children[0] -> symbol_table_ptr -> id_name, expr.back().dest));
+	res.insert(res.end(), expr.begin(), expr.end());      
+      }
     } else {
       lis.push_back(three_arity_quad(node_STOR, lc -> children[0] -> symbol_table_ptr -> id_name, lis.back().dest));
       res.insert(res.end(), lis.begin(), lis.end());      
@@ -237,6 +242,34 @@ quad write_exp_quad(parsetree *write_node, parsetree *ident) {
   return res;
 }
 
+set<nodetype> unary_ops() {
+  set<nodetype> unaries;
+  unaries.insert(node_INC_OP);
+  unaries.insert(node_DEC_OP);
+  return unaries;
+}
+
+list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops) {
+    list<quad> res;
+    parsetree *lc = node -> children[0];
+    parsetree *rc = node -> children[1];
+    parsetree *leaf = NULL;
+    parsetree *op = NULL;
+    if (contains(unary_ops, lc -> type)) {
+      op = lc;      
+      leaf = rc;
+    } else {
+      op = rc;
+      leaf = lc;
+    }
+    
+    res.push_back(store_leaf(leaf -> children[0]));
+    res.push_back(four_arity_quad(op -> type == node_INC_OP ? node_ADD : node_SUBTRACT, 
+				    next_reg(), leaf -> children[0] -> symbol_table_ptr -> id_name, "1"));
+    res.push_back(three_arity_quad(node_STOR, leaf -> children[0] -> symbol_table_ptr -> id_name, res.back().dest));
+    return res;
+}
+ 
 list<quad> handle_ground_node(parsetree *node) {
   list<quad> res;
   if (node -> type == node_unary_expression) {
@@ -246,12 +279,8 @@ list<quad> handle_ground_node(parsetree *node) {
       res.push_back(three_arity_quad(lc -> children[0] -> type, next_reg(), 
 				     rc -> children[0] -> symbol_table_ptr -> id_name));
   } else if (node -> type == node_postfix_expression) {
-      parsetree *lc = node -> children[0];
-      parsetree *rc = node -> children[1];
-      res.push_back(store_leaf(lc -> children[0]));
-      res.push_back(four_arity_quad(rc -> type == node_INC_OP ? node_ADD : node_SUBTRACT, 
-				    next_reg(), lc -> children[0] -> symbol_table_ptr -> id_name, "1"));
-      res.push_back(three_arity_quad(node_STOR, lc -> children[0] -> symbol_table_ptr -> id_name, res.back().dest));
+    list<quad> expr = prefix_postfix_exp(node, unary_ops());
+    res.insert(res.end(), expr.begin(), expr.end());
   } else {
     res.push_back(store_leaf(node -> children[0]));
   }
