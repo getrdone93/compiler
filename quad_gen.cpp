@@ -52,7 +52,7 @@ list<quad> ground_expression(parsetree *root, set<nodetype> ground_exp) {
     left_child = NULL;
   } else if (lc -> type == node_primary_expression && lcc != NULL && contains(ground_exp, lcc -> type)) {
     left_child = lcc;
-  } else if (lc -> type == node_unary_expression) {
+  } else if (lc -> type == node_unary_expression || lc -> type == node_postfix_expression) {
     left_child = lc;
   }
 
@@ -63,7 +63,7 @@ list<quad> ground_expression(parsetree *root, set<nodetype> ground_exp) {
     right_child = NULL;
   } else if (rc -> type == node_primary_expression && rcc != NULL && contains(ground_exp, rcc -> type)) {
     right_child = rcc;
-  } else if (rc -> type == node_unary_expression) {
+  } else if (rc -> type == node_unary_expression || rc -> type == node_postfix_expression) {
     right_child = rc;
   }
 
@@ -143,7 +143,7 @@ set<nodetype> set_op_types() {
 }
 
 list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetype> ops, set<nodetype> ge) {
-  //    cout << "at node: " << nodenames[root -> type] << "\n";
+    cout << "at node: " << nodenames[root -> type] << "\n";
     parsetree *lc = root -> children[0];
     parsetree *left_child = NULL;
     if (lc == NULL) {
@@ -175,6 +175,7 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
     return res;
   } else {
     if (left_child == NULL && right_child == NULL) {
+      cout << "going to ground expression\n";
       return ground_expression(root, ge);
     } else {
       if (left_child != NULL && right_child != NULL) {
@@ -219,6 +220,8 @@ list<quad> handle_assignment(parsetree *root) {
 	list<quad> expr = prefix_postfix_exp(rc, unary);
 	expr.push_back(three_arity_quad(node_STOR, lc -> children[0] -> symbol_table_ptr -> id_name, expr.back().dest));
 	res.insert(res.end(), expr.begin(), expr.end());      
+      } else {
+	cout << "WARN: Matched nothing on rhs for assignment\n";
       }
     } else {
       lis.push_back(three_arity_quad(node_STOR, lc -> children[0] -> symbol_table_ptr -> id_name, lis.back().dest));
