@@ -23,5 +23,6 @@ struct arm_register {
   int number;
 };
 
-list<string> process_quads(list<quad> quads, set<arm_register> regs);
+list<string> process_quads(list<quad> quads);
+list<string> process_quads(list<quad> quads, list<arm_register> *regs);
 list<arm_register> make_registers(int num_regs);

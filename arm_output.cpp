@@ -14,7 +14,12 @@ list<arm_register> make_registers(int num_regs) {
   return res;
 }
 
-list<string> process_quads(list<quad> quads, set<arm_register> regs) {
+list<string> process_quads(list<quad> quads) {
+  list<arm_register> arms = make_registers(12);
+  return process_quads(quads, &arms);
+}
+
+list<string> process_quads(list<quad> quads, list<arm_register> *regs) {
   list<string> res;
   return res;
 }
