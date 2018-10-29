@@ -14,6 +14,7 @@ const string SUB = "SUB";
 const string MULT = "MUL";
 const string SWI = "SWI";
 const string SEEK = "0x6b";
+const string HALT = "0x11";
 const string WORD = ".word";
 const string DEFAULT_VALUE = "0";
 const string NO_REG = "no_reg";

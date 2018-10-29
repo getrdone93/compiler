@@ -77,7 +77,7 @@ list<quad> load(quad load, arm_register *value_reg, set<string> idents, map<stri
   string reg = regify(value_reg -> number);
   fake_to_real -> insert(pair<string, int>(load.dest, value_reg -> number));
   if (contains(idents, load.opd1)) {
-    res.push_back(three_arity_quad(node_LOAD, reg, load.opd1));
+    res.push_back(three_arity_quad(node_LOAD, reg, arm_constant(load.opd1)));
     res.push_back(three_arity_quad(node_LOAD, reg, at_address(reg)));
   } else {
     res.push_back(three_arity_quad(node_LOAD, reg, arm_constant(load.opd1)));
@@ -121,6 +121,27 @@ list<quad> binary_operator(quad binary, arm_register *dest_reg, vector<arm_regis
   return res;
 }
 
+list<quad> write_to_quads(quad write, vector<arm_register> *regs, set<string> idents, map<string, int> *fake_to_real) {
+  list<quad> res;
+  arm_register *r1 = &(regs -> at(1));
+  if (r1 -> dt == NONE && r1 -> dt == NONE) {
+    quad la = {node_LOAD, regify(1), write.dest};
+    list<quad> load_asm = load(la, r1, idents, fake_to_real);
+    res.insert(res.end(), load_asm.begin(), load_asm.end());
+
+    //  MOV     R0, #1
+    //  SWI     0x6b
+    //  SWI     0x11
+    res.push_back(three_arity_quad(node_MOV, regify(0), arm_small_constant("1")));
+    res.push_back(two_arity_quad(node_SWI, SEEK));
+    res.push_back(two_arity_quad(node_SWI, HALT));
+  } else {
+    cout << "r1 or r0 is being used. Need to save their values\n";
+  }
+
+  return res;
+}
+
 list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
   //cout << "quads.size() " << quads.size() << "\n";
   list<quad> res;
@@ -148,6 +169,11 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
       int fr = regs_with_dt(regs, NONE).at(0);
       list<quad> bin_asm = binary_operator(cq, &(regs -> at(fr)), regs, &fake_to_real);
       res.insert(res.end(), bin_asm.begin(), bin_asm.end());
+    }
+      break;
+    case node_WRITE: {
+      list<quad> write_asm = write_to_quads(cq, regs, idents, &fake_to_real);
+      res.insert(res.end(), write_asm.begin(), write_asm.end());
     }
       break;
       default:
@@ -181,6 +207,12 @@ string quad_to_arm(quad q) {
       break;
     case node_SUBTRACT:
       res = four_arity(SUB, q.dest, q.opd1, q.opd2);
+      break;
+    case node_SWI:
+      res = two_arity(nodenames[node_SWI], q.dest);
+      break;
+    case node_MOV:
+      res = three_arity(nodenames[node_MOV], q.dest, q.opd1);
       break;
     default:
       res = "default";

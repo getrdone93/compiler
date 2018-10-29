@@ -72,6 +72,8 @@ const char *nodenames[] =
     "STOR",
     "ERROR",
     "LOAD",
-    "LABEL"
+    "LABEL",
+    "MOV",
+    "SWI"
   };
 

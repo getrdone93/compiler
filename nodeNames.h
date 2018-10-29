@@ -72,5 +72,7 @@ enum nodetype {
   node_ERROR,
   node_LOAD,
   node_LABEL,
+  node_MOV,
+  node_SWI,
   node_end_of_nodes
 };
