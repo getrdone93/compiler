@@ -13,18 +13,6 @@
 
 using namespace std;
 
-const string STOR = "STR";
-const string LOAD = "LDR";
-const string MOV = "MOV";
-const string ADD = "ADD";
-const string SUB = "SUB";
-const string MULT = "MUL";
-const string SWI = "SWI";
-const string SEEK = "0x6b";
-const string WORD = ".word";
-const string DEFAULT_VALUE = "0";
-const string NO_REG = "no_reg";
-
 enum data_type {
   CONST,
   MEM_ADD,
@@ -37,7 +25,8 @@ struct arm_register {
   int number;
 };
 
-string nt_to_arm(nodetype type);
+list<string> asm_quads_to_asm(list<quad> asm_quads);
+string quad_to_arm(quad q);
 quad load(quad load, arm_register *value_reg);
 string regify(int num);
 vector<int> regs_with_dt(vector<arm_register> regs, data_type filter);

@@ -6,6 +6,18 @@
 
 using namespace std;
 
+const string STOR = "STR";
+const string LOAD = "LDR";
+const string MOV = "MOV";
+const string ADD = "ADD";
+const string SUB = "SUB";
+const string MULT = "MUL";
+const string SWI = "SWI";
+const string SEEK = "0x6b";
+const string WORD = ".word";
+const string DEFAULT_VALUE = "0";
+const string NO_REG = "no_reg";
+
 string four_arity(string op, string dest, string opd1, string opd2);
 string three_arity(string op, string dest, string opd1);
 string two_arity(string op, string dest);

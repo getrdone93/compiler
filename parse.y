@@ -885,7 +885,8 @@ int main( int ac, char *av[] )
       cout << "calling process quads\n";
       ofstream asm_file("program.s");
       list<quad> assembler = quads_to_asm(quads);
-      asm_file << quad_list_to_str(assembler);
+      list<string> asm_out = asm_quads_to_asm(assembler);
+      asm_file << list_to_string(asm_out);
       
       return( 0 );
     }

@@ -30,7 +30,7 @@ list<quad> declare_idents(set<string> idents) {
   list<quad> decs;
   for (set<string>::iterator it = idents.begin(); it != idents.end(); it++) {
     string id = *it;
-    decs.push_back(four_arity_quad(node_LABEL, id, WORD, DEFAULT_VALUE));
+    decs.push_back(four_arity_quad(node_LABEL, make_label(id), WORD, DEFAULT_VALUE));
   }
 
   return decs;
@@ -60,22 +60,7 @@ list<quad> stor(quad store, arm_register *id_add, arm_register *value_reg) {
 
 quad load(quad load, arm_register *value_reg) {
   value_reg -> dt = DATA;
-  return three_arity_quad(load.type, regify(value_reg -> number), arm_constant(load.opd1));
-}
-
-string nt_to_arm(nodetype type) {
-  string res;
-  switch(type) {
-    case node_STOR:
-      res = STOR;
-      break;
-    case node_LOAD:
-      res = LOAD;
-    default:
-      res = "*NM";
-      break;
-  }
-  return res;
+  return three_arity_quad(node_LOAD, regify(value_reg -> number), arm_constant(load.opd1));
 }
 
 vector<int> regs_with_dt(vector<arm_register> regs, data_type filter) {
@@ -103,7 +88,7 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
 	}
        case node_LOAD: {
 	int fr = regs_with_dt(*regs, NONE).at(0);
-	//res.push_back(load(cq, &(regs -> at(fr))));
+	res.push_back(load(cq, &(regs -> at(fr))));
 	break;
        }
       default:
@@ -114,11 +99,25 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
   return res;
 }
 
+list<string> asm_quads_to_asm(list<quad> asm_quads) {
+  list<string> res;
+  for (list<quad>::iterator aq = asm_quads.begin(); aq != asm_quads.end(); aq++) {
+    res.push_back(quad_to_arm(*aq));
+  }
+  return res;
+}
+ 
 string quad_to_arm(quad q) {
   string res;
   switch (q.type) {
     case node_LOAD:
-      //      res = three_arity()
+      res = three_arity(LOAD, q.dest, q.opd1);
+      break;
+    case node_STOR:
+      res = three_arity(STOR, q.dest, q.opd1);
+      break;
+    case node_LABEL:
+      res = three_arity_nc(q.dest, q.opd1, q.opd2);
       break;
     default:
       res = "default";
