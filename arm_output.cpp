@@ -6,7 +6,7 @@ using namespace std;
 vector<arm_register> make_registers(int num_regs) {
   vector<arm_register> res;
   int i;
-  for (i = 1; i <= num_regs; i++) {
+  for (i = 0; i < num_regs; i++) {
     arm_register reg;
     reg.dt = NONE;
     reg.number = i;
@@ -37,7 +37,7 @@ list<quad> declare_idents(set<string> idents) {
 }
 
 list<quad> quads_to_asm(list<quad> quads) {
-  vector<arm_register> arms = make_registers(10);
+  vector<arm_register> arms = make_registers(11);
   return quads_to_asm(quads, &arms);
 }
 
@@ -48,9 +48,7 @@ list<quad> stor(quad store, vector<arm_register> *regs, map<string, int> *fake_t
   address_reg -> dt = MEM_ADD;
   string add_reg = regify(address_reg -> number);
   if (boost::starts_with(store.opd1, "R")) {
-    cout << "looking for this register: " << store.opd1 << "\n";
     int vr = fake_to_real -> find(store.opd1) -> second;
-    cout << "found this value: " << vr << "\n";
     arm_register *rv_reg = &(regs -> at(vr));
     string value_reg = regify(rv_reg -> number);
     res.push_back(three_arity_quad(node_LOAD, add_reg, arm_constant(store.dest)));
@@ -117,8 +115,7 @@ list<quad> binary_operator(quad binary, arm_register *dest_reg, vector<arm_regis
   list<quad> res;
   string dr = regify(dest_reg -> number);
   dest_reg -> dt = DATA;
-  cout << "putting register in map: " << binary.dest << "\n";
-  fake_to_real -> insert(pair<string, int>(binary.dest, dest_reg -> number - 1));
+  fake_to_real -> insert(pair<string, int>(binary.dest, dest_reg -> number));
   
   res.push_back(four_arity_quad(binary.type, dr, opd1, opd2));
   return res;
