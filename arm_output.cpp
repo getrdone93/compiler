@@ -161,6 +161,7 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
 	res.insert(res.end(), la.begin(), la.end());
        }
 	break;
+    case node_BITWISE_XOR:
     case node_BITWISE_AND:
     case node_BITWISE_OR:
     case node_ADD:
@@ -205,7 +206,8 @@ string quad_to_arm(quad q) {
     case node_LABEL:
       res = three_arity_nc(q.dest, q.opd1, q.opd2);
       break;
-  case node_BITWISE_AND:
+    case node_BITWISE_AND:
+    case node_BITWISE_XOR:
     case node_BITWISE_OR:
     case node_ADD:
     case node_MULT:
@@ -242,6 +244,9 @@ string nt_to_arm(nodetype t) {
     break;
   case node_BITWISE_AND:
     res = "AND";
+    break;
+  case node_BITWISE_XOR:
+    res = "EOR";
     break;
     default:
     break;
