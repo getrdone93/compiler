@@ -202,7 +202,7 @@ string quad_to_arm(quad q) {
       res = three_arity_nc(q.dest, q.opd1, q.opd2);
       break;
     case node_SUBTRACT:
-      res = four_arity(SUB, q.dest, q.opd1, q.opd2);
+      res = four_arity(nt_to_arm(q.type), q.dest, q.opd1, q.opd2);
       break;
     case node_SWI:
       res = two_arity(nodenames[node_SWI], q.dest);
@@ -213,6 +213,18 @@ string quad_to_arm(quad q) {
     default:
       res = "default";
       break;
+  }
+  return res;
+}
+
+string nt_to_arm(nodetype t) {
+  string res;
+  switch(t) {
+    case node_SUBTRACT:
+      res = "SUB";
+      break;
+    default:
+    break;
   }
   return res;
 }

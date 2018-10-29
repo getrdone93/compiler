@@ -26,6 +26,7 @@ struct arm_register {
   int number;
 };
 
+string nt_to_arm(nodetype t);
 list<quad> binary_operator(quad binary, arm_register *dest_reg, vector<arm_register> *regs, map<string, int> *fake_to_real);
 bool contains(set<string> strs, string s);
 list<string> asm_quads_to_asm(list<quad> asm_quads);
