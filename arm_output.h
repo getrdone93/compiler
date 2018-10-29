@@ -10,6 +10,7 @@
 
 #include <set>
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -25,13 +26,15 @@ struct arm_register {
   int number;
 };
 
+list<quad> binary_operator(quad binary, arm_register *dest_reg, vector<arm_register> *regs, map<string, int> *fake_to_real);
+bool contains(set<string> strs, string s);
 list<string> asm_quads_to_asm(list<quad> asm_quads);
 string quad_to_arm(quad q);
-quad load(quad load, arm_register *value_reg);
+list<quad> load(quad load, arm_register *value_reg, set<string> idents, map<string, int> *fake_to_real);
 string regify(int num);
-vector<int> regs_with_dt(vector<arm_register> regs, data_type filter);
+vector<int> regs_with_dt(vector<arm_register> *regs, data_type filter);
 string at_address(string reg);
-list<quad> stor(quad store, arm_register *id_add, arm_register *value_reg);
+list<quad> stor(quad store, vector<arm_register> *regs, map<string, int> *fake_to_real);
 string three_arity_nc(string op, string dest, string opd1);
 string make_label(string id);
 list<quad> declare_idents(set<string> idents);

@@ -22,7 +22,6 @@
 
 using namespace std;
 
-
 list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops);
 set<nodetype> unary_ops();
 set<nodetype> set_ground_exp();
