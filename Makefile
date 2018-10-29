@@ -52,13 +52,13 @@ quad.o: quad.cpp quad.h nodeNames.h
 
 # Run some tests - all should parse OK
 test :	parse
-	# echo "\na_test1.c"
-	# -./parse testFiles/input_progs/a_test1.c- > /dev/null
-	# cat testFiles/input_progs/a_test1.c-
-	# cat output.quad
-	# echo "---assembler---"
-	# cat program.s
-	# ./makeTree.sh
+	echo "\na_test1.c"
+	-./parse testFiles/input_progs/a_test1.c- > /dev/null
+	cat testFiles/input_progs/a_test1.c-
+	cat output.quad
+	echo "---assembler---"
+	cat program.s
+	./makeTree.sh
 
 	# echo "\na_test2.c"
 	# -./parse testFiles/input_progs/a_test2.c- > /dev/null
@@ -132,14 +132,14 @@ test :	parse
 	# cat program.s
 	# ./makeTree.sh
 
-	echo "\na_test10.c"
-	-./parse testFiles/input_progs/a_test10.c-
-		cat testFiles/input_progs/a_test10.c-
-	cat output.quad
-	./makeTree.sh
-	echo "---assembler---"
-	cat program.s
-	./makeTree.sh
+	# echo "\na_test10.c"
+	# -./parse testFiles/input_progs/a_test10.c-
+	# 	cat testFiles/input_progs/a_test10.c-
+	# cat output.quad
+	# ./makeTree.sh
+	# echo "---assembler---"
+	# cat program.s
+	# ./makeTree.sh
 
 
 
