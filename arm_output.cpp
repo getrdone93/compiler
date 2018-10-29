@@ -161,6 +161,7 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
 	res.insert(res.end(), la.begin(), la.end());
        }
 	break;
+    case node_ADD:
     case node_MULT:
     case node_SUBTRACT: {
       int fr = regs_with_dt(regs, NONE).at(0);
@@ -202,6 +203,7 @@ string quad_to_arm(quad q) {
     case node_LABEL:
       res = three_arity_nc(q.dest, q.opd1, q.opd2);
       break;
+    case node_ADD:
     case node_MULT:
     case node_SUBTRACT:
       res = four_arity(nt_to_arm(q.type), q.dest, q.opd1, q.opd2);
@@ -228,6 +230,9 @@ string nt_to_arm(nodetype t) {
   case node_MULT:
      res = "MUL";
      break;
+  case node_ADD:
+    res = "ADD";
+    break;
     default:
     break;
   }

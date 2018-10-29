@@ -208,6 +208,7 @@ list<quad> handle_assignment(parsetree *root) {
   set<nodetype> ops = set_op_types();
   set<nodetype> ge = set_ground_exp();
   set<nodetype> unary = unary_ops();
+  set<nodetype> pm = unary_p_m();
   parsetree *lc = root -> children[0];
   parsetree *rc = root -> children[2];
   quad sa = simple_assignment(lc -> children[0], root -> children[1], rc -> children[0] -> type == node_CONSTANT ? 
@@ -216,7 +217,10 @@ list<quad> handle_assignment(parsetree *root) {
     list<quad> lis = nested_expression(root -> children[2], expr_types, ops, ge);
     if (lis.back().type == node_ERROR) {
       if (rc -> type == node_unary_expression) {
-	list<quad> expr = prefix_postfix_exp(rc, unary);
+	parsetree *rcc = rc -> children[0];
+	list<quad> expr = rcc -> type == node_unary_operator && contains(pm, rcc -> children[0] -> type) ? 
+	  unary_minus(rc, pm) : prefix_postfix_exp(rc, unary);
+
 	expr.push_back(three_arity_quad(node_STOR, lc -> children[0] -> symbol_table_ptr -> id_name, expr.back().dest));
 	res.insert(res.end(), expr.begin(), expr.end());      
       } else {
@@ -249,6 +253,25 @@ set<nodetype> unary_ops() {
   unaries.insert(node_INC_OP);
   unaries.insert(node_DEC_OP);
   return unaries;
+}
+
+set<nodetype> unary_p_m() {
+  set<nodetype> plus_minus;
+  plus_minus.insert(node_UNARY_MINUS);
+  return plus_minus;
+}
+
+list<quad> unary_minus(parsetree *node, set<nodetype> unaries) {
+  list<quad> res;
+  parsetree *lc = node -> children[0];
+  parsetree *rc = node -> children[1];
+  cout << "here again\n";
+  if (contains(unaries, lc -> children[0] -> type)) {
+    res.push_back(store_leaf(rc -> children[0]));
+    res.push_back(four_arity_quad(node_MULT, next_reg(), res.back().dest, "-1"));
+  }
+
+  return res;
 }
 
 list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops) {
@@ -290,7 +313,7 @@ list<quad> handle_ground_node(parsetree *node) {
 }
 
 list<quad> make_quads(parsetree *root, list<quad> res) {
-  //  cout << "at node: " << nodenames[root -> type] << "\n";
+  cout << "at node: " << nodenames[root -> type] << "\n";
   switch(root -> type) {
     case node_assignment_expression: {
       list<quad> assign = handle_assignment(root);
