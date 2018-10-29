@@ -128,10 +128,6 @@ list<quad> write_to_quads(quad write, vector<arm_register> *regs, set<string> id
     quad la = {node_LOAD, regify(1), write.dest};
     list<quad> load_asm = load(la, r1, idents, fake_to_real);
     res.insert(res.end(), load_asm.begin(), load_asm.end());
-
-    //  MOV     R0, #1
-    //  SWI     0x6b
-    //  SWI     0x11
     res.push_back(three_arity_quad(node_MOV, regify(0), arm_small_constant("1")));
     res.push_back(two_arity_quad(node_SWI, SEEK));
     res.push_back(two_arity_quad(node_SWI, HALT));
