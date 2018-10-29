@@ -258,6 +258,7 @@ set<nodetype> unary_ops() {
 set<nodetype> unary_p_m() {
   set<nodetype> plus_minus;
   plus_minus.insert(node_UNARY_MINUS);
+  plus_minus.insert(node_NEGATE);
   return plus_minus;
 }
 
@@ -265,12 +266,19 @@ list<quad> unary_minus(parsetree *node, set<nodetype> unaries) {
   list<quad> res;
   parsetree *lc = node -> children[0];
   parsetree *rc = node -> children[1];
-  cout << "here again\n";
-  if (contains(unaries, lc -> children[0] -> type)) {
+
+  switch(lc -> children[0] -> type) {
+  case node_UNARY_MINUS:
     res.push_back(store_leaf(rc -> children[0]));
     res.push_back(four_arity_quad(node_MULT, next_reg(), res.back().dest, "-1"));
+    break;
+  case node_NEGATE:
+    res.push_back(store_leaf(rc -> children[0]));
+    res.push_back(three_arity_quad(node_NEGATE, next_reg(), res.back().dest));
+    break;
+  default:
+    break;
   }
-
   return res;
 }
 
