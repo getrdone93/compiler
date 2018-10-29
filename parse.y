@@ -887,7 +887,8 @@ int main( int ac, char *av[] )
       list<quad> assembler = quads_to_asm(quads);
       list<string> asm_out = asm_quads_to_asm(assembler);
       asm_file << list_to_string(asm_out);
-      
+
+      cout << "\n\tquad output can be seen in ./output.quad\n\tassembler output can be seen in ./program.s\n";
       return( 0 );
     }
     else
