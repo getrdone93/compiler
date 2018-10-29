@@ -321,7 +321,6 @@ list<quad> handle_ground_node(parsetree *node) {
 }
 
 list<quad> make_quads(parsetree *root, list<quad> res) {
-  cout << "at node: " << nodenames[root -> type] << "\n";
   switch(root -> type) {
     case node_assignment_expression: {
       list<quad> assign = handle_assignment(root);
