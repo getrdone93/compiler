@@ -151,8 +151,6 @@ void process_decl_list(parsetree *root, vector<map<string, id_attrs> > *sym_tabl
     } else {
       insert_sym_table(root -> children[0] -> children[1], integer, sym_table);
     }
-    cout << "sym_table id_name in node_decl: " << sym_table -> front().find("a_0") -> second.id_name << "\n";
-
     if (root -> children[1] -> type == node_i_list) {
       process_decl_list(root -> children[1], sym_table);
     }
@@ -213,7 +211,6 @@ void insert_sym_table(parsetree *node, id_type type, vector<map<string, id_attrs
     cout << "ERROR: duplicate declaration of identifier " << atts.id_name << " found on line " << atts.line << "\n"; 
   } else {
      sym_table -> back().insert(pair<string, id_attrs>(atts.id_name, atts));
-    cout << "sym_table id_name after inserting symbol: " << sym_table -> front().find("a_0") -> second.id_name << "\n";
     cout << "new identifier " << atts.id_name << " with type " << get_id_type_name(atts.it) << " in scope at line: "
 	 << atts.line << "\n";
   }

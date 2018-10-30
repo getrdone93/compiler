@@ -268,9 +268,12 @@ list<quad> unary_minus(parsetree *node, set<nodetype> unaries) {
   parsetree *rc = node -> children[1];
 
   switch(lc -> children[0] -> type) {
-  case node_UNARY_MINUS:
-    res.push_back(store_leaf(rc -> children[0]));
-    res.push_back(four_arity_quad(node_MULT, next_reg(), res.back().dest, "-1"));
+  case node_UNARY_MINUS: {
+    quad leaf = store_leaf(rc -> children[0]);
+    //to_int(leaf.opd1)
+    res.push_back(leaf);
+    //res.push_back(four_arity_quad(node_MULT, next_reg(), res.back().dest, "-1"));
+  }
     break;
   case node_NEGATE:
     res.push_back(store_leaf(rc -> children[0]));

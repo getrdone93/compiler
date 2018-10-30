@@ -874,8 +874,9 @@ int main( int ac, char *av[] )
       vector<map<string, id_attrs> > sym_table;
       map<string, id_attrs> global_scope;
       sym_table.push_back(global_scope);
+      cout << "calling into sym table\n";
       symbol_table(root, &sym_table);
-
+      
       cout << "calling make quads\n";
       ofstream quad_file("output.quad");
       list<quad> quads;
