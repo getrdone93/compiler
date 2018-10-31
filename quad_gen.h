@@ -31,7 +31,7 @@ list<quad> handle_ground_node(parsetree *node);
 set<nodetype> set_op_types();
 bool contains(set<nodetype> types, nodetype type);
 set<nodetype> set_expression_types();
-quad store_leaf(parsetree *node);
+quad load_leaf(parsetree *node);
 string next_reg();
 void output_node(parsetree *node, string var_name);
 list<nodetype> expression_types();
