@@ -27,7 +27,6 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> post_pre_ops);
 set<nodetype> post_pre_ops();
 set<nodetype> set_ground_exp();
 list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nodetype> ge);
-set<nodetype> set_op_types();
 bool contains(set<nodetype> types, nodetype type);
 set<nodetype> set_expression_types();
 quad load_leaf(parsetree *node);

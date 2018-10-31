@@ -89,28 +89,6 @@ bool contains(set<nodetype> types, nodetype type) {
   return types.find(type) != types.end();
 }
 
-set<nodetype> set_op_types() {
-  //please figure out how to do constants
-  set<nodetype> op_types;
-  op_types.insert(node_ADD);
-  op_types.insert(node_MULT);
-  op_types.insert(node_DIVIDE);
-  op_types.insert(node_SUBTRACT);
-  op_types.insert(node_MOD);
-  op_types.insert(node_LESS_EQUAL);
-  op_types.insert(node_LESS_THAN);
-  op_types.insert(node_GREATER_EQUAL);
-  op_types.insert(node_GREATER_THAN);
-  op_types.insert(node_EQUAL);
-  op_types.insert(node_NOT_EQUAL);
-  op_types.insert(node_BITWISE_OR);
-  op_types.insert(node_BITWISE_AND);
-  op_types.insert(node_BITWISE_XOR);
-  op_types.insert(node_LOGICAL_AND);
-  op_types.insert(node_LOGICAL_OR);
-  return op_types;
-}
-
 list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetype> ge) {
     if (contains(ge, root -> type)) {
       return unary_post_pre_exp(root, set_exp, ge);
