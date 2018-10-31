@@ -33,7 +33,6 @@ set<nodetype> set_ground_exp() {
 }
 
 list<quad> ground_expression(parsetree *root, set<nodetype> nested_exp, set<nodetype> accepted_exp) {
-  cout << "now im in ground exp\n";
   parsetree *lc = root -> children[0];
   parsetree *left_child = NULL;
   if (contains(accepted_exp, lc -> type)) {
@@ -46,11 +45,8 @@ list<quad> ground_expression(parsetree *root, set<nodetype> nested_exp, set<node
     right_child = rc;
   }
 
-    cout << "done checking rules\n";
-
   if (left_child == NULL || right_child == NULL) {
     //do a warn or something
-    cout << "ground expression sees nulls\n";
     list<quad> res;
     return res;
   } else {
@@ -186,13 +182,9 @@ list<quad> handle_assignment(parsetree *root, set<nodetype> exp_types, set<nodet
   list<quad> res;
   parsetree *lc = root -> children[0];
   parsetree *rc = root -> children[2];
-  cout << "here\n";
   list<quad> right_side = nested_expression(rc, exp_types, ge);
-  cout << "after nested_expr, right_side size " << right_side.size() << "\n";
   res.insert(res.end(), right_side.begin(), right_side.end());
-  cout << "after insert\n";
   res.push_back(three_arity_quad(node_STOR, lc -> symbol_table_ptr -> id_name, right_side.back().dest));
-  cout << "after last stor\n";
   return res;
 }
 
@@ -235,7 +227,6 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops) {
       op = rc;
       leaf = lc;
     }
-    cout << "here in prefix postfix\n";
     res.push_back(load_leaf(leaf));
     res.push_back(four_arity_quad(op -> type == node_INC_OP ? node_ADD : node_SUBTRACT, 
 				    next_reg(), leaf -> symbol_table_ptr -> id_name, "1"));
@@ -244,7 +235,8 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops) {
 }
  
 list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nodetype> ge) {
-  if (node -> type == node_CONSTANT) {
+  cout << "i am here\n";
+  if (node -> type == node_CONSTANT || node -> type == node_IDENTIFIER) {
     list<quad> res;
     res.push_back(load_leaf(node));
     return res;
@@ -252,10 +244,8 @@ list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nod
     return nested_expression(node, nested_exp, ge);
   } else if (node -> type == node_postfix_expression || node -> children[0] -> type == node_INC_OP
 	     || node -> children[0] -> type == node_DEC_OP) {
-    cout << "calling into node_postfix\n";
     return prefix_postfix_exp(node, unary_ops());
   } else if (node -> type == node_unary_expression) {
-    cout << "made it to node unary\n";
     list<quad> right = unary_post_pre_exp(node -> children[1], nested_exp, ge);
     if (node -> children[0] -> type == node_UNARY_MINUS) {
       right.push_back(four_arity_quad(node_SUBTRACT, next_reg(), "0", right.back().dest));
