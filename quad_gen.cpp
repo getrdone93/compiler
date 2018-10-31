@@ -149,9 +149,10 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
       left_child = NULL;
     } else if (contains(set_exp, lc -> type)) {
       left_child = lc;
-    } else if (lc -> type == node_primary_expression && contains(set_exp, lc -> children[0] -> type)) {
-      left_child = lc -> children[0];
     }
+    // else if (lc -> type == node_primary_expression && contains(set_exp, lc -> children[0] -> type)) {
+    //   left_child = lc -> children[0];
+    // }
 
     parsetree *mc = root -> children[1];
     parsetree *mid_child = contains(ops, mc -> type) ? mc : NULL;
@@ -162,9 +163,11 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
       right_child = NULL;
     } else if (contains(set_exp, rc -> type)) {
       right_child = rc;
-    } else if (rc -> type == node_primary_expression && contains(set_exp, rc -> children[0] -> type)) {
-      right_child = rc -> children[0];
-    }
+    } 
+
+    // else if (rc -> type == node_primary_expression && contains(set_exp, rc -> children[0] -> type)) {
+    //   right_child = rc -> children[0];
+    // }
 
     if (root == NULL || mid_child == NULL) {
     //do debug or something
@@ -199,6 +202,15 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
     }
   }
 }
+
+// list<quad> handle_assignment(parsetree *root) {
+//   list<quad> res;
+//   parsetree *lc = root -> children[0];
+//   parsetree *rc = root -> children[2];
+//   list<quad> right_side = nested_expression(rc);
+//   res.insert(res.end(), right_side.begin(), right_side.end());
+//   res.push_back(three_arity_quad(node_STOR, lc -> symbol_table_ptr -> id_name, right_side.back().dest));
+// }
 
 list<quad> handle_assignment(parsetree *root) {
   list<quad> res;
@@ -305,6 +317,10 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops) {
     return res;
 }
  
+list<quad> handle_ground_node_new(parsetree *node) {
+  
+}
+
 list<quad> handle_ground_node(parsetree *node) {
   list<quad> res;
   if (node -> type == node_unary_expression) {
@@ -313,7 +329,7 @@ list<quad> handle_ground_node(parsetree *node) {
       res.push_back(store_leaf(rc -> children[0]));
       res.push_back(three_arity_quad(lc -> children[0] -> type, next_reg(), 
 				     rc -> children[0] -> symbol_table_ptr -> id_name));
-  } else if (node -> type == node_postfix_expression) {
+    } else if (node -> type == node_postfix_expression) {
     list<quad> expr = prefix_postfix_exp(node, unary_ops());
     res.insert(res.end(), expr.begin(), expr.end());
   } else {

@@ -525,42 +525,32 @@ unary_operator
 	: '&'
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_unary_operator;
-	  $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> children[0] -> type = node_UNARY_AND;
-	  $$ -> children[0] -> str_ptr = "&";
+	  $$ -> type = node_UNARY_AND;
+	  $$ -> str_ptr = "&";
 	}
 	| '*'
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_unary_operator;
-	  $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> children[0] -> type = node_DEREF;
-	  $$ -> children[0] -> str_ptr = "*";
+ 	  $$ -> type = node_DEREF;
+	  $$ -> str_ptr = "*";
 	}
 	| '+'
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_unary_operator;
-	  $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> children[0] -> type = node_UNARY_PLUS;
-	  $$ -> children[0] -> str_ptr = "+";
+	  $$ -> type = node_UNARY_PLUS;
+	  $$ -> str_ptr = "+";
 	}
 	| '-'
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_unary_operator;
-	  $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> children[0] -> type = node_UNARY_MINUS;
-	  $$ -> children[0] -> str_ptr = "-";
+	  $$ -> type = node_UNARY_MINUS;
+	  $$ -> str_ptr = "-";
 	}
 	| '!'
 	{
 	  $$ = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> type = node_unary_operator;
-	  $$ -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
-	  $$ -> children[0] -> type = node_NEGATE;
-	  $$ -> children[0] -> str_ptr = "!";
+	  $$ -> type = node_NEGATE;
+	  $$ -> str_ptr = "!";
 	}
 	;
 
