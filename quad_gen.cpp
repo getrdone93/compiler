@@ -53,7 +53,9 @@ list<quad> ground_expression(parsetree *root, set<nodetype> nested_exp, set<node
     list<quad> left = unary_post_pre_exp(lc, nested_exp, accepted_exp);
     list<quad> right = unary_post_pre_exp(rc, nested_exp, accepted_exp);
     nodetype op_type = root -> children[1] -> type;
-    quad expr = four_arity_quad(op_type, next_reg(), left.back().dest, right.back().dest);
+    quad expr = four_arity_quad(op_type, next_reg(), 
+				left.back().type == node_STOR ? left.back().opd1 : left.back().dest,
+				right.back().type == node_STOR ? right.back().opd1 : right.back().dest);
 
     list<quad> res;
     res.insert(res.end(), left.begin(), left.end());
@@ -136,7 +138,8 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
 	parsetree *ground_node = left_child == NULL ? root -> children[0] : root -> children[2];
 	list<quad> gn = unary_post_pre_exp(ground_node, set_exp, ge); 
 
-	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, gn.back().dest);
+	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, 
+				    gn.back().type == node_STOR ? gn.back().opd1 : gn.back().dest);
 	
 	l1.insert(l1.end(), gn.begin(), gn.end());
 	l1.push_back(expr);
