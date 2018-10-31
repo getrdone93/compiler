@@ -126,10 +126,8 @@ set<nodetype> set_op_types() {
 
 list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetype> ge) {
   cout << "at node in ne: " << nodenames[root -> type] << "\n";
-    if (root -> type == node_IDENTIFIER || root -> type == node_CONSTANT) {
-      list<quad> res;
-      res.push_back(load_leaf(root));
-      return res;
+    if (contains(ge, root -> type)) {
+      return unary_post_pre_exp(root, set_exp, ge);
     }
 
     parsetree *lc = root -> children[0];
@@ -280,6 +278,7 @@ list<quad> make_quads(parsetree *root, list<quad> res) {
       return assign;
     }
     break;
+  case node_unary_expression:
   case node_postfix_expression: {
     list<quad> postfix = unary_post_pre_exp(root, expr_types, ge);
     return postfix;
