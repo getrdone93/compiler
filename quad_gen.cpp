@@ -73,14 +73,6 @@ void output_node(parsetree *node, string var_name) {
   }
 }
 
-list<nodetype> expression_types() {
-  //please figure out how to do constants
-  list<nodetype> exp_types;
-  exp_types.push_back(node_additive_expression);
-  exp_types.push_back(node_multiplicative_expression);
-  return exp_types;
-}
-
 set<nodetype> set_expression_types() {
   set<nodetype> exp_types;
   exp_types.insert(node_additive_expression);
@@ -235,7 +227,6 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops) {
 }
  
 list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nodetype> ge) {
-  cout << "i am here\n";
   if (node -> type == node_CONSTANT || node -> type == node_IDENTIFIER) {
     list<quad> res;
     res.push_back(load_leaf(node));

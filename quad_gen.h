@@ -34,7 +34,6 @@ set<nodetype> set_expression_types();
 quad load_leaf(parsetree *node);
 string next_reg();
 void output_node(parsetree *node, string var_name);
-list<nodetype> expression_types();
 list<nodetype> operator_types();
 list<quad> make_quads(parsetree *root, list<quad> res);
 list<quad> ground_expression(parsetree *root, set<nodetype> accepted_exp);
