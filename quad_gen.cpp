@@ -190,27 +190,20 @@ quad write_exp_quad(parsetree *write_node, parsetree *ident) {
   return res;
 }
 
-set<nodetype> unary_ops() {
+set<nodetype> post_pre_ops() {
   set<nodetype> unaries;
   unaries.insert(node_INC_OP);
   unaries.insert(node_DEC_OP);
   return unaries;
 }
 
-set<nodetype> unary_p_m() {
-  set<nodetype> plus_minus;
-  plus_minus.insert(node_UNARY_MINUS);
-  plus_minus.insert(node_NEGATE);
-  return plus_minus;
-}
-
-list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops) {
+list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> post_pre_ops) {
     list<quad> res;
     parsetree *lc = node -> children[0];
     parsetree *rc = node -> children[1];
     parsetree *leaf = NULL;
     parsetree *op = NULL;
-    if (contains(unary_ops, lc -> type)) {
+    if (contains(post_pre_ops, lc -> type)) {
       op = lc;      
       leaf = rc;
     } else {
@@ -233,7 +226,7 @@ list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nod
     return nested_expression(node, nested_exp, ge);
   } else if (node -> type == node_postfix_expression || node -> children[0] -> type == node_INC_OP
 	     || node -> children[0] -> type == node_DEC_OP) {
-    return prefix_postfix_exp(node, unary_ops());
+    return prefix_postfix_exp(node, post_pre_ops());
   } else if (node -> type == node_unary_expression) {
     list<quad> right = unary_post_pre_exp(node -> children[1], nested_exp, ge);
     if (node -> children[0] -> type == node_UNARY_MINUS) {

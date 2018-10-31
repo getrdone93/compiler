@@ -1,0 +1,16 @@
+int c;
+int c;
+int main() {
+    int c;
+    int c;
+    c = !(9 & 8) && -1 + 1 * 9 ^ 5;
+    c++;
+    ++c;
+    --c;
+    c--;
+    write(c);
+}
+
+int a, b, c;
+
+

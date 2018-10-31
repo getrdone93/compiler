@@ -23,9 +23,8 @@
 using namespace std;
 
 list<quad> unary_minus(parsetree *node, set<nodetype> unaries);
-set<nodetype> unary_p_m();
-list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops);
-set<nodetype> unary_ops();
+list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> post_pre_ops);
+set<nodetype> post_pre_ops();
 set<nodetype> set_ground_exp();
 list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nodetype> ge);
 set<nodetype> set_op_types();
