@@ -143,7 +143,6 @@ set<nodetype> set_op_types() {
 }
 
 list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetype> ops, set<nodetype> ge) {
-    cout << "at node: " << nodenames[root -> type] << "\n";
     parsetree *lc = root -> children[0];
     parsetree *left_child = NULL;
     if (lc == NULL) {
