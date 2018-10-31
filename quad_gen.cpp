@@ -50,7 +50,6 @@ list<quad> ground_expression(parsetree *root, set<nodetype> nested_exp, set<node
     list<quad> res;
     return res;
   } else {
-      cout << "going into hgn\n";
     list<quad> left = unary_post_pre_exp(lc, nested_exp, accepted_exp);
     list<quad> right = unary_post_pre_exp(rc, nested_exp, accepted_exp);
     nodetype op_type = root -> children[1] -> type;
@@ -113,7 +112,6 @@ set<nodetype> set_op_types() {
 }
 
 list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetype> ge) {
-  cout << "at node in ne: " << nodenames[root -> type] << "\n";
     if (contains(ge, root -> type)) {
       return unary_post_pre_exp(root, set_exp, ge);
     }
@@ -136,7 +134,7 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
       right_child = rc;
     } 
 
-    if (root == NULL || mid_child == NULL) {
+    if (mid_child == NULL) {
     //do debug or something
     cout << "not an eggsicutable eggspression, mid_child: " << mid_child << "\n";
     list<quad> res;
@@ -221,7 +219,7 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops) {
     }
     res.push_back(load_leaf(leaf));
     res.push_back(four_arity_quad(op -> type == node_INC_OP ? node_ADD : node_SUBTRACT, 
-				    next_reg(), leaf -> symbol_table_ptr -> id_name, "1"));
+				  next_reg(), res.back().dest, "1"));
     res.push_back(three_arity_quad(node_STOR, leaf -> symbol_table_ptr -> id_name, res.back().dest));
     return res;
 }
