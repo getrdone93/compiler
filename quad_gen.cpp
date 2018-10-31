@@ -39,6 +39,7 @@ set<nodetype> set_ground_exp() {
 }
 
 list<quad> ground_expression(parsetree *root, set<nodetype> accepted_exp) {
+  cout << "now im in ground exp\n";
   parsetree *lc = root -> children[0];
   parsetree *left_child = NULL;
   if (contains(accepted_exp, lc -> type)) {
@@ -51,12 +52,15 @@ list<quad> ground_expression(parsetree *root, set<nodetype> accepted_exp) {
     right_child = rc;
   }
 
+    cout << "done checking rules\n";
+
   if (left_child == NULL || right_child == NULL) {
     //do a warn or something
     cout << "ground expression sees nulls\n";
     list<quad> res;
     return res;
   } else {
+      cout << "going into hgn\n";
     list<quad> left = handle_ground_node(lc);
     list<quad> right = handle_ground_node(rc);
     nodetype op_type = root -> children[1] -> type;
@@ -256,6 +260,7 @@ list<quad> handle_ground_node(parsetree *node) {
     cout << "calling into node_postfix\n";
     return prefix_postfix_exp(node, unary_ops());
   } else if (node -> type == node_unary_expression) {
+    cout << "made it to node unary\n";
     list<quad> right = handle_ground_node(node -> children[1]);
     if (node -> children[0] -> type == node_UNARY_MINUS) {
       right.push_back(four_arity_quad(node_SUBTRACT, next_reg(), "0", right.back().dest));
