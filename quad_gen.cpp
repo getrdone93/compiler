@@ -250,7 +250,8 @@ list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nod
     return res;
   } else if (contains(nested_exp, node -> type)) {
     return nested_expression(node, nested_exp, ge);
-  } else if (node -> type == node_postfix_expression) {
+  } else if (node -> type == node_postfix_expression || node -> children[0] -> type == node_INC_OP
+	     || node -> children[0] -> type == node_DEC_OP) {
     cout << "calling into node_postfix\n";
     return prefix_postfix_exp(node, unary_ops());
   } else if (node -> type == node_unary_expression) {
