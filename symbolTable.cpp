@@ -207,8 +207,8 @@ void insert_sym_table(parsetree *node, id_type type, vector<map<string, id_attrs
   strcpy(atts.id_name, strcat(node_under, to_string(seq_num++).c_str()));
   atts.value = 0;
 
-  if (in_top_scope(atts.id_name, sym_table)) {
-    cout << "ERROR: duplicate declaration of identifier " << atts.id_name << " found on line " << atts.line << "\n"; 
+  if (in_top_scope(node -> str_ptr, sym_table)) {
+    cout << "ERROR: duplicate declaration of identifier " << node -> str_ptr << " found on line " << atts.line << "\n"; 
   } else {
      sym_table -> back().insert(pair<string, id_attrs>(atts.id_name, atts));
     cout << "new identifier " << atts.id_name << " with type " << get_id_type_name(atts.it) << " in scope at line: "
