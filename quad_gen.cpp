@@ -25,12 +25,6 @@ quad load_leaf(parsetree *node) {
   return reg_expr;
 }
 
-quad simple_assignment(parsetree *ident, parsetree *assign, parsetree *constant) {
-  return ident == NULL || assign == NULL || constant == NULL ? 
-    two_arity_quad(node_ERROR, "simple_assignment saw a null input") 
-    : three_arity_quad(node_STOR, ident -> symbol_table_ptr -> id_name, constant -> str_ptr);
-}
-
 set<nodetype> set_ground_exp() {
   set<nodetype> exp_types;
   exp_types.insert(node_IDENTIFIER);
@@ -38,7 +32,7 @@ set<nodetype> set_ground_exp() {
   return exp_types;
 }
 
-list<quad> ground_expression(parsetree *root, set<nodetype> accepted_exp) {
+list<quad> ground_expression(parsetree *root, set<nodetype> nested_exp, set<nodetype> accepted_exp) {
   cout << "now im in ground exp\n";
   parsetree *lc = root -> children[0];
   parsetree *left_child = NULL;
@@ -61,8 +55,8 @@ list<quad> ground_expression(parsetree *root, set<nodetype> accepted_exp) {
     return res;
   } else {
       cout << "going into hgn\n";
-    list<quad> left = handle_ground_node(lc);
-    list<quad> right = handle_ground_node(rc);
+    list<quad> left = unary_post_pre_exp(lc, nested_exp, accepted_exp);
+    list<quad> right = unary_post_pre_exp(rc, nested_exp, accepted_exp);
     nodetype op_type = root -> children[1] -> type;
     quad expr = four_arity_quad(op_type, next_reg(), left.back().dest, right.back().dest);
 
@@ -132,6 +126,12 @@ set<nodetype> set_op_types() {
 
 list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetype> ge) {
   cout << "at node in ne: " << nodenames[root -> type] << "\n";
+    if (root -> type == node_IDENTIFIER || root -> type == node_CONSTANT) {
+      list<quad> res;
+      res.push_back(load_leaf(root));
+      return res;
+    }
+
     parsetree *lc = root -> children[0];
     parsetree *left_child = NULL;
     if (lc == NULL) {
@@ -158,7 +158,7 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
     return res;
   } else {
     if (left_child == NULL && right_child == NULL) {
-      return ground_expression(root, ge);
+      return ground_expression(root, set_exp, ge);
     } else {
       if (left_child != NULL && right_child != NULL) {
 	list<quad> l1 = nested_expression(left_child, set_exp, ge);
@@ -170,10 +170,9 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
 	return l1;
       } else {
 	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, set_exp, ge);
-	cout << "we can see this because it shouldnt break before dis\n";
 
 	parsetree *ground_node = left_child == NULL ? root -> children[0] : root -> children[2];
-	list<quad> gn = handle_ground_node(ground_node); 
+	list<quad> gn = unary_post_pre_exp(ground_node, set_exp, ge); 
 
 	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, gn.back().dest);
 	
@@ -185,17 +184,12 @@ list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetyp
   }
 }
 
-list<quad> handle_assignment(parsetree *root) {
+list<quad> handle_assignment(parsetree *root, set<nodetype> exp_types, set<nodetype> ge) {
   list<quad> res;
   parsetree *lc = root -> children[0];
   parsetree *rc = root -> children[2];
-  set<nodetype> expr_types = set_expression_types();
-  set<nodetype> ge = set_ground_exp();
-  ge.insert(node_unary_expression);
-  ge.insert(node_postfix_expression);
-
   cout << "here\n";
-  list<quad> right_side = nested_expression(rc, expr_types, ge);
+  list<quad> right_side = nested_expression(rc, exp_types, ge);
   cout << "after nested_expr, right_side size " << right_side.size() << "\n";
   res.insert(res.end(), right_side.begin(), right_side.end());
   cout << "after insert\n";
@@ -251,17 +245,19 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> unary_ops) {
     return res;
 }
  
-list<quad> handle_ground_node(parsetree *node) {
+list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nodetype> ge) {
   if (node -> type == node_CONSTANT) {
     list<quad> res;
     res.push_back(load_leaf(node));
     return res;
+  } else if (contains(nested_exp, node -> type)) {
+    return nested_expression(node, nested_exp, ge);
   } else if (node -> type == node_postfix_expression) {
     cout << "calling into node_postfix\n";
     return prefix_postfix_exp(node, unary_ops());
   } else if (node -> type == node_unary_expression) {
     cout << "made it to node unary\n";
-    list<quad> right = handle_ground_node(node -> children[1]);
+    list<quad> right = unary_post_pre_exp(node -> children[1], nested_exp, ge);
     if (node -> children[0] -> type == node_UNARY_MINUS) {
       right.push_back(four_arity_quad(node_SUBTRACT, next_reg(), "0", right.back().dest));
     } else if (node -> children[0] -> type == node_NEGATE) {
@@ -274,14 +270,18 @@ list<quad> handle_ground_node(parsetree *node) {
 }
 
 list<quad> make_quads(parsetree *root, list<quad> res) {
+  set<nodetype> expr_types = set_expression_types();
+  set<nodetype> ge = set_ground_exp();
+  ge.insert(node_unary_expression);
+  ge.insert(node_postfix_expression);
   switch(root -> type) {
     case node_assignment_expression: {
-      list<quad> assign = handle_assignment(root);
+      list<quad> assign = handle_assignment(root, expr_types, ge);
       return assign;
     }
     break;
   case node_postfix_expression: {
-    list<quad> postfix = handle_ground_node(root);
+    list<quad> postfix = unary_post_pre_exp(root, expr_types, ge);
     return postfix;
   }
     break;
