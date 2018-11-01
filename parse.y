@@ -36,7 +36,8 @@ void detab( char *line );
 int yylex( void );
 void dumpit( parsetree *root, int level );
 void dotit( parsetree *root, int level, ofstream *out_file);
- void take_out_nodes(parsetree *root);
+void take_out_nodes(parsetree *root);
+void take_out_nodes(parsetree *root, set<nodetype> remove_nodes);
 extern "C" int yywrap( void );
 extern char *yytext; // In the scanner
 
@@ -858,9 +859,11 @@ int main( int ac, char *av[] )
 
     if ( ! err_count )
     {
-      
-      ofstream tree_file("tree.dat");
+      //apply tree transformations
       take_out_nodes(root);
+      
+
+      ofstream tree_file("tree.dat");
       dotit(root, 0, &tree_file);
 
       vector<map<string, id_attrs> > sym_table;
@@ -893,10 +896,17 @@ int main( int ac, char *av[] )
 }
 
 void take_out_nodes(parsetree *root) {
+  set<nodetype> remove_nodes;
+  remove_nodes.insert(node_primary_expression);
+  remove_nodes.insert(node_expression_stmt);
+  take_out_nodes(root, remove_nodes);
+}
+
+void take_out_nodes(parsetree *root, set<nodetype> remove_nodes) {
   parsetree *child;
   for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
     child = root -> children[i];
-    while (child -> type == node_primary_expression || child -> type == node_expression_stmt) {
+    while (contains(remove_nodes, child -> type)) {
       child = child -> children[0];
     }
     root -> children[i] = child;
