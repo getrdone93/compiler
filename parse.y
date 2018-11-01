@@ -38,6 +38,8 @@ void dumpit( parsetree *root, int level );
 void dotit( parsetree *root, int level, ofstream *out_file);
 void take_out_nodes(parsetree *root);
 void take_out_nodes(parsetree *root, set<nodetype> remove_nodes);
+void postfix_to_assign(parsetree *root, set<nodetype> post_ops);
+void postfix_to_assign(parsetree *root);
 extern "C" int yywrap( void );
 extern char *yytext; // In the scanner
 
@@ -859,10 +861,6 @@ int main( int ac, char *av[] )
 
     if ( ! err_count )
     {
-      //apply tree transformations
-      take_out_nodes(root);
-      
-
       ofstream tree_file("tree.dat");
       dotit(root, 0, &tree_file);
 
@@ -871,6 +869,9 @@ int main( int ac, char *av[] )
       sym_table.push_back(global_scope);
       cout << "calling into sym table\n";
       symbol_table(root, &sym_table);
+
+      //apply tree transformations
+      take_out_nodes(root);
       
       cout << "calling make quads\n";
       ofstream quad_file("output.quad");
@@ -894,6 +895,41 @@ int main( int ac, char *av[] )
     }
     
 }
+
+/* void postfix_to_assign(parsetree *root) { */
+/*   set<nodetype> post_ops; */
+/*   post_ops.insert(node_INC_OP); */
+/*   post_ops.insert(node_DEC_OP); */
+/*   postfix_to_assign(root, post_ops); */
+  
+/* } */
+
+/* void postfix_to_assign(parsetree *root, set<nodetype> post_ops) { */
+/*   if (root -> type == node_postfix_expression && contains(post_ops, root -> children[1] -> type)) { */
+/*     root -> type = node_assignment_expression; */
+/*     bool add = root -> children[1] -> type == node_INC_OP; */
+/*     root -> children[1] -> type = node_ASSIGNMENT; */
+/*     root -> children[2] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/*     root -> children[2] -> type = node_additive_expression; */
+
+/*     root -> children[2] -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/*     root -> children[2] -> children[0] -> type = node_IDENTIFIER; */
+/*     root -> children[2] -> children[0] -> str_ptr = strdup(root -> children[0] -> str_ptr); */
+/*     root -> children[2] -> children[0] -> line = root -> children[0] -> line; */
+    
+/*     root -> children[2] -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/*     root -> children[2] -> children[1] -> type = add ? node_ADD : node_SUBTRACT; */
+
+/*     root -> children[2] -> children[2] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
+/*     root -> children[2] -> children[2] -> type = node_CONSTANT; */
+/*     root -> children[2] -> children[2] -> str_ptr = "1"; */
+/*     return; */
+/*   } */
+
+/*   for (int i = 0; i < 10 && root -> children[i] != NULL; i++) { */
+/*     postfix_to_assign(root -> children[i], post_ops); */
+/*   } */
+/* } */
 
 void take_out_nodes(parsetree *root) {
   set<nodetype> remove_nodes;
