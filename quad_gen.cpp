@@ -193,8 +193,9 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> post_pre_ops) {
     }
     quad ll = load_leaf(leaf);
     res.push_back(ll);
+    res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
     res.push_back(four_arity_quad(op -> type == node_INC_OP ? node_ADD : node_SUBTRACT, 
-				  next_reg(), res.back().dest, "1"));
+				  next_reg(), ll.dest, res.back().dest));
     res.push_back(three_arity_quad(node_STOR, leaf -> symbol_table_ptr -> id_name, res.back().dest));
     if (node -> type == node_postfix_expression) {
       //force caller to grab register of original leaf prior to bumping it
@@ -216,7 +217,8 @@ list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nod
   } else if (node -> type == node_unary_expression) {
     list<quad> right = unary_post_pre_exp(node -> children[1], nested_exp, ge);
     if (node -> children[0] -> type == node_UNARY_MINUS) {
-      right.push_back(four_arity_quad(node_SUBTRACT, next_reg(), "0", right.back().dest));
+      right.push_back(three_arity_quad(node_LOAD, next_reg(), "0"));
+      right.push_back(four_arity_quad(node_SUBTRACT, next_reg(), right.back().dest, right.front().dest));
     } else if (node -> children[0] -> type == node_NEGATE) {
       right.push_back(three_arity_quad(node_NEGATE, next_reg(), right.back().dest));
     } else {

@@ -80,8 +80,8 @@ test :	parse
 	# ./makeTree.sh
 
 	echo "\na_test4.c"
-	-./parse testprog.c- > /dev/null
-		cat testprog.c-
+	-./parse testFiles/input_progs/a_test4.c- > /dev/null
+		cat testFiles/input_progs/a_test4.c-
 	./makeTree.sh
 	cat output.quad
 	echo "---assembler---"
