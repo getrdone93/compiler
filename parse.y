@@ -861,6 +861,9 @@ int main( int ac, char *av[] )
 
     if ( ! err_count )
     {
+       //apply tree transformations
+      take_out_nodes(root);
+
       ofstream tree_file("tree.dat");
       dotit(root, 0, &tree_file);
 
@@ -869,9 +872,6 @@ int main( int ac, char *av[] )
       sym_table.push_back(global_scope);
       cout << "calling into sym table\n";
       symbol_table(root, &sym_table);
-
-      //apply tree transformations
-      take_out_nodes(root);
       
       cout << "calling make quads\n";
       ofstream quad_file("output.quad");
