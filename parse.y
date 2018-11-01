@@ -36,7 +36,7 @@ void detab( char *line );
 int yylex( void );
 void dumpit( parsetree *root, int level );
 void dotit( parsetree *root, int level, ofstream *out_file);
- void take_out_primary(parsetree *root);
+ void take_out_nodes(parsetree *root);
 extern "C" int yywrap( void );
 extern char *yytext; // In the scanner
 
@@ -860,7 +860,7 @@ int main( int ac, char *av[] )
     {
       
       ofstream tree_file("tree.dat");
-      take_out_primary(root);
+      take_out_nodes(root);
       dotit(root, 0, &tree_file);
 
       vector<map<string, id_attrs> > sym_table;
@@ -892,15 +892,15 @@ int main( int ac, char *av[] )
     
 }
 
-void take_out_primary(parsetree *root) {
+void take_out_nodes(parsetree *root) {
   parsetree *child;
   for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
     child = root -> children[i];
-    while (child -> type == node_primary_expression) {
+    while (child -> type == node_primary_expression || child -> type == node_expression_stmt) {
       child = child -> children[0];
     }
     root -> children[i] = child;
-    take_out_primary(child);
+    take_out_nodes(child);
   }
 }
 
