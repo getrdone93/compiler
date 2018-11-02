@@ -74,5 +74,7 @@ enum nodetype {
   node_LABEL,
   node_MOV,
   node_SWI,
+  node_POST_ADD,
+  node_POST_SUB,
   node_end_of_nodes
 };

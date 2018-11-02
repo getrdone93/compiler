@@ -74,6 +74,8 @@ const char *nodenames[] =
     "LOAD",
     "LABEL",
     "MOV",
-    "SWI"
+    "SWI",
+    "POST_ADD",
+    "POST_SUB"
   };
 

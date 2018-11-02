@@ -15,6 +15,16 @@ vector<arm_register> make_registers(int num_regs) {
   return res;
 }
 
+// list<quad> arm_negate(string in_reg, string ret_reg) {
+//   list<quad> res;
+//   res.push_back(two_arity_quad(node_FUNC_LABEL, "negate:"));
+//   res.push_back(three_arity_quad(node_CMP, in_reg, arm_small_constant("0")));
+//   res.push_back(three_arity_quad(node_MOV, ret_reg, arm_small_constant("0")));
+//   res.push_back(three_arity_quad(node_MOV_EQ, ret_reg, arm_small_constant("1")));
+//   res.push_back(two_arity_quad(node_BX, "LR"));
+//   return res;
+// }
+
 set<string> get_idents(list<quad> quads) {
   set<string> vars;
   for (list<quad>::iterator it = quads.begin(); it != quads.end(); it++) {
@@ -73,14 +83,16 @@ list<quad> stor(quad store, vector<arm_register> *regs, map<string, int> *fake_t
 
 list<quad> load(quad load, arm_register *value_reg, set<string> idents, map<string, int> *fake_to_real) {
   list<quad> res;
-  value_reg -> dt = DATA;
-  string reg = regify(value_reg -> number);
-  fake_to_real -> insert(pair<string, int>(load.dest, value_reg -> number));
-  if (contains(idents, load.opd1)) {
-    res.push_back(three_arity_quad(node_LOAD, reg, arm_constant(load.opd1)));
-    res.push_back(three_arity_quad(node_LOAD, reg, at_address(reg)));
-  } else {
-    res.push_back(three_arity_quad(node_LOAD, reg, arm_constant(load.opd1)));
+  if (load.dest.compare(load.opd1) != 0) {
+    value_reg -> dt = DATA;
+    string reg = regify(value_reg -> number);
+    fake_to_real -> insert(pair<string, int>(load.dest, value_reg -> number));
+    if (contains(idents, load.opd1)) {
+      res.push_back(three_arity_quad(node_LOAD, reg, arm_constant(load.opd1)));
+      res.push_back(three_arity_quad(node_LOAD, reg, at_address(reg)));
+    } else {
+      res.push_back(three_arity_quad(node_LOAD, reg, arm_constant(load.opd1)));
+    }
   }
   return res;
 }
@@ -100,14 +112,33 @@ vector<int> regs_with_dt(vector<arm_register> *regs, data_type filter) {
   return res;
 }
 
+nodetype post_to_regular(nodetype type) {
+  nodetype res;
+  switch(type) {
+  case node_POST_ADD:
+    res = node_ADD;
+    break;
+  case node_POST_SUB:
+    res = node_SUBTRACT;
+    break;
+  default:
+    res = type;
+    break;
+  }
+  return res;
+}
+
 list<quad> binary_operator(quad binary, arm_register *dest_reg, vector<arm_register> *regs, 
 			   map<string, int> *fake_to_real) {
-  //maybe check if find gets it
   int rr1 = fake_to_real -> find(binary.opd1) -> second;
   int rr2 = fake_to_real -> find(binary.opd2) -> second;
-  regs -> at(rr1).dt = NONE;
+  if (binary.type != node_POST_ADD && binary.type != node_POST_SUB) {
+    regs -> at(rr1).dt = NONE;
+  }
   regs -> at(rr2).dt = NONE;
-  fake_to_real -> erase(binary.opd1);
+  if (binary.type != node_POST_ADD && binary.type != node_POST_SUB) {
+    fake_to_real -> erase(binary.opd1);
+  }
   fake_to_real -> erase(binary.opd2);
   string opd1 = regify(rr1);
   string opd2 = regify(rr2);
@@ -117,7 +148,7 @@ list<quad> binary_operator(quad binary, arm_register *dest_reg, vector<arm_regis
   dest_reg -> dt = DATA;
   fake_to_real -> insert(pair<string, int>(binary.dest, dest_reg -> number));
   
-  res.push_back(four_arity_quad(binary.type, dr, opd1, opd2));
+  res.push_back(four_arity_quad(post_to_regular(binary.type), dr, opd1, opd2));
   return res;
 }
 
@@ -161,6 +192,8 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
 	res.insert(res.end(), la.begin(), la.end());
        }
 	break;
+    case node_POST_ADD:
+    case node_POST_SUB:
     case node_BITWISE_XOR:
     case node_BITWISE_AND:
     case node_BITWISE_OR:

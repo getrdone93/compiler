@@ -194,7 +194,7 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> post_pre_ops) {
     quad ll = load_leaf(leaf);
     res.push_back(ll);
     res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
-    res.push_back(four_arity_quad(op -> type == node_INC_OP ? node_ADD : node_SUBTRACT, 
+    res.push_back(four_arity_quad(op -> type == node_INC_OP ? node_POST_ADD : node_POST_SUB, 
 				  next_reg(), ll.dest, res.back().dest));
     res.push_back(three_arity_quad(node_STOR, leaf -> symbol_table_ptr -> id_name, res.back().dest));
     if (node -> type == node_postfix_expression) {
