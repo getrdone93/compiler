@@ -15,15 +15,15 @@ vector<arm_register> make_registers(int num_regs) {
   return res;
 }
 
-// list<quad> arm_negate(string in_reg, string ret_reg) {
-//   list<quad> res;
-//   res.push_back(two_arity_quad(node_FUNC_LABEL, "negate:"));
-//   res.push_back(three_arity_quad(node_CMP, in_reg, arm_small_constant("0")));
-//   res.push_back(three_arity_quad(node_MOV, ret_reg, arm_small_constant("0")));
-//   res.push_back(three_arity_quad(node_MOV_EQ, ret_reg, arm_small_constant("1")));
-//   res.push_back(two_arity_quad(node_BX, "LR"));
-//   return res;
-// }
+list<quad> arm_negate(string in_reg, string ret_reg) {
+  list<quad> res;
+  res.push_back(two_arity_quad(node_FUNC_LABEL, "negate:"));
+  res.push_back(three_arity_quad(node_CMP, in_reg, arm_small_constant("0")));
+  res.push_back(three_arity_quad(node_MOV, ret_reg, arm_small_constant("0")));
+  res.push_back(three_arity_quad(node_MOV_EQ, ret_reg, arm_small_constant("1")));
+  res.push_back(two_arity_quad(node_BX, "LR"));
+  return res;
+}
 
 set<string> get_idents(list<quad> quads) {
   set<string> vars;

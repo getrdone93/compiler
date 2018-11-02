@@ -76,6 +76,10 @@ const char *nodenames[] =
     "MOV",
     "SWI",
     "POST_ADD",
-    "POST_SUB"
+    "POST_SUB",
+    "FUNC_LABEL",
+    "CMP",
+    "MOVEQ",
+    "BX"
   };
 

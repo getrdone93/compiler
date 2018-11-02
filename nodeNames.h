@@ -76,5 +76,9 @@ enum nodetype {
   node_SWI,
   node_POST_ADD,
   node_POST_SUB,
+  node_FUNC_LABEL,
+  node_CMP,
+  node_MOV_EQ,
+  node_BX,
   node_end_of_nodes
 };
