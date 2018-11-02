@@ -15,16 +15,6 @@ vector<arm_register> make_registers(int num_regs) {
   return res;
 }
 
-list<quad> arm_negate(string in_reg, string ret_reg) {
-  list<quad> res;
-  res.push_back(two_arity_quad(node_FUNC_LABEL, "negate:"));
-  res.push_back(three_arity_quad(node_CMP, in_reg, arm_small_constant("0")));
-  res.push_back(three_arity_quad(node_MOV, ret_reg, arm_small_constant("0")));
-  res.push_back(three_arity_quad(node_MOV_EQ, ret_reg, arm_small_constant("1")));
-  res.push_back(two_arity_quad(node_BX, "LR"));
-  return res;
-}
-
 set<string> get_idents(list<quad> quads) {
   set<string> vars;
   for (list<quad>::iterator it = quads.begin(); it != quads.end(); it++) {
@@ -210,12 +200,36 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
       res.insert(res.end(), write_asm.begin(), write_asm.end());
     }
       break;
+    case node_NEGATE: {
+      
+    }
+      break;
       default:
 	cout << "dont have rule for nodetype: " << nodenames[cq.type] << "\n";
 	break;
     }
   }
-  //  cout << "res output.size " << res.size() << "\n";
+
+  list<quad> af = arm_funcs();
+  res.insert(res.end(), af.begin(), af.end());
+  return res;
+}
+
+list<quad> arm_funcs() {
+  list<quad> res;
+  list<quad> afn = arm_func_negate("R0", "R1");
+  res.insert(res.end(), afn.begin(), afn.end());
+  return res;
+}
+
+list<quad> arm_func_negate(string in_reg, string ret_reg) {
+  list<quad> res;
+  res.push_back(two_arity_quad(node_FUNC_LABEL, "negate:"));
+  res.push_back(three_arity_quad(node_CMP, in_reg, arm_small_constant("0")));
+  res.push_back(three_arity_quad(node_MOV, ret_reg, arm_small_constant("0")));
+  res.push_back(three_arity_quad(node_MOV_EQ, ret_reg, arm_small_constant("1")));
+  res.push_back(two_arity_quad(node_BX, "LR"));
+  res.push_back(two_arity_quad(node_FUNC_LABEL, ".end"));
   return res;
 }
 

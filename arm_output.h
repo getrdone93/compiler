@@ -26,7 +26,8 @@ struct arm_register {
   int number;
 };
 
-list<quad> arm_negate(string in_reg, string ret_reg);
+list<quad> arm_funcs();
+list<quad> arm_func_negate(string in_reg, string ret_reg);
 nodetype post_to_regular(nodetype type);
 string nt_to_arm(nodetype t);
 list<quad> binary_operator(quad binary, arm_register *dest_reg, vector<arm_register> *regs, 
