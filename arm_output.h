@@ -26,6 +26,13 @@ struct arm_register {
   int number;
 };
 
+pair<string, int> pair_exists(int real_reg, map<string, int> *fake_to_real);
+bool pair_exists(string fake_reg, map<string, int> *fake_to_real);
+quad move_to_first_unused(pair<string, int> from, vector<arm_register> *regs, map<string, int> *fake_to_real);
+quad move_to(pair<string, int> from, pair<string, int> to, vector<arm_register> *regs, map<string, int> *fake_to_real);
+bool pair_exists(string fake_reg, map<string, int> *fake_to_real);
+void reg_pair(pair<string, int> reg,  data_type type, vector<arm_register> *regs, map<string, int> *fake_to_real);
+void free_pair(pair<string, int> free, vector<arm_register> *regs, map<string, int> *fake_to_real);
 list<quad> arm_func_sdiv();
 list<quad> handle_negate(quad negate, vector<arm_register> *regs, map<string, int> *fake_to_real);
 list<quad> arm_funcs();

@@ -201,6 +201,10 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
       res.insert(res.end(), bin_asm.begin(), bin_asm.end());
     }
       break;
+    case node_DIVIDE: {
+      
+    }
+      break;
     case node_WRITE: {
       list<quad> write_asm = write_to_quads(cq, regs, idents, &fake_to_real);
       res.insert(res.end(), write_asm.begin(), write_asm.end());
@@ -223,20 +227,73 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
   return res;
 }
 
+void free_pair(pair<string, int> free, vector<arm_register> *regs, map<string, int> *fake_to_real) {
+  if (pair_exists(free.first, fake_to_real)) {
+    arm_register *f = &(regs -> at(free.second));
+    f -> dt = NONE;
+    fake_to_real -> erase(free.first);
+  } else {
+    cout << "WARN " << __FUNCTION__ << " free is not in map\n";
+  }
+}
+
+pair<string, int> pair_exists(int real_reg, map<string, int> *fake_to_real) {
+  pair<string, int> res;
+  res.first = "not_found";
+  res.second = -1;
+  for (map<string, int>::iterator entry = fake_to_real -> begin(); entry != fake_to_real -> end(); entry++) {
+    if (entry -> second == real_reg) {
+      res.first = entry -> first;
+      res.second = entry -> second;
+      break;
+    }
+  }
+
+  return res;
+}
+
+bool pair_exists(string fake_reg, map<string, int> *fake_to_real) {
+  return fake_to_real -> find(fake_reg) != fake_to_real -> end();
+}
+
+void reg_pair(pair<string, int> reg,  data_type type, vector<arm_register> *regs, map<string, int> *fake_to_real) {
+  if (pair_exists(reg.first, fake_to_real)) {
+    cout << "WARN " << __FUNCTION__ << " reg is in map\n";
+  } else {
+    arm_register *t = &(regs -> at(reg.second));
+    t -> dt = type;
+    fake_to_real -> insert(reg);
+  }
+}
+
+quad move_to_first_unused(pair<string, int> from, vector<arm_register> *regs, map<string, int> *fake_to_real) {
+  int fr = regs_with_dt(regs, NONE).front();
+  pair<string, int> to = pair<string, int>(from.first, fr);
+  return move_to(from, to, regs, fake_to_real);
+}
+
+quad move_to(pair<string, int> from, pair<string, int> to, vector<arm_register> *regs, map<string, int> *fake_to_real) {
+  free_pair(from, regs, fake_to_real);
+  reg_pair(to, DATA, regs, fake_to_real);
+  return three_arity_quad(node_MOV, regify(to.second), regify(from.second));
+}
+
 list<quad> handle_negate(quad negate, vector<arm_register> *regs, map<string, int> *fake_to_real) {
   list<quad> res;
   if (fake_to_real -> find(negate.opd1) == fake_to_real -> end()) {
     cout << "ERROR: " << __FUNCTION__ << " opd1 was not in map\n";
   } else {
-    fake_to_real -> erase(negate.opd1);
-    fake_to_real -> erase(negate.dest);
-    fake_to_real -> insert(pair<string, int>(negate.opd1, 0));
-    fake_to_real -> insert(pair<string, int>(negate.dest, 1));
-    arm_register *input = &(regs -> at(0));
-    input -> dt = DATA;
-
-    arm_register *output = &(regs -> at(1));
-    output -> dt = DATA;
+    pair<string, int> r0 = pair_exists(0, fake_to_real);
+    if (r0.second != -1) {
+      move_to_first_unused(r0, regs, fake_to_real);
+    }
+    pair<string, int> r1 = pair_exists(1, fake_to_real);
+    if (r1.second != -1) {
+      move_to_first_unused(r1, regs, fake_to_real);
+    }
+ 
+    reg_pair(pair<string, int>(negate.opd1, 0), DATA, regs, fake_to_real);
+    reg_pair(pair<string, int>(negate.dest, 1), DATA, regs, fake_to_real);
 
     res.push_back(two_arity_quad(node_BL, "negate"));
   }
