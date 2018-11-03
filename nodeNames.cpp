@@ -69,9 +69,9 @@ const char *nodenames[] =
     "identifier_list",
     "postfix_expression",
     "int_ident",
-    "STOR",
+    "STR",
     "ERROR",
-    "LOAD",
+    "LDR",
     "LABEL",
     "MOV",
     "SWI",
@@ -81,6 +81,7 @@ const char *nodenames[] =
     "CMP",
     "MOVEQ",
     "BX",
-    "BL"
+    "BL",
+    "LR"
   };
 

@@ -81,5 +81,6 @@ enum nodetype {
   node_MOV_EQ,
   node_BX,
   node_BL,
+  node_LR,
   node_end_of_nodes
 };

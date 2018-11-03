@@ -206,23 +206,46 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
       res.insert(res.end(), write_asm.begin(), write_asm.end());
     }
       break;
+    case node_NEGATE: {
+      list<quad> negate = handle_negate(cq, regs, &fake_to_real);
+      res.insert(res.end(), negate.begin(), negate.end());
+    }
+	break;
       default:
   	cout << "dont have rule for nodetype: " << nodenames[cq.type] << "\n";
   	break;
     }
   }
 
-  // cout << "here then\n";
-  // list<quad> af = arm_funcs();
-  // cout << "hither\n";
-  // res.insert(res.end(), af.begin(), af.end());
-  // cout << "dither\n";
+  list<quad> af = arm_funcs();
+  res.insert(res.end(), af.begin(), af.end());
+  return res;
+}
+
+list<quad> handle_negate(quad negate, vector<arm_register> *regs, map<string, int> *fake_to_real) {
+  list<quad> res;
+  if (fake_to_real -> find(negate.opd1) == fake_to_real -> end()) {
+    cout << "ERROR: " << __FUNCTION__ << " opd1 was not in map\n";
+  } else {
+    fake_to_real -> erase(negate.opd1);
+    fake_to_real -> erase(negate.dest);
+    fake_to_real -> insert(pair<string, int>(negate.opd1, 0));
+    fake_to_real -> insert(pair<string, int>(negate.dest, 1));
+    arm_register *input = &(regs -> at(0));
+    input -> dt = DATA;
+
+    arm_register *output = &(regs -> at(1));
+    output -> dt = DATA;
+
+    res.push_back(two_arity_quad(node_BL, "negate"));
+  }
   return res;
 }
 
 list<quad> arm_funcs() {
   list<quad> res;
   list<quad> afn = arm_func_negate("R0", "R1");
+  afn.push_front(two_arity_quad(node_FUNC_LABEL, ""));
   res.insert(res.end(), afn.begin(), afn.end());
   return res;
 }
@@ -233,7 +256,7 @@ list<quad> arm_func_negate(string in_reg, string ret_reg) {
   res.push_back(three_arity_quad(node_CMP, in_reg, arm_small_constant("0")));
   res.push_back(three_arity_quad(node_MOV, ret_reg, arm_small_constant("0")));
   res.push_back(three_arity_quad(node_MOV_EQ, ret_reg, arm_small_constant("1")));
-  res.push_back(two_arity_quad(node_BX, nodenames[node_BL]));
+  res.push_back(two_arity_quad(node_BX, nodenames[node_LR]));
   res.push_back(two_arity_quad(node_FUNC_LABEL, ".end"));
   return res;
 }
@@ -249,12 +272,6 @@ list<string> asm_quads_to_asm(list<quad> asm_quads) {
 string quad_to_arm(quad q) {
   string res;
   switch (q.type) {
-    case node_LOAD:
-      res = three_arity(LOAD, q.dest, q.opd1);
-      break;
-    case node_STOR:
-      res = three_arity(STOR, q.dest, q.opd1);
-      break;
     case node_LABEL:
       res = three_arity_nc(q.dest, q.opd1, q.opd2);
       break;
@@ -266,11 +283,20 @@ string quad_to_arm(quad q) {
     case node_SUBTRACT:
       res = four_arity(nt_to_arm(q.type), q.dest, q.opd1, q.opd2);
       break;
+    case node_BL:
+    case node_BX: 
     case node_SWI:
-      res = two_arity(nodenames[node_SWI], q.dest);
+      res = two_arity(nodenames[q.type], q.dest);
       break;
+    case node_STOR: 
+    case node_LOAD:
+    case node_MOV_EQ:  
+    case node_CMP:
     case node_MOV:
-      res = three_arity(nodenames[node_MOV], q.dest, q.opd1);
+      res = three_arity(nodenames[q.type], q.dest, q.opd1);
+      break;
+    case node_FUNC_LABEL:
+      res = two_arity(q.dest, "");
       break;
     default:
       res = "default";
