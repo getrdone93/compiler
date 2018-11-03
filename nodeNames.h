@@ -90,5 +90,7 @@ enum nodetype {
   node_ADC,
   node_BHS,
   node_LDM_FD,
+  node_CMP_4,
+  node_MOV_4,
   node_end_of_nodes
 };

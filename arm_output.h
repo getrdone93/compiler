@@ -26,6 +26,7 @@ struct arm_register {
   int number;
 };
 
+list<quad> arm_func_sdiv();
 list<quad> handle_negate(quad negate, vector<arm_register> *regs, map<string, int> *fake_to_real);
 list<quad> arm_funcs();
 list<quad> arm_func_negate(string in_reg, string ret_reg);

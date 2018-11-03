@@ -90,6 +90,8 @@ const char *nodenames[] =
     "SUBCS",
     "ADC",
     "BHS",
-    "LDMFD"
+    "LDMFD",
+    "CMP",
+    "MOV"
   };
 
