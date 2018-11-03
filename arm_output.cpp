@@ -284,17 +284,17 @@ list<quad> handle_negate(quad negate, vector<arm_register> *regs, map<string, in
     cout << "ERROR: " << __FUNCTION__ << " opd1 was not in map\n";
   } else {
     pair<string, int> r0 = pair_exists(0, fake_to_real);
-    if (r0.second != -1) {
-      move_to_first_unused(r0, regs, fake_to_real);
+    if (r0.second != -1 && r0.first.compare(negate.opd1) != 0) {
+      res.push_back(move_to_first_unused(r0, regs, fake_to_real));
     }
-    pair<string, int> r1 = pair_exists(1, fake_to_real);
-    if (r1.second != -1) {
-      move_to_first_unused(r1, regs, fake_to_real);
-    }
- 
-    reg_pair(pair<string, int>(negate.opd1, 0), DATA, regs, fake_to_real);
-    reg_pair(pair<string, int>(negate.dest, 1), DATA, regs, fake_to_real);
 
+    pair<string, int> r1 = pair_exists(1, fake_to_real);
+    if (r1.second != -1 && r1.first.compare(negate.dest) != 0) {
+      res.push_back(move_to_first_unused(r1, regs, fake_to_real));
+    }
+
+    reg_pair(pair<string, int>(negate.opd1, 0), DATA, regs, fake_to_real);
+    reg_pair(pair<string, int>(negate.dest, 1), DATA, regs, fake_to_real); 
     res.push_back(two_arity_quad(node_BL, "negate"));
   }
   return res;
