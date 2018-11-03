@@ -80,6 +80,7 @@ const char *nodenames[] =
     "FUNC_LABEL",
     "CMP",
     "MOVEQ",
-    "BX"
+    "BX",
+    "BL"
   };
 

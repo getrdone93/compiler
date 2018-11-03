@@ -48,7 +48,14 @@ list<quad> stor(quad store, vector<arm_register> *regs, map<string, int> *fake_t
   address_reg -> dt = MEM_ADD;
   string add_reg = regify(address_reg -> number);
   if (boost::starts_with(store.opd1, "R")) {
-    int vr = fake_to_real -> find(store.opd1) -> second;
+    int vr = -1;
+    if (fake_to_real -> find(store.opd1) == fake_to_real -> end()) {
+      cout << "ERROR: tried looking this up and got nothing back: " << store.opd1 << "\n";
+      list<quad> err;
+      return err;
+    } else {
+      vr = fake_to_real -> find(store.opd1) -> second;
+    }
     arm_register *rv_reg = &(regs -> at(vr));
     string value_reg = regify(rv_reg -> number);
     res.push_back(three_arity_quad(node_LOAD, add_reg, arm_constant(store.dest)));
@@ -160,7 +167,6 @@ list<quad> write_to_quads(quad write, vector<arm_register> *regs, set<string> id
 }
 
 list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
-  //cout << "quads.size() " << quads.size() << "\n";
   list<quad> res;
   map<string, int> fake_to_real;
   set<string> idents = get_idents(quads);
@@ -169,19 +175,19 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
 
   for (list<quad>::iterator it = quads.begin(); it != quads.end(); it++) {
     quad cq = *it;
+    cout << "on this quad: " << quad_to_string(cq);
     switch(cq.type) {
         case node_STOR: {
-	  vector<int> free_regs = regs_with_dt(regs, NONE);
-	  list<quad> stor_asm = stor(cq, regs, &fake_to_real);
-	  res.insert(res.end(), stor_asm.begin(), stor_asm.end());
-	}
-	 break;
+  	  list<quad> stor_asm = stor(cq, regs, &fake_to_real);
+  	  res.insert(res.end(), stor_asm.begin(), stor_asm.end());
+  	}
+  	 break;
        case node_LOAD: {
-	int fr = regs_with_dt(regs, NONE).at(0);
-	list<quad> la = load(cq, &(regs -> at(fr)), idents, &fake_to_real);
-	res.insert(res.end(), la.begin(), la.end());
+  	int fr = regs_with_dt(regs, NONE).at(0);
+  	list<quad> la = load(cq, &(regs -> at(fr)), idents, &fake_to_real);
+  	res.insert(res.end(), la.begin(), la.end());
        }
-	break;
+  	break;
     case node_POST_ADD:
     case node_POST_SUB:
     case node_BITWISE_XOR:
@@ -200,18 +206,17 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
       res.insert(res.end(), write_asm.begin(), write_asm.end());
     }
       break;
-    case node_NEGATE: {
-      
-    }
-      break;
       default:
-	cout << "dont have rule for nodetype: " << nodenames[cq.type] << "\n";
-	break;
+  	cout << "dont have rule for nodetype: " << nodenames[cq.type] << "\n";
+  	break;
     }
   }
 
-  list<quad> af = arm_funcs();
-  res.insert(res.end(), af.begin(), af.end());
+  // cout << "here then\n";
+  // list<quad> af = arm_funcs();
+  // cout << "hither\n";
+  // res.insert(res.end(), af.begin(), af.end());
+  // cout << "dither\n";
   return res;
 }
 
@@ -228,7 +233,7 @@ list<quad> arm_func_negate(string in_reg, string ret_reg) {
   res.push_back(three_arity_quad(node_CMP, in_reg, arm_small_constant("0")));
   res.push_back(three_arity_quad(node_MOV, ret_reg, arm_small_constant("0")));
   res.push_back(three_arity_quad(node_MOV_EQ, ret_reg, arm_small_constant("1")));
-  res.push_back(two_arity_quad(node_BX, "LR"));
+  res.push_back(two_arity_quad(node_BX, nodenames[node_BL]));
   res.push_back(two_arity_quad(node_FUNC_LABEL, ".end"));
   return res;
 }

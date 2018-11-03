@@ -80,5 +80,6 @@ enum nodetype {
   node_CMP,
   node_MOV_EQ,
   node_BX,
+  node_BL,
   node_end_of_nodes
 };
