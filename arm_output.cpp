@@ -152,16 +152,16 @@ list<quad> binary_operator(quad binary, arm_register *dest_reg, vector<arm_regis
 list<quad> write_to_quads(quad write, vector<arm_register> *regs, set<string> idents, map<string, int> *fake_to_real) {
   list<quad> res;
   arm_register *r1 = &(regs -> at(1));
-  if (r1 -> dt == NONE && r1 -> dt == NONE) {
+  //  if (r1 -> dt == NONE && r1 -> dt == NONE) {
     quad la = {node_LOAD, regify(1), write.dest};
     list<quad> load_asm = load(la, r1, idents, fake_to_real);
     res.insert(res.end(), load_asm.begin(), load_asm.end());
     res.push_back(three_arity_quad(node_MOV, regify(0), arm_small_constant("1")));
     res.push_back(two_arity_quad(node_SWI, SEEK));
     res.push_back(two_arity_quad(node_SWI, HALT));
-  } else {
-    cout << "r1 or r0 is being used. Need to save their values\n";
-  }
+  // } else {
+  //   cout << "r1 or r0 is being used. Need to save their values\n";
+  // }
 
   return res;
 }
@@ -202,7 +202,8 @@ list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
     }
       break;
     case node_DIVIDE: {
-      
+      list<quad> div = handle_divide(cq, regs, &fake_to_real);
+      res.insert(res.end(), div.begin(), div.end());
     }
       break;
     case node_WRITE: {
@@ -276,6 +277,30 @@ quad move_to(pair<string, int> from, pair<string, int> to, vector<arm_register> 
   free_pair(from, regs, fake_to_real);
   reg_pair(to, DATA, regs, fake_to_real);
   return three_arity_quad(node_MOV, regify(to.second), regify(from.second));
+}
+
+list<quad> handle_divide(quad div, vector<arm_register> *regs, map<string, int> *fake_to_real) {
+  list<quad> res;
+  if (pair_exists(div.opd1, fake_to_real) && pair_exists(div.opd2, fake_to_real)) {
+    pair<string, int> r0 = pair_exists(0, fake_to_real);
+    if (r0.second != -1 && r0.first.compare(div.opd1) != 0) {
+      res.push_back(move_to_first_unused(r0, regs, fake_to_real));
+    }
+
+    pair<string, int> r1 = pair_exists(1, fake_to_real);
+    if (r1.second != -1 && r1.first.compare(div.opd2) != 0) {
+      res.push_back(move_to_first_unused(r1, regs, fake_to_real));
+    }    
+
+    reg_pair(pair<string, int>(div.opd1, 0), DATA, regs, fake_to_real);
+    reg_pair(pair<string, int>(div.opd2, 1), DATA, regs, fake_to_real); 
+    reg_pair(pair<string, int>(div.dest, 0), DATA, regs, fake_to_real); 
+    res.push_back(two_arity_quad(node_BL, "sdiv"));
+  } else {
+    cout << "ERROR: " << __FUNCTION__ << " op(s) were stored properly\n";
+  }
+
+  return res;
 }
 
 list<quad> handle_negate(quad negate, vector<arm_register> *regs, map<string, int> *fake_to_real) {
