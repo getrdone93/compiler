@@ -82,5 +82,13 @@ enum nodetype {
   node_BX,
   node_BL,
   node_LR,
+  node_STM_FD,
+  node_RSBLT,
+  node_MOVLS,
+  node_BLS,
+  node_SUBCS,
+  node_ADC,
+  node_BHS,
+  node_LDM_FD,
   node_end_of_nodes
 };

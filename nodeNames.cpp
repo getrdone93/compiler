@@ -82,6 +82,14 @@ const char *nodenames[] =
     "MOVEQ",
     "BX",
     "BL",
-    "LR"
+    "LR",
+    "STMFD",
+    "RSBLT",
+    "MOVLS",
+    "BLS",
+    "SUBCS",
+    "ADC",
+    "BHS",
+    "LDMFD"
   };
 

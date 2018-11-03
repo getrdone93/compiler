@@ -244,14 +244,53 @@ list<quad> handle_negate(quad negate, vector<arm_register> *regs, map<string, in
 
 list<quad> arm_funcs() {
   list<quad> res;
-  list<quad> afn = arm_func_negate("R0", "R1");
-  afn.push_front(two_arity_quad(node_FUNC_LABEL, ""));
+  list<quad> afn = arm_func_negate(regify(0), regify(1));
   res.insert(res.end(), afn.begin(), afn.end());
+  return res;
+}
+
+list<quad> arm_func_sdiv() {
+  list<quad> res;
+  res.push_back(two_arity_quad(node_FUNC_LABEL, ""));
+  res.push_back(two_arity_quad(node_FUNC_LABEL, "sdiv:"));
+  res.push_back(three_arity_quad(node_STM_FD, "sp!", "{r2-r5}"));
+  res.push_back(three_arity_quad(node_MOV, regify(4), regify(0)));
+  res.push_back(four_arity_quad(node_MULT, regify(5), regify(0), regify(1)));
+  res.push_back(three_arity_quad(node_CMP, regify(0), arm_small_constant("0")));
+  res.push_back(four_arity_quad(node_RSBLT, regify(0), regify(0), arm_small_constant("0")));
+  res.push_back(three_arity_quad(node_CMP, regify(1), arm_small_constant("0")));
+  res.push_back(four_arity_quad(node_RSBLT, regify(1), regify(1), arm_small_constant("0")));
+  res.push_back(three_arity_quad(node_MOV, regify(3), regify(1)));
+  res.push_back(four_arity_quad(node_CMP, regify(3), regify(0), "lsr #1"));
+
+  res.push_back(two_arity_quad(node_FUNC_LABEL, ".Div1:"));
+  res.push_back(four_arity_quad(node_MOVLS, regify(3), regify(3), "lsl #1"));
+  res.push_back(four_arity_quad(node_CMP, regify(3), regify(0), "lsr #1"));
+  res.push_back(two_arity_quad(node_BLS, ".Div1"));
+  res.push_back(three_arity_quad(node_MOV, regify(2), arm_small_constant("0")));
+
+  res.push_back(two_arity_quad(node_FUNC_LABEL, ".Div2:"));
+  res.push_back(three_arity_quad(node_CMP, regify(0), regify(3)));
+  res.push_back(four_arity_quad(node_SUBCS, regify(0), regify(0), regify(3)));
+  res.push_back(four_arity_quad(node_ADC, regify(2), regify(2), regify(2)));
+  res.push_back(four_arity_quad(node_MOV, regify(3), regify(3), "lsr #1"));
+  res.push_back(three_arity_quad(node_CMP, regify(3), regify(1)));
+  res.push_back(two_arity_quad(node_BHS, ".Div2"));
+  res.push_back(three_arity_quad(node_CMP, regify(5), arm_small_constant("0")));
+  res.push_back(four_arity_quad(node_RSBLT, regify(2), regify(2), arm_small_constant("0")));
+  res.push_back(three_arity_quad(node_CMP, regify(4), arm_small_constant("0")));
+  res.push_back(four_arity_quad(node_RSBLT, regify(0), regify(0), arm_small_constant("0")));
+  res.push_back(three_arity_quad(node_MOV, regify(1), regify(0)));
+  res.push_back(three_arity_quad(node_MOV, regify(0), regify(2)));
+  res.push_back(three_arity_quad(node_LDM_FD, "sp!", "{r2-r5}"));
+  res.push_back(two_arity_quad(node_BX, regify(14)));
+  res.push_back(two_arity_quad(node_FUNC_LABEL, ".end"));
   return res;
 }
 
 list<quad> arm_func_negate(string in_reg, string ret_reg) {
   list<quad> res;
+  res.push_back(two_arity_quad(node_FUNC_LABEL, ""));
   res.push_back(two_arity_quad(node_FUNC_LABEL, "negate:"));
   res.push_back(three_arity_quad(node_CMP, in_reg, arm_small_constant("0")));
   res.push_back(three_arity_quad(node_MOV, ret_reg, arm_small_constant("0")));
