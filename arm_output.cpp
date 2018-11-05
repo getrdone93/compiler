@@ -15,17 +15,6 @@ vector<arm_register> make_registers(int num_regs) {
   return res;
 }
 
-set<string> get_idents(list<quad> quads) {
-  set<string> vars;
-  for (list<quad>::iterator it = quads.begin(); it != quads.end(); it++) {
-    quad q = *it;
-    if (q.type == node_STOR) {
-      vars.insert(q.dest);
-    }
-  }
-  return vars;
-}
-
 list<quad> declare_idents(set<string> idents) {
   list<quad> decs;
   for (set<string>::iterator it = idents.begin(); it != idents.end(); it++) {
@@ -36,9 +25,9 @@ list<quad> declare_idents(set<string> idents) {
   return decs;
 }
 
-list<quad> quads_to_asm(list<quad> quads) {
+list<quad> quads_to_asm(list<quad> quads, set<string> idents) {
   vector<arm_register> arms = make_registers(11);
-  return quads_to_asm(quads, &arms);
+  return quads_to_asm(quads, idents, &arms);
 }
 
 list<quad> stor(quad store, vector<arm_register> *regs, map<string, int> *fake_to_real) {
@@ -166,10 +155,9 @@ list<quad> write_to_quads(quad write, vector<arm_register> *regs, set<string> id
   return res;
 }
 
-list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs) {
+list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_register> *regs) {
   list<quad> res;
   map<string, int> fake_to_real;
-  set<string> idents = get_idents(quads);
   list<quad> decs = declare_idents(idents);
   res.insert(res.end(), decs.begin(), decs.end());
 

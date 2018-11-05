@@ -880,8 +880,10 @@ int main( int ac, char *av[] )
       quad_file << quad_list_to_str(quads);
 
       cout << "calling process quads\n";
+      set<string> begin;
+      set<string> ids = get_identifiers(root, begin);
       ofstream asm_file("program.s");
-      list<quad> assembler = quads_to_asm(quads);
+      list<quad> assembler = quads_to_asm(quads, ids);
       list<string> asm_out = asm_quads_to_asm(assembler);
       asm_file << list_to_string(asm_out);
 

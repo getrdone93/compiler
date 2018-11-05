@@ -22,6 +22,7 @@
 
 using namespace std;
 
+set<string> get_identifiers(parsetree *root, set<string> res);
 list<quad> unary_minus(parsetree *node, set<nodetype> unaries);
 list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> post_pre_ops);
 set<nodetype> post_pre_ops();

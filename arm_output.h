@@ -57,12 +57,11 @@ list<quad> stor(quad store, vector<arm_register> *regs, map<string, int> *fake_t
 string three_arity_nc(string op, string dest, string opd1);
 string make_label(string id);
 list<quad> declare_idents(set<string> idents);
-set<string> get_idents(list<quad> quads);
 string four_arity(string op, string dest, string opd1, string opd2);
 string three_arity(string op, string dest, string opd1);
 string two_arity(string op, string dest);
 string arm_constant(string val);
 string arm_small_constant(string val);
-list<quad> quads_to_asm(list<quad> quads);
-list<quad> quads_to_asm(list<quad> quads, vector<arm_register> *regs);
+list<quad> quads_to_asm(list<quad> quads, set<string> idents);
+list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_register> *regs);
 vector<arm_register> make_registers(int num_regs);

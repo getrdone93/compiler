@@ -235,6 +235,19 @@ list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nod
   }
 }
 
+set<string> get_identifiers(parsetree *root, set<string> res) {
+  if (root -> type == node_IDENTIFIER && root -> symbol_table_ptr != NULL) {
+    res.insert(root -> symbol_table_ptr -> id_name);
+    return res;
+  } else {
+    for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+      set<string> ret = get_identifiers(root -> children[i], res);
+      res.insert(ret.begin(), ret.end());
+    }
+    return res;
+  }
+}
+
 list<quad> make_quads(parsetree *root, list<quad> res) {
   set<nodetype> expr_types = set_expression_types();
   set<nodetype> ge = set_ground_exp();
