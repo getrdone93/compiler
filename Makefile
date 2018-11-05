@@ -124,13 +124,13 @@ test :	parse
 	# cat program.s
 	# ./makeTree.sh
 
-	echo "\na_test9.c"
-	-./parse testFiles/input_progs/a_test9.c- > /dev/null
-		cat testFiles/input_progs/a_test9.c-
-	cat output.quad
-	echo "---assembler---"
-	cat program.s
-	./makeTree.sh
+	# echo "\na_test9.c"
+	# -./parse testFiles/input_progs/a_test9.c- > /dev/null
+	# 	cat testFiles/input_progs/a_test9.c-
+	# cat output.quad
+	# echo "---assembler---"
+	# cat program.s
+	# ./makeTree.sh
 
 	# echo "\na_test10.c"
 	# -./parse testFiles/input_progs/a_test10.c-
@@ -140,6 +140,16 @@ test :	parse
 	# echo "---assembler---"
 	# cat program.s
 	# ./makeTree.sh
+
+	echo "\na_test11.c"
+	-./parse testFiles/input_progs/a_test11.c-
+	cat testFiles/input_progs/a_test11.c-
+	cat output.quad
+	./makeTree.sh
+	echo "---assembler---"
+	cat program.s
+	./makeTree.sh
+
 
 
 
