@@ -26,6 +26,8 @@ struct arm_register {
   int number;
 };
 
+list<quad> call_divide(quad div, int dest_reg, vector<arm_register> *regs, map<string, int> *fake_to_real);
+list<quad> handle_mod(quad div, vector<arm_register> *regs, map<string, int> *fake_to_real);
 list<quad> handle_divide(quad div, vector<arm_register> *regs, map<string, int> *fake_to_real);
 pair<string, int> pair_exists(int real_reg, map<string, int> *fake_to_real);
 bool pair_exists(string fake_reg, map<string, int> *fake_to_real);
