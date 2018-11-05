@@ -1,4 +1,5 @@
 #include "quad_gen.h"
+#include <boost/algorithm/string/predicate.hpp>
 
 string next_reg() {
   static int reg_seq = 0;
@@ -155,7 +156,13 @@ list<quad> handle_assignment(parsetree *root, set<nodetype> exp_types, set<nodet
   parsetree *rc = root -> children[2];
   list<quad> right_side = nested_expression(rc, exp_types, ge);
   res.insert(res.end(), right_side.begin(), right_side.end());
-  res.push_back(three_arity_quad(node_STOR, lc -> symbol_table_ptr -> id_name, right_side.back().dest));
+  string last_loc = right_side.back().dest;
+  if (boost::starts_with(last_loc, "R")) {
+    res.push_back(three_arity_quad(node_STOR, lc -> symbol_table_ptr -> id_name, last_loc));
+  } else {
+    res.push_back(three_arity_quad(node_LOAD, next_reg(), last_loc));
+    res.push_back(three_arity_quad(node_STOR, lc -> symbol_table_ptr -> id_name, res.back().dest));
+  }
   return res;
 }
 
