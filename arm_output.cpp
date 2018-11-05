@@ -282,15 +282,7 @@ quad move_to(pair<string, int> from, pair<string, int> to, vector<arm_register> 
 list<quad> handle_divide(quad div, vector<arm_register> *regs, map<string, int> *fake_to_real) {
   list<quad> res;
   if (pair_exists(div.opd1, fake_to_real) && pair_exists(div.opd2, fake_to_real)) {
-    pair<string, int> r0 = pair_exists(0, fake_to_real);
-    if (r0.second != -1 && r0.first.compare(div.opd1) != 0) {
-      res.push_back(move_to_first_unused(r0, regs, fake_to_real));
-    }
-
-    pair<string, int> r1 = pair_exists(1, fake_to_real);
-    if (r1.second != -1 && r1.first.compare(div.opd2) != 0) {
-      res.push_back(move_to_first_unused(r1, regs, fake_to_real));
-    }    
+    //need to account for operands not being in r0 and r1
 
     reg_pair(pair<string, int>(div.opd1, 0), DATA, regs, fake_to_real);
     reg_pair(pair<string, int>(div.opd2, 1), DATA, regs, fake_to_real); 
@@ -308,15 +300,7 @@ list<quad> handle_negate(quad negate, vector<arm_register> *regs, map<string, in
   if (fake_to_real -> find(negate.opd1) == fake_to_real -> end()) {
     cout << "ERROR: " << __FUNCTION__ << " opd1 was not in map\n";
   } else {
-    pair<string, int> r0 = pair_exists(0, fake_to_real);
-    if (r0.second != -1 && r0.first.compare(negate.opd1) != 0) {
-      res.push_back(move_to_first_unused(r0, regs, fake_to_real));
-    }
-
-    pair<string, int> r1 = pair_exists(1, fake_to_real);
-    if (r1.second != -1 && r1.first.compare(negate.dest) != 0) {
-      res.push_back(move_to_first_unused(r1, regs, fake_to_real));
-    }
+    //need to account for operands not being in r0 and r1
 
     reg_pair(pair<string, int>(negate.opd1, 0), DATA, regs, fake_to_real);
     reg_pair(pair<string, int>(negate.dest, 1), DATA, regs, fake_to_real); 
