@@ -287,16 +287,62 @@ quad move_to(pair<string, int> from, pair<string, int> to, vector<arm_register> 
 list<quad> call_divide(quad div, int dest_reg, vector<arm_register> *regs, map<string, int> *fake_to_real) {
   list<quad> res;
   if (pair_exists(div.opd1, fake_to_real) && pair_exists(div.opd2, fake_to_real)) {
-    //need to account for operands not being in r0 and r1
+    list<quad> opd1_prep = prepare_operand(div.opd1, 0, regs, fake_to_real);
+    res.insert(res.end(), opd1_prep.begin(), opd1_prep.end());
 
-    reg_pair(pair<string, int>(div.opd1, 0), DATA, regs, fake_to_real);
-    reg_pair(pair<string, int>(div.opd2, 1), DATA, regs, fake_to_real); 
-    reg_pair(pair<string, int>(div.dest, dest_reg), DATA, regs, fake_to_real); 
+    list<quad> opd2_prep = prepare_operand(div.opd2, 1, regs, fake_to_real);
+    res.insert(res.end(), opd2_prep.begin(), opd2_prep.end());
+
+    list<quad> dest_prep = prepare_dest(div.dest, dest_reg, regs, fake_to_real);
+    res.insert(res.end(), dest_prep.begin(), dest_prep.end());
+
     res.push_back(two_arity_quad(node_BL, "sdiv"));
   } else {
     cout << "ERROR: " << __FUNCTION__ << " op(s) were stored properly\n";
   }
 
+  return res;
+}
+
+list<quad> prepare_operand(string fake_reg, int dest_real, vector<arm_register> *regs, map<string, int> *fake_to_real) {
+  list<quad> res;
+  if (pair_exists(fake_reg, fake_to_real)) {
+    pair<string, int> func_opd = pair<string, int>(fake_reg, fake_to_real -> find(fake_reg) -> second);
+    pair<string, int> curr_reg = pair_exists(dest_real, fake_to_real);
+    if (curr_reg.second == -1) {
+      //nothing is in desired register
+      pair<string, int> to_pair = pair<string, int>(func_opd.first, dest_real);
+      res.push_back(move_to(func_opd, to_pair, regs, fake_to_real));
+    } else {
+      //something is in desired register
+      if (func_opd.second == curr_reg.second) {
+	//do nothing becase function operand is in desired register
+      } else {
+	//move whatever is in desired register away and operand into desired register
+	res.push_back(move_to_first_unused(curr_reg, regs, fake_to_real));
+	pair<string, int> to_pair = pair<string, int>(func_opd.first, 0);
+	res.push_back(move_to(func_opd, to_pair, regs, fake_to_real));
+      }
+    }
+  } else {
+    cout << __FUNCTION__ << " has no effect because fake_reg " << fake_reg << " has no mapping\n";
+  }
+
+  return res;
+}
+
+list<quad> prepare_dest(string fake_reg, int dest_real, vector<arm_register> *regs, map<string, int> *fake_to_real) {
+  list<quad> res;
+  pair<string, int> dest_pair = pair_exists(dest_real, fake_to_real);
+  if (dest_pair.second == -1) {
+    //do nothing because nothing is in destination
+  } else {
+    //move whatever is there somewhere else
+    res.push_back(move_to_first_unused(dest_pair, regs, fake_to_real));
+  }
+  
+  //take dest register
+  reg_pair(pair<string, int>(fake_reg, dest_real), DATA, regs, fake_to_real); 
   return res;
 }
 
@@ -313,10 +359,12 @@ list<quad> handle_negate(quad negate, vector<arm_register> *regs, map<string, in
   if (fake_to_real -> find(negate.opd1) == fake_to_real -> end()) {
     cout << "ERROR: " << __FUNCTION__ << " opd1 was not in map\n";
   } else {
-    //need to account for operands not being in r0 and r1
+    list<quad> opd_prep = prepare_operand(negate.opd1, 0, regs, fake_to_real);
+    res.insert(res.end(), opd_prep.begin(), opd_prep.end());
 
-    reg_pair(pair<string, int>(negate.opd1, 0), DATA, regs, fake_to_real);
-    reg_pair(pair<string, int>(negate.dest, 1), DATA, regs, fake_to_real); 
+    list<quad> dest_prep = prepare_dest(negate.dest, 1, regs, fake_to_real);
+    res.insert(res.end(), dest_prep.begin(), dest_prep.end());
+
     res.push_back(two_arity_quad(node_BL, "negate"));
   }
   return res;
