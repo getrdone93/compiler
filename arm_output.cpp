@@ -140,18 +140,16 @@ list<quad> binary_operator(quad binary, arm_register *dest_reg, vector<arm_regis
 
 list<quad> write_to_quads(quad write, vector<arm_register> *regs, set<string> idents, map<string, int> *fake_to_real) {
   list<quad> res;
-  arm_register *r1 = &(regs -> at(1));
-  //  if (r1 -> dt == NONE && r1 -> dt == NONE) {
-    quad la = {node_LOAD, regify(1), write.dest};
-    list<quad> load_asm = load(la, r1, idents, fake_to_real);
-    res.insert(res.end(), load_asm.begin(), load_asm.end());
-    res.push_back(three_arity_quad(node_MOV, regify(0), arm_small_constant("1")));
-    res.push_back(two_arity_quad(node_SWI, SEEK));
-    res.push_back(two_arity_quad(node_SWI, HALT));
-  // } else {
-  //   cout << "r1 or r0 is being used. Need to save their values\n";
-  // }
+  list<quad> stdout = prepare_operand(write.dest, 0, regs, fake_to_real);
+  res.insert(res.end(), stdout.begin(), stdout.end());
 
+  list<quad> opd1_prep = prepare_operand(write.opd1, 1, regs, fake_to_real);
+  res.insert(res.end(), opd1_prep.begin(), opd1_prep.end());
+  
+  res.push_back(two_arity_quad(node_SWI, SEEK));
+
+  free_pair(pair_exists(0, fake_to_real), regs, fake_to_real);
+  free_pair(pair_exists(1, fake_to_real), regs, fake_to_real);
   return res;
 }
 
@@ -227,6 +225,7 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
   }
 
   list<quad> af = arm_funcs();
+  res.push_back(two_arity_quad(node_SWI, HALT));
   res.insert(res.end(), af.begin(), af.end());
   res.push_back(two_arity_quad(node_FUNC_LABEL, ".end"));
   return res;
@@ -341,7 +340,7 @@ list<quad> prepare_operand(string fake_reg, int dest_real, vector<arm_register> 
     } else {
       //something is in desired register
       if (func_opd.second == curr_reg.second) {
-	//do nothing becase function operand is in desired register
+	//do nothing because function operand is in desired register
       } else {
 	//move whatever is in desired register away and operand into desired register
 	res.push_back(move_to_first_unused(curr_reg, regs, fake_to_real));
