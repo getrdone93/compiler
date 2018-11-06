@@ -211,6 +211,11 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
       res.insert(res.end(), negate.begin(), negate.end());
     }
 	break;
+    case node_EQUAL:
+    case node_GREATER_THAN:
+    case node_GREATER_EQUAL:
+    case node_LESS_THAN:
+    case node_NOT_EQUAL:
     case node_LESS_EQUAL: {
       list<quad> relation = handle_relational(cq, regs, &fake_to_real);
       res.insert(res.end(), relation.begin(), relation.end());
@@ -501,6 +506,11 @@ string quad_to_arm(quad q) {
     case node_FUNC_LABEL:
       res = two_arity(q.dest, "");
       break;
+  case node_EQUAL:
+  case node_GREATER_THAN:
+  case node_GREATER_EQUAL:
+  case node_NOT_EQUAL:
+    case node_LESS_THAN:
     case node_LESS_EQUAL:
       res = three_arity(rel_to_arm(q.type), q.dest, q.opd1);
       break;
@@ -516,6 +526,21 @@ string rel_to_arm(nodetype t) {
   switch(t) {
   case node_LESS_EQUAL:
     res = "MOVLE";
+    break;
+  case node_LESS_THAN:
+    res = "MOVLT";
+    break;
+  case node_GREATER_EQUAL:
+    res = "MOVGE";
+    break;
+  case node_GREATER_THAN:
+    res = "MOVGT";
+    break;
+  case node_EQUAL:
+    res = "MOVEQ";
+    break;
+  case node_NOT_EQUAL:
+    res = "MOVNE";
     break;
   default:
     break;
