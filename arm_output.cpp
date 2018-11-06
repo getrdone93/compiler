@@ -400,10 +400,10 @@ list<quad> handle_negate(quad negate, vector<arm_register> *regs, map<string, in
     list<quad> opd_prep = prepare_operand(negate.opd1, 0, regs, fake_to_real);
     res.insert(res.end(), opd_prep.begin(), opd_prep.end());
 
-    free_pair(pair<string, int>(negate.opd1, fake_to_real -> find(negate.opd1) -> second), regs, fake_to_real);
-
     list<quad> dest_prep = prepare_dest(negate.dest, 1, regs, fake_to_real);
     res.insert(res.end(), dest_prep.begin(), dest_prep.end());
+
+    free_pair(pair<string, int>(negate.opd1, fake_to_real -> find(negate.opd1) -> second), regs, fake_to_real);
 
     res.push_back(two_arity_quad(node_BL, "negate"));
   }
