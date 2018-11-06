@@ -221,6 +221,7 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
       list<quad> relation = handle_relational(cq, regs, &fake_to_real);
       res.insert(res.end(), relation.begin(), relation.end());
     }
+      break;
       default:
   	cout << "dont have rule for nodetype: " << nodenames[cq.type] << "\n";
   	break;
