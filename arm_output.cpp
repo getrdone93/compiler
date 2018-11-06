@@ -274,6 +274,19 @@ quad move_to(pair<string, int> from, pair<string, int> to, vector<arm_register> 
   return three_arity_quad(node_MOV, regify(to.second), regify(from.second));
 }
 
+// list<quad> handle_relational(quad rel, vector<arm_register> *regs, map<string, int> *fake_to_real) {
+//   list<quad> res;
+//   if (pair_exists(rel.opd1, fake_to_real) && pair_exists(rel.opd2), fake_to_real) {
+//     int real_1 = fake_to_real -> find(rel.opd1) -> second;
+//     int real_2 = fake_to_real -> find(rel.opd2) -> second;
+//     res.push_back(three_arity_quad(node_CMP, real_1, real_2));
+//   } else {
+//     cout << "ERROR: " << __FUNCTION__ << " op(s) were not mapped properly\n";
+//   }
+
+//   return res;
+// }
+
 list<quad> call_divide(quad div, int dest_reg, vector<arm_register> *regs, map<string, int> *fake_to_real) {
   list<quad> res;
   if (pair_exists(div.opd1, fake_to_real) && pair_exists(div.opd2, fake_to_real)) {
@@ -283,12 +296,15 @@ list<quad> call_divide(quad div, int dest_reg, vector<arm_register> *regs, map<s
     list<quad> opd2_prep = prepare_operand(div.opd2, 1, regs, fake_to_real);
     res.insert(res.end(), opd2_prep.begin(), opd2_prep.end());
 
+    free_pair(pair<string, int>(div.opd1, fake_to_real -> find(div.opd1) -> second), regs, fake_to_real);
+    free_pair(pair<string, int>(div.opd2, fake_to_real -> find(div.opd2) -> second), regs, fake_to_real);
+
     list<quad> dest_prep = prepare_dest(div.dest, dest_reg, regs, fake_to_real);
     res.insert(res.end(), dest_prep.begin(), dest_prep.end());
 
     res.push_back(two_arity_quad(node_BL, "sdiv"));
   } else {
-    cout << "ERROR: " << __FUNCTION__ << " op(s) were stored properly\n";
+    cout << "ERROR: " << __FUNCTION__ << " op(s) were not mapped properly\n";
   }
 
   return res;
