@@ -92,5 +92,8 @@ enum nodetype {
   node_LDM_FD,
   node_CMP_4,
   node_MOV_4,
+  node_FUNC_LABEL_4,
+  node_PRINT_STR,
+  node_PRINT_INT,
   node_end_of_nodes
 };

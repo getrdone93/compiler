@@ -26,6 +26,7 @@ struct arm_register {
   int number;
 };
 
+list<quad> data_section();
 list<quad> write_to_quads(quad write, vector<arm_register> *regs, set<string> idents, map<string, int> *fake_to_real);
 list<quad> handle_relational(quad rel, vector<arm_register> *regs, map<string, int> *fake_to_real);
 string rel_to_arm(nodetype t);

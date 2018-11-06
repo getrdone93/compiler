@@ -53,8 +53,8 @@ quad.o: quad.cpp quad.h nodeNames.h
 # Run some tests - all should parse OK
 test :	parse
 	echo "\ntestprog.c"
-	-./parse testprog.c- > /dev/null
-	cat testprog.c-
+	-./parse new_test.c- > /dev/null
+	cat new_test.c-
 	cat output.quad
 	echo "---assembler---"
 	cat program.s

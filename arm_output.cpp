@@ -146,7 +146,11 @@ list<quad> write_to_quads(quad write, vector<arm_register> *regs, set<string> id
   list<quad> opd1_prep = prepare_operand(write.opd1, 1, regs, fake_to_real);
   res.insert(res.end(), opd1_prep.begin(), opd1_prep.end());
   
-  res.push_back(two_arity_quad(node_SWI, SEEK));
+  res.push_back(two_arity_quad(node_SWI, nodenames[node_PRINT_INT]));
+
+  //add newline
+  res.push_back(three_arity_quad(node_LOAD, regify(1), arm_constant("EOL")));
+  res.push_back(two_arity_quad(node_SWI, nodenames[node_PRINT_STR]));
 
   free_pair(pair_exists(0, fake_to_real), regs, fake_to_real);
   free_pair(pair_exists(1, fake_to_real), regs, fake_to_real);
@@ -227,7 +231,17 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
   list<quad> af = arm_funcs();
   res.push_back(two_arity_quad(node_SWI, HALT));
   res.insert(res.end(), af.begin(), af.end());
+
+  list<quad> ds = data_section();
+  res.insert(res.end(), ds.begin(), ds.end());
   res.push_back(two_arity_quad(node_FUNC_LABEL, ".end"));
+  return res;
+}
+
+list<quad> data_section() {
+  list<quad> res;
+  res.push_back(two_arity_quad(node_FUNC_LABEL, ".data"));
+  res.push_back(four_arity_quad(node_FUNC_LABEL_4, "EOL:", ".asciz", "\"\\n\""));
   return res;
 }
 
@@ -465,6 +479,9 @@ list<string> asm_quads_to_asm(list<quad> asm_quads) {
 string quad_to_arm(quad q) {
   string res;
   switch (q.type) {
+    case node_FUNC_LABEL_4:
+      res = three_arity_nc(q.dest, q.opd1, q.opd2);
+      break;
     case node_LABEL:
       res = three_arity_nc(q.dest, q.opd1, q.opd2);
       break;

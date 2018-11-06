@@ -92,6 +92,9 @@ const char *nodenames[] =
     "BHS",
     "LDMFD",
     "CMP",
-    "MOV"
+    "MOV",
+    "FUNC_LABEL_4",
+    "0x69",
+    "0x6b"
   };
 
