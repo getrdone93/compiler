@@ -26,6 +26,8 @@ struct arm_register {
   int number;
 };
 
+list<quad> handle_relational(quad rel, vector<arm_register> *regs, map<string, int> *fake_to_real);
+string rel_to_arm(nodetype t);
 list<quad> prepare_dest(string fake_reg, int dest_real, vector<arm_register> *regs, map<string, int> *fake_to_real);
 list<quad> prepare_operand(string fake_reg, int dest_real, vector<arm_register> *regs, map<string, int> *fake_to_real);
 list<quad> call_divide(quad div, int dest_reg, vector<arm_register> *regs, map<string, int> *fake_to_real);

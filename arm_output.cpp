@@ -211,6 +211,10 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
       res.insert(res.end(), negate.begin(), negate.end());
     }
 	break;
+    case node_LESS_EQUAL: {
+      list<quad> relation = handle_relational(cq, regs, &fake_to_real);
+      res.insert(res.end(), relation.begin(), relation.end());
+    }
       default:
   	cout << "dont have rule for nodetype: " << nodenames[cq.type] << "\n";
   	break;
@@ -274,18 +278,28 @@ quad move_to(pair<string, int> from, pair<string, int> to, vector<arm_register> 
   return three_arity_quad(node_MOV, regify(to.second), regify(from.second));
 }
 
-// list<quad> handle_relational(quad rel, vector<arm_register> *regs, map<string, int> *fake_to_real) {
-//   list<quad> res;
-//   if (pair_exists(rel.opd1, fake_to_real) && pair_exists(rel.opd2), fake_to_real) {
-//     int real_1 = fake_to_real -> find(rel.opd1) -> second;
-//     int real_2 = fake_to_real -> find(rel.opd2) -> second;
-//     res.push_back(three_arity_quad(node_CMP, real_1, real_2));
-//   } else {
-//     cout << "ERROR: " << __FUNCTION__ << " op(s) were not mapped properly\n";
-//   }
+list<quad> handle_relational(quad rel, vector<arm_register> *regs, map<string, int> *fake_to_real) {
+  list<quad> res;
+  if (pair_exists(rel.opd1, fake_to_real) && pair_exists(rel.opd2, fake_to_real)) {
+    int real_1 = fake_to_real -> find(rel.opd1) -> second;
+    int real_2 = fake_to_real -> find(rel.opd2) -> second;
+    res.push_back(three_arity_quad(node_CMP, regify(real_1), regify(real_2)));
 
-//   return res;
-// }
+    free_pair(pair<string, int>(rel.opd1, real_1), regs, fake_to_real);
+    free_pair(pair<string, int>(rel.opd2, real_2), regs, fake_to_real);
+
+    list<quad> dest_prep = prepare_dest(rel.dest, real_1, regs, fake_to_real);
+    res.insert(res.end(), dest_prep.begin(), dest_prep.end());
+
+    //do first move to assume false. next instruction will mov true if condition is true
+    res.push_back(three_arity_quad(node_MOV, regify(real_1), arm_small_constant("0")));
+    res.push_back(three_arity_quad(rel.type, regify(real_1), arm_small_constant("1")));
+  } else {
+    cout << "ERROR: " << __FUNCTION__ << " op(s) were not mapped properly\n";
+  }
+
+  return res;
+}
 
 list<quad> call_divide(quad div, int dest_reg, vector<arm_register> *regs, map<string, int> *fake_to_real) {
   list<quad> res;
@@ -487,9 +501,24 @@ string quad_to_arm(quad q) {
     case node_FUNC_LABEL:
       res = two_arity(q.dest, "");
       break;
+    case node_LESS_EQUAL:
+      res = three_arity(rel_to_arm(q.type), q.dest, q.opd1);
+      break;
     default:
       res = "default";
       break;
+  }
+  return res;
+}
+
+string rel_to_arm(nodetype t) {
+  string res;
+  switch(t) {
+  case node_LESS_EQUAL:
+    res = "MOVLE";
+    break;
+  default:
+    break;
   }
   return res;
 }
