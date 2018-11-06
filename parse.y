@@ -29,6 +29,10 @@ using namespace std;
 
 extern int  yydebug; // Use if you want the Bison generated debugging
 
+void negate_operands(parsetree *root);
+bool negate_present(parsetree *root);
+parsetree* new_unary_expr();
+void negate_operands(parsetree *root, set<nodetype> expr_types, set<nodetype> ground_types);
 int usage( void );
 int yyerror( const char *msg );
 int my_input( char *buf, int max_size );
@@ -863,6 +867,7 @@ int main( int ac, char *av[] )
     {
        //apply tree transformations
       take_out_nodes(root);
+      negate_operands(root);
 
       ofstream tree_file("tree.dat");
       dotit(root, 0, &tree_file);
@@ -898,40 +903,52 @@ int main( int ac, char *av[] )
     
 }
 
-/* void postfix_to_assign(parsetree *root) { */
-/*   set<nodetype> post_ops; */
-/*   post_ops.insert(node_INC_OP); */
-/*   post_ops.insert(node_DEC_OP); */
-/*   postfix_to_assign(root, post_ops); */
-  
-/* } */
+bool negate_present(parsetree *root) {  
+  return root -> type == node_unary_expression && root -> children[0] != NULL
+    && root -> children[0] -> type == node_NEGATE;
+}
 
-/* void postfix_to_assign(parsetree *root, set<nodetype> post_ops) { */
-/*   if (root -> type == node_postfix_expression && contains(post_ops, root -> children[1] -> type)) { */
-/*     root -> type = node_assignment_expression; */
-/*     bool add = root -> children[1] -> type == node_INC_OP; */
-/*     root -> children[1] -> type = node_ASSIGNMENT; */
-/*     root -> children[2] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
-/*     root -> children[2] -> type = node_additive_expression; */
+parsetree* new_unary_expr() {
+  parsetree *top_child = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+  top_child -> type = node_unary_expression;
+  top_child -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+  top_child -> children[0] -> type = node_NEGATE;
+  top_child -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+  top_child -> children[1] -> type = node_unary_expression;
+  top_child -> children[1] -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+  top_child -> children[1] -> children[0] -> type = node_NEGATE;
+  top_child -> children[1] -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
+  return top_child;
+}
 
-/*     root -> children[2] -> children[0] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
-/*     root -> children[2] -> children[0] -> type = node_IDENTIFIER; */
-/*     root -> children[2] -> children[0] -> str_ptr = strdup(root -> children[0] -> str_ptr); */
-/*     root -> children[2] -> children[0] -> line = root -> children[0] -> line; */
-    
-/*     root -> children[2] -> children[1] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
-/*     root -> children[2] -> children[1] -> type = add ? node_ADD : node_SUBTRACT; */
+void negate_operands(parsetree *root) {
+  set<nodetype> ground_types;
+  ground_types.insert(node_IDENTIFIER);
+  ground_types.insert(node_CONSTANT);
+  set<nodetype> expr_types;
+  expr_types.insert(node_logical_and_expression);
+  expr_types.insert(node_logical_or_expression);
 
-/*     root -> children[2] -> children[2] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 ); */
-/*     root -> children[2] -> children[2] -> type = node_CONSTANT; */
-/*     root -> children[2] -> children[2] -> str_ptr = "1"; */
-/*     return; */
-/*   } */
+  negate_operands(root, expr_types, ground_types);
+}
 
-/*   for (int i = 0; i < 10 && root -> children[i] != NULL; i++) { */
-/*     postfix_to_assign(root -> children[i], post_ops); */
-/*   } */
-/* } */
+void negate_operands(parsetree *root, set<nodetype> expr_types, set<nodetype> ground_types) {
+  if (contains(expr_types, root -> type)) {
+    for (int i = 0; i < 3 && root -> children[i] != NULL; i++) {
+      if (contains(ground_types, root -> children[i] -> type)) {
+	parsetree *new_child = new_unary_expr();
+	new_child -> children[1] -> children[1] = root -> children[i];
+	root -> children[i] = new_child;
+      } else if (contains(expr_types, root -> children[i] -> type)) {
+	negate_operands(root -> children[i], expr_types, ground_types);
+      }
+    }
+  } else {
+    for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+      negate_operands(root -> children[i], expr_types, ground_types);
+    }
+  }
+}
 
 void take_out_nodes(parsetree *root) {
   set<nodetype> remove_nodes;
