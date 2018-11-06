@@ -29,10 +29,11 @@ using namespace std;
 
 extern int  yydebug; // Use if you want the Bison generated debugging
 
+set<nodetype> set_expr_types();
 void negate_operands(parsetree *root);
 bool negate_present(parsetree *root);
 parsetree* new_unary_expr();
-void negate_operands(parsetree *root, set<nodetype> expr_types, set<nodetype> ground_types);
+void negate_operands(parsetree *root, set<nodetype> expr_types, set<nodetype> ground_types, set<nodetype> recur_gt);
 int usage( void );
 int yyerror( const char *msg );
 int my_input( char *buf, int max_size );
@@ -908,6 +909,19 @@ bool negate_present(parsetree *root) {
     && root -> children[0] -> type == node_NEGATE;
 }
 
+set<nodetype> set_expr_types() {
+  set<nodetype> exp_types;
+  exp_types.insert(node_additive_expression);
+  exp_types.insert(node_multiplicative_expression);
+  exp_types.insert(node_relational_expression);
+  exp_types.insert(node_inclusive_or_expression);
+  exp_types.insert(node_and_expression);
+  exp_types.insert(node_exclusive_or_expression);
+  exp_types.insert(node_logical_and_expression);
+  exp_types.insert(node_logical_or_expression);
+  return exp_types;
+}
+
 parsetree* new_unary_expr() {
   parsetree *top_child = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
   top_child -> type = node_unary_expression;
@@ -922,30 +936,42 @@ parsetree* new_unary_expr() {
 }
 
 void negate_operands(parsetree *root) {
+  set<nodetype> recur_gt = set_expr_types();
+
   set<nodetype> ground_types;
   ground_types.insert(node_IDENTIFIER);
   ground_types.insert(node_CONSTANT);
+  ground_types.insert(node_unary_expression);
+  ground_types.insert(node_postfix_expression);
+  ground_types.insert(recur_gt.begin(), recur_gt.end());
+  ground_types.erase(node_logical_and_expression);
+  ground_types.erase(node_logical_or_expression);
+
   set<nodetype> expr_types;
   expr_types.insert(node_logical_and_expression);
   expr_types.insert(node_logical_or_expression);
 
-  negate_operands(root, expr_types, ground_types);
+  negate_operands(root, expr_types, ground_types, recur_gt);
 }
 
-void negate_operands(parsetree *root, set<nodetype> expr_types, set<nodetype> ground_types) {
+void negate_operands(parsetree *root, set<nodetype> expr_types, set<nodetype> ground_types, 
+		     set<nodetype> recur_gt) {
   if (contains(expr_types, root -> type)) {
     for (int i = 0; i < 3 && root -> children[i] != NULL; i++) {
       if (contains(ground_types, root -> children[i] -> type)) {
 	parsetree *new_child = new_unary_expr();
 	new_child -> children[1] -> children[1] = root -> children[i];
 	root -> children[i] = new_child;
+	if (contains(recur_gt, root -> children[i] -> children[1] -> children[1] -> type)) {
+	  negate_operands(root -> children[i] -> children[1] -> children[1], expr_types, ground_types, recur_gt);
+	}
       } else if (contains(expr_types, root -> children[i] -> type)) {
-	negate_operands(root -> children[i], expr_types, ground_types);
+	negate_operands(root -> children[i], expr_types, ground_types, recur_gt);
       }
     }
   } else {
     for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-      negate_operands(root -> children[i], expr_types, ground_types);
+      negate_operands(root -> children[i], expr_types, ground_types, recur_gt);
     }
   }
 }

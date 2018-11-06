@@ -114,7 +114,7 @@ test :	parse
 	# cat program.s
 	# ./makeTree.sh
 
-	# Echo "\na_test7.c"
+	# echo "\na_test7.c"
 	# -./parse testFiles/input_progs/a_test7.c- > /dev/null
 	# 	cat testFiles/input_progs/a_test7.c-
 	# ./makeTree.sh
