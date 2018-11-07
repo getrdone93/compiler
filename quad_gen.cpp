@@ -212,6 +212,9 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> post_pre_ops) {
     if (node -> type == node_postfix_expression) {
       //force caller to grab register of original leaf prior to bumping it
       res.push_back(three_arity_quad(node_LOAD, ll.dest, ll.dest));
+    } else if (node -> type == node_unary_expression) {
+      //load last value published for pre inc
+      res.push_back(three_arity_quad(node_LOAD, next_reg(), res.back().dest));
     }
     return res;
 }

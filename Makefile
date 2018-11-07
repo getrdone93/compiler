@@ -52,22 +52,22 @@ quad.o: quad.cpp quad.h nodeNames.h
 
 # Run some tests - all should parse OK
 test :	parse
-	echo "\nsmall_test.c-"
-	-./parse small_test.c- > /dev/null
-	cat small_test.c-
-	cat output.quad
-	echo "---assembler---"
-	cat program.s
-	./makeTree.sh
-
-
-	# echo "\ntestprog.c"
-	# -./parse testprog.c- > /dev/null
-	# cat testprog.c-
+	# echo "\nsmall_test.c-"
+	# -./parse small_test.c- > /dev/null
+	# cat small_test.c-
 	# cat output.quad
 	# echo "---assembler---"
 	# cat program.s
 	# ./makeTree.sh
+
+
+	echo "\ntestprog.c"
+	-./parse testprog.c- > /dev/null
+	cat testprog.c-
+	cat output.quad
+	echo "---assembler---"
+	cat program.s
+	./makeTree.sh
 
 	# echo "\na_test1.c"
 	# -./parse testFiles/input_progs/a_test1.c- > /dev/null

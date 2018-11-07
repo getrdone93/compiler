@@ -884,14 +884,16 @@ int main( int ac, char *av[] )
       list<quad> quads;
       quads = make_quads(root, quads);
       quad_file << quad_list_to_str(quads);
+      quad_file.flush();
 
-      cout << "calling process quads\n";
+      cout << "calling process quads, " << quads.size() << "\n"; 
       set<string> begin;
       set<string> ids = get_identifiers(root, begin);
       ofstream asm_file("program.s");
       list<quad> assembler = quads_to_asm(quads, ids);
       list<string> asm_out = asm_quads_to_asm(assembler);
       asm_file << list_to_string(asm_out);
+      asm_file.flush();
 
       cout << "\n\tquad output can be seen in ./output.quad\n\tassembler output can be seen in ./program.s\n";
       return( 0 );
