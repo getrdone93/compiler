@@ -95,5 +95,7 @@ enum nodetype {
   node_FUNC_LABEL_4,
   node_PRINT_STR,
   node_PRINT_INT,
+  node_PRE_ADD,
+  node_PRE_SUB,
   node_end_of_nodes
 };

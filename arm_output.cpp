@@ -101,9 +101,11 @@ vector<int> regs_with_dt(vector<arm_register> *regs, data_type filter) {
 nodetype post_to_regular(nodetype type) {
   nodetype res;
   switch(type) {
+  case node_PRE_ADD:
   case node_POST_ADD:
     res = node_ADD;
     break;
+  case node_PRE_SUB:
   case node_POST_SUB:
     res = node_SUBTRACT;
     break;
@@ -180,6 +182,8 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
   	break;
     case node_LOGICAL_OR:
     case node_LOGICAL_AND:
+    case node_PRE_ADD:
+    case node_PRE_SUB:
     case node_POST_ADD:
     case node_POST_SUB:
     case node_BITWISE_XOR:

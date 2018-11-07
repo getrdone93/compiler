@@ -58,6 +58,17 @@ list<quad> ground_expression(parsetree *root, set<nodetype> nested_exp, set<node
 				left.back().type == node_STOR ? left.back().opd1 : left.back().dest,
 				right.back().type == node_STOR ? right.back().opd1 : right.back().dest);
 
+
+    if (right_child -> type == node_unary_expression && (right_child -> children[0] -> type == node_INC_OP
+							 || right_child -> children[0] -> type == node_DEC_OP)
+	|| left_child -> type == node_unary_expression && (left_child -> children[0] -> type == node_INC_OP
+							   || left_child -> children[0] -> type == node_DEC_OP)) {
+      quad rb = right.back();
+      rb.dest = next_reg();
+      right.push_back(rb);
+      expr.opd1 = rb.dest;
+    }
+
     list<quad> res;
     res.insert(res.end(), left.begin(), left.end());
     res.insert(res.end(), right.begin(), right.end());
@@ -206,9 +217,18 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> post_pre_ops) {
     quad ll = load_leaf(leaf);
     res.push_back(ll);
     res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
-    res.push_back(four_arity_quad(op -> type == node_INC_OP ? node_POST_ADD : node_POST_SUB, 
-				  next_reg(), ll.dest, res.back().dest));
+
+    nodetype expr_type;
+    if (node -> type == node_postfix_expression) {
+      expr_type = op -> type == node_INC_OP ? node_POST_ADD : node_POST_SUB;
+    } else if (node -> type == node_unary_expression) {
+      expr_type = op -> type == node_INC_OP ? node_PRE_ADD : node_PRE_SUB;
+    } else {
+      cout << __FUNCTION__ << " ERROR, did not see expected nodetype of either postfix_expression or unary_expression\n";
+    }
+    res.push_back(four_arity_quad(expr_type, next_reg(), ll.dest, res.back().dest));
     res.push_back(three_arity_quad(node_STOR, leaf -> symbol_table_ptr -> id_name, res.back().dest));
+
     if (node -> type == node_postfix_expression) {
       //force caller to grab register of original leaf prior to bumping it
       res.push_back(three_arity_quad(node_LOAD, ll.dest, ll.dest));

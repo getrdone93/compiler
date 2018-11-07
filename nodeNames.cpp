@@ -95,6 +95,8 @@ const char *nodenames[] =
     "MOV",
     "FUNC_LABEL_4",
     "0x69",
-    "0x6b"
+    "0x6b",
+    "PRE_ADD",
+    "PRE_SUB"
   };
 
