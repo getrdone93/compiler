@@ -167,7 +167,6 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
 
   for (list<quad>::iterator it = quads.begin(); it != quads.end(); it++) {
     quad cq = *it;
-    cout << "on this node: " << quad_to_string(cq);
     switch(cq.type) {
         case node_STOR: {
   	  list<quad> stor_asm = stor(cq, regs, &fake_to_real);
