@@ -366,7 +366,7 @@ selection_stmt
 	   $$ -> children[3] = (struct parsetree *) calloc( sizeof( struct parsetree ), 1 );
 	   $$ -> children[3] -> type = node_ELSE;
 	   $$ -> children[3] -> str_ptr = "else";
-	   $$ -> children[2] = $7;
+	   $$ -> children[3] -> children[0] = $7;
 	 }
 	;
 
