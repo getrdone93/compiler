@@ -58,11 +58,11 @@ list<quad> ground_expression(parsetree *root, set<nodetype> nested_exp, set<node
 				left.back().type == node_STOR ? left.back().opd1 : left.back().dest,
 				right.back().type == node_STOR ? right.back().opd1 : right.back().dest);
 
-
-    if (right_child -> type == node_unary_expression && (right_child -> children[0] -> type == node_INC_OP
+    if ((right_child -> type == node_unary_expression && (right_child -> children[0] -> type == node_INC_OP
 							 || right_child -> children[0] -> type == node_DEC_OP)
 	|| left_child -> type == node_unary_expression && (left_child -> children[0] -> type == node_INC_OP
-							   || left_child -> children[0] -> type == node_DEC_OP)) {
+							   || left_child -> children[0] -> type == node_DEC_OP))
+	&& right_child -> type != node_postfix_expression && left_child -> type != node_postfix_expression) {
       quad rb = right.back();
       rb.dest = next_reg();
       right.push_back(rb);
