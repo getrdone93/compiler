@@ -276,6 +276,29 @@ set<string> get_identifiers(parsetree *root, set<string> res) {
   }
 }
 
+
+list<quad> handle_if(parsetree *root, set<nodetype> ge, set<nodetype> pass_through) {
+  list<quad> res;
+  if (contains(pass_through, root -> type)) {
+    return handle_if(root -> children[0], ge, pass_through);
+  }
+
+  parsetree *condition = root -> children[1];
+  parsetree *curr_block = root -> children[2];
+  parsetree *else_block = root -> children[3];
+
+  
+  return res;
+}
+
+set<nodetype> set_pass_nodes() {
+  set<nodetype> nodes;
+  nodes.insert(node_ELSE);
+  nodes.insert(node_block);
+  return nodes;
+}
+
+
 list<quad> make_quads(parsetree *root, list<quad> res) {
   set<nodetype> expr_types = set_expression_types();
   set<nodetype> ge = set_ground_exp();
@@ -298,7 +321,12 @@ list<quad> make_quads(parsetree *root, list<quad> res) {
     res.insert(res.end(), write_quads.begin(), write_quads.end());
   }
     break;
-    default:
+  // case node_selection_stmt: {
+  //   list<quad> if_quads = handle_if(root, set_ground_exp());
+  //   res.insert(res.end(), if_quads.begin(), if_quads.end());
+  // }
+  //   break;
+  default:
       list<quad> recur_ret;
       for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
 	list<quad> child_quads = make_quads(root -> children[i], res);

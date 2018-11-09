@@ -956,6 +956,15 @@ void negate_operands(parsetree *root) {
   negate_operands(root, expr_types, ground_types, recur_gt);
 }
 
+void negate_if_ge(parsetree *root, set<nodetype> ground_types) {
+  if (root -> type == node_selection_stmt && contains(ground_types, root -> children[1] -> type)) { 
+    
+  }
+  for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+    negate_if_ge(root -> children[i], ground_types);
+  }  
+}
+
 void negate_operands(parsetree *root, set<nodetype> expr_types, set<nodetype> ground_types, 
 		     set<nodetype> recur_gt) {
   if (contains(expr_types, root -> type)) {
@@ -972,6 +981,11 @@ void negate_operands(parsetree *root, set<nodetype> expr_types, set<nodetype> gr
       }
     }
   } else {
+    if (root -> type == node_selection_stmt && contains(ground_types, root -> children[1] -> type)) {
+      parsetree *new_child = new_unary_expr();
+      new_child -> children[1] -> children[1] = root -> children[1];
+      root -> children[1] = new_child;    
+    }
     for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
       negate_operands(root -> children[i], expr_types, ground_types, recur_gt);
     }
