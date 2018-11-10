@@ -37,6 +37,9 @@ void negate_operands(parsetree *root, set<nodetype> expr_types, set<nodetype> gr
 int usage( void );
 int yyerror( const char *msg );
 int my_input( char *buf, int max_size );
+int sequential_name(parsetree *root, set<nodetype> node_types, int seq);
+void sequential_name(parsetree *root);
+ void check_names(parsetree *root, set<nodetype> node_types);
 void detab( char *line );
 int yylex( void );
 void dumpit( parsetree *root, int level );
@@ -869,6 +872,12 @@ int main( int ac, char *av[] )
        //apply tree transformations
       take_out_nodes(root);
       negate_operands(root);
+      sequential_name(root);
+
+  /*       set<nodetype> types; */
+  /* types.insert(node_IF); */
+  /* types.insert(node_ELSE); */
+  /* check_names(root, types); */
 
       ofstream tree_file("tree.dat");
       dotit(root, 0, &tree_file);
@@ -904,6 +913,46 @@ int main( int ac, char *av[] )
 	return( 1 );
     }
     
+}
+
+void sequential_name(parsetree *root) {
+  set<nodetype> types;
+  types.insert(node_IF);
+  types.insert(node_ELSE);
+
+  sequential_name(root, types, 0);
+}
+
+void check_names(parsetree *root, set<nodetype> node_types) {
+  if (contains(node_types, root -> type)) {
+    cout << "node " << nodenames[root -> type] << " now has str_ptr " << root -> str_ptr << "\n";
+    if (root -> type == node_ELSE) {
+      check_names(root -> children[0], node_types);
+    }
+  } else {
+    for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+      check_names(root -> children[i], node_types);
+    }
+  }
+}
+
+int sequential_name(parsetree *root, set<nodetype> node_types, int seq) {
+  if (contains(node_types, root -> type)) {
+    string seq_end = string(root -> str_ptr) + "_" + to_string(seq);
+    root -> str_ptr = (char*) calloc(256 * sizeof(char), 0);
+    strcpy((char*) root -> str_ptr, seq_end.c_str());
+    int ret = seq + 1;
+    if (root -> type == node_ELSE) {
+      ret = sequential_name(root -> children[0], node_types, ret);
+    }
+    return ret;
+  } else {
+    for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+      int ret = sequential_name(root -> children[i], node_types, seq);
+      seq = ret;
+    }
+    return seq;
+  }
 }
 
 bool negate_present(parsetree *root) {  
@@ -954,15 +1003,6 @@ void negate_operands(parsetree *root) {
   expr_types.insert(node_logical_or_expression);
 
   negate_operands(root, expr_types, ground_types, recur_gt);
-}
-
-void negate_if_ge(parsetree *root, set<nodetype> ground_types) {
-  if (root -> type == node_selection_stmt && contains(ground_types, root -> children[1] -> type)) { 
-    
-  }
-  for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
-    negate_if_ge(root -> children[i], ground_types);
-  }  
 }
 
 void negate_operands(parsetree *root, set<nodetype> expr_types, set<nodetype> ground_types, 

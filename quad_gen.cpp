@@ -277,19 +277,21 @@ set<string> get_identifiers(parsetree *root, set<string> res) {
 }
 
 
-list<quad> handle_if(parsetree *root, set<nodetype> ge, set<nodetype> pass_through) {
-  list<quad> res;
-  if (contains(pass_through, root -> type)) {
-    return handle_if(root -> children[0], ge, pass_through);
-  }
+// list<quad> handle_if(parsetree *root, set<nodetype> set_exp, set<nodetype> ge) {
+//   list<quad> res;
+//   if (root -> type == node_ELSE) {
+//     return handle_if(root -> children[0], set_exp, ge);
+//   }
 
-  parsetree *condition = root -> children[1];
-  parsetree *curr_block = root -> children[2];
-  parsetree *else_block = root -> children[3];
+//   parsetree *condition = root -> children[1];
+//   parsetree *curr_block = root -> children[2];
+//   parsetree *else_block = root -> children[3];
 
   
-  return res;
-}
+//   list<quad> nested_expression(condition, set_exp, ge);
+  
+//   return res;
+// }
 
 set<nodetype> set_pass_nodes() {
   set<nodetype> nodes;
