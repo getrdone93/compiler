@@ -297,57 +297,67 @@ set<string> get_identifiers(parsetree *root, set<string> res) {
 }
 
 list<quad> handle_if(parsetree *root, set<nodetype> set_exp, set<nodetype> ge) {
+  //  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
   list<quad> res;
 
   parsetree *if_child = root -> children[0];
   parsetree *condition = root -> children[1];
   parsetree *curr_block = root -> children[2];
   parsetree *else_child = root -> children[3];
-  parsetree *next_sel = else_child -> children[0];
-  string branch_label = "error";
-  int next_stop = -1;
-  if (next_sel -> type == node_block) {
-    branch_label = string(else_child -> str_ptr);
-    next_stop = 1;
-  } else if (next_sel -> type == node_selection_stmt) {
-    branch_label = string(next_sel -> children[0] -> str_ptr);
-    next_stop = 2;
-  } else {
-    cout << "ERROR, unexpected next node, can't get branch label\n";
-  }
 
+  list<quad> next_block;
+  string next_br;
+  if (else_child -> children[0] -> type == node_block) {
+    next_br = else_child -> str_ptr;
+    next_block = make_quads(else_child -> children[0], next_block);
+    next_block.push_back(two_arity_quad(node_FUNC_LABEL, end_label(else_child)));
+    next_block.push_front(two_arity_quad(node_FUNC_LABEL, else_child -> str_ptr));
+  } else if (else_child -> children[0] -> type == node_selection_stmt) {
+    next_br = else_child -> children[0] -> children[0] -> str_ptr;
+    next_block = handle_if(else_child -> children[0], set_exp, ge);
+  }
   
   list<quad> cond_quads = nested_expression(condition, set_exp, ge);
   cond_quads.push_front(two_arity_quad(node_FUNC_LABEL, if_child -> str_ptr));
 
   list<quad> branch;
   branch.push_back(three_arity_quad(node_CMP, cond_quads.back().dest, "0"));
-  branch.push_back(two_arity_quad(node_BR_EQ, branch_label));
+  branch.push_back(two_arity_quad(node_BR_EQ, next_br));
   
-  list<quad> block_quads = nested_expression(curr_block, set_exp, ge);
-  block_quads.push_back(two_arity_quad(node_FUNC_LABEL, "end"));
+  list<quad> block_quads;
+  block_quads = make_quads(curr_block, block_quads);
+  string el = end_label(root);
+  block_quads.push_back(two_arity_quad(node_BR, el));
 
   res.insert(res.end(), cond_quads.begin(), cond_quads.end());
   res.insert(res.end(), branch.begin(), branch.end());
   res.insert(res.end(), block_quads.begin(), block_quads.end());
+  res.insert(res.end(), next_block.begin(), next_block.end());
   return res;
 }
 
-// vector<quad> handle_if(parsetree *root) {
-//   vector<quad> res;
+int last_child(parsetree *node) {
+  int res = -1;
+  for (int c = 0; c < 10 && node -> children[c] != NULL; c++) {
+    res = c;
+  }
+  return res;
+}
 
-  
-//   return res;
-// }
+int num_children(parsetree *node) {
+  return last_child(node) + 1;
+}
 
-// list<quad> if_condition(parsetree *root, set<nodetype> expr_types, set<nodetype> ge) {
-//   list<quad> res;
-
-  
-//   res = root -> type == node_assignment_expression ? handle_assignment(root, expr_types, ge)
-//     : nested_expression(root, expr_types, ge);
-//   return res;
-// }
+string end_label(parsetree *node) {
+  if (node -> type == node_ELSE && node -> children[0] -> type == node_block) {
+    string prefix = "end_";
+    string suffix = string(node -> str_ptr);
+    return prefix + suffix;
+  } else {
+    int lc = last_child(node);
+    return end_label(node -> children[lc]);
+  }
+}
 
 set<nodetype> set_pass_nodes() {
   set<nodetype> nodes;
@@ -380,11 +390,11 @@ list<quad> make_quads(parsetree *root, list<quad> res) {
     res.insert(res.end(), write_quads.begin(), write_quads.end());
   }
     break;
-  // case node_selection_stmt: {
-  //   list<quad> if_quads = handle_if(root, set_ground_exp());
-  //   res.insert(res.end(), if_quads.begin(), if_quads.end());
-  // }
-  //   break;
+  case node_selection_stmt: {
+    list<quad> if_quads = handle_if(root, expr_types, ge);
+    res.insert(res.end(), if_quads.begin(), if_quads.end());
+  }
+    break;
   default:
       list<quad> recur_ret;
       for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {

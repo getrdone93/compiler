@@ -22,6 +22,10 @@
 
 using namespace std;
 
+string end_label(parsetree *node);
+int num_children(parsetree *node);
+int last_child(parsetree *node);
+list<quad> handle_if(parsetree *root, set<nodetype> set_exp, set<nodetype> ge);
 set<string> get_identifiers(parsetree *root, set<string> res);
 list<quad> unary_minus(parsetree *node, set<nodetype> unaries);
 list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> post_pre_ops);
