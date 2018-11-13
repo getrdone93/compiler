@@ -97,6 +97,7 @@ const char *nodenames[] =
     "0x69",
     "0x6b",
     "PRE_ADD",
-    "PRE_SUB"
+    "PRE_SUB",
+    "BEQ"
   };
 
