@@ -56,6 +56,7 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
     sym_table -> pop_back();
     break;
   case node_IDENTIFIER: {
+    cout << "visiting identifier " << root -> str_ptr << " at line " << root -> line << "\n";
     id_attrs atts = in_scope(root -> str_ptr, sym_table);
     if (atts.line == -1) {
       cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
