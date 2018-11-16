@@ -34,6 +34,7 @@ set<nodetype> set_ground_exp() {
 }
 
 list<quad> ground_expression(parsetree *root, set<nodetype> nested_exp, set<nodetype> accepted_exp) {
+  //  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
   parsetree *lc = root -> children[0];
   parsetree *left_child = NULL;
   if (contains(accepted_exp, lc -> type)) {
@@ -115,6 +116,7 @@ bool contains(set<nodetype> types, nodetype type) {
 }
 
 list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetype> ge) {
+  //  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
     if (contains(ge, root -> type)) {
       return unary_post_pre_exp(root, set_exp, ge);
     }
@@ -207,6 +209,7 @@ list<quad> write_exp_quad(parsetree *write_node, parsetree *ident) {
     res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
     res.push_back(three_arity_quad(node_WRITE, res.back().dest, ll.dest));
   }
+
   return res;
 }
 
@@ -380,6 +383,7 @@ set<nodetype> set_pass_nodes() {
 
 
 list<quad> make_quads(parsetree *root, list<quad> res) {
+  //cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
   if (root == NULL) {
     return res;
   }

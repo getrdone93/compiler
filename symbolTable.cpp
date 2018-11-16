@@ -17,6 +17,7 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
     cout << "null root, returning\n";
     return;
   }
+  cout << "at node " << nodenames[root -> type] << "\n";
   switch(root -> type) {
   case node_translation_unit:
     for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
@@ -47,14 +48,15 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
     if (root -> children[0] -> type == node_decl_list || root -> children[0] -> type == node_decl) {
       process_decl_list(root -> children[0], sym_table);
     }
-    if (root -> children[1] != NULL) {
-      symbol_table(root -> children[1], sym_table);
-    }
+    
+    symbol_table(root -> children[0], sym_table);
+    symbol_table(root -> children[1], sym_table);
 
     output_map(sym_table -> back());
     sym_table -> pop_back();
     break;
   case node_IDENTIFIER: {
+    cout << "visiting identifier " << root -> str_ptr << " at line " << root -> line << "\n";
     id_attrs atts = in_scope(root -> str_ptr, sym_table);
     if (atts.line == -1) {
       cout << "ERROR: symbol " << root -> str_ptr << " is out of scope at line: " << root -> line << "\n";
