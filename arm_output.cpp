@@ -179,6 +179,11 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
   	res.insert(res.end(), la.begin(), la.end());
        }
   	break;
+       case node_CMP: {
+	 list<quad> cmp_quads = handle_compare(cq, regs, &fake_to_real);
+	 res.insert(res.end(), cmp_quads.begin(), cmp_quads.end());
+       }
+        break;
     case node_LOGICAL_OR:
     case node_LOGICAL_AND:
     case node_PRE_ADD:
@@ -226,6 +231,19 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
       res.insert(res.end(), relation.begin(), relation.end());
     }
       break;
+    case node_FUNC_LABEL: {
+      quad label = cq;
+      label.dest = arm_label(label.dest);
+      res.push_back(label);
+    }
+      break;
+    case node_BR_EQ:
+    case node_BR: {
+      quad branch = cq;
+      branch.dest = call_label(branch.dest);
+      res.push_back(branch);
+    }
+      break;
       default:
   	cout << "dont have rule for nodetype: " << nodenames[cq.type] << "\n";
   	break;
@@ -240,6 +258,14 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
   res.insert(res.end(), ds.begin(), ds.end());
   res.push_back(two_arity_quad(node_FUNC_LABEL, ".end"));
   return res;
+}
+
+string call_label(string str) {
+  return "." + str;
+}
+
+string arm_label(string str) {
+  return "." + str + ":";
 }
 
 list<quad> data_section() {
@@ -300,8 +326,24 @@ quad move_to(pair<string, int> from, pair<string, int> to, vector<arm_register> 
   return three_arity_quad(node_MOV, regify(to.second), regify(from.second));
 }
 
+list<quad> handle_compare(quad cmp, vector<arm_register> *regs, map<string, int> *fake_to_real) {
+  list<quad> res; 
+  if (pair_exists(cmp.dest, fake_to_real) && pair_exists(cmp.opd1, fake_to_real)) {
+    int real_1 = fake_to_real -> find(cmp.dest) -> second;
+    int real_2 = fake_to_real -> find(cmp.opd1) -> second;
+    res.push_back(three_arity_quad(node_CMP, regify(real_1), regify(real_2)));
+
+    //done wif em
+    free_pair(pair<string, int>(cmp.dest, real_1), regs, fake_to_real);
+    free_pair(pair<string, int>(cmp.opd1, real_2), regs, fake_to_real);
+  } else {
+    cout << "ERROR: " << __FUNCTION__ << " op(s) were not mapped properly\n";
+  }
+  return res;
+}
+
 list<quad> handle_relational(quad rel, vector<arm_register> *regs, map<string, int> *fake_to_real) {
-  list<quad> res;
+  list<quad> res; 
   if (pair_exists(rel.opd1, fake_to_real) && pair_exists(rel.opd2, fake_to_real)) {
     int real_1 = fake_to_real -> find(rel.opd1) -> second;
     int real_2 = fake_to_real -> find(rel.opd2) -> second;
@@ -507,6 +549,8 @@ string quad_to_arm(quad q) {
     case node_MOV_4:
       res = four_arity(nodenames[q.type], q.dest, q.opd1, q.opd2);
       break;
+    case node_BR:
+    case node_BR_EQ:
     case node_BHS:
     case node_BLS:
     case node_BL:

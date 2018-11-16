@@ -26,6 +26,9 @@ struct arm_register {
   int number;
 };
 
+string arm_label(string str);
+string call_label(string str);
+list<quad> handle_compare(quad cmp, vector<arm_register> *regs, map<string, int> *fake_to_real);
 list<quad> data_section();
 list<quad> write_to_quads(quad write, vector<arm_register> *regs, set<string> idents, map<string, int> *fake_to_real);
 list<quad> handle_relational(quad rel, vector<arm_register> *regs, map<string, int> *fake_to_real);
