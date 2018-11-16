@@ -22,6 +22,8 @@
 
 using namespace std;
 
+string make_end_label(string label);
+string end_label(parsetree *node, string last_else);
 string end_label(parsetree *node);
 int num_children(parsetree *node);
 int last_child(parsetree *node);
