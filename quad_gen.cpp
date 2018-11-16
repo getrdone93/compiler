@@ -309,11 +309,16 @@ list<quad> handle_if(parsetree *root, set<nodetype> set_exp, set<nodetype> ge) {
   string next_br;
   
   if (else_child == NULL) {
-    next_br = string(if_child -> str_ptr) + "_end";
+    next_br = make_end_label(string(if_child -> str_ptr));
   } else {
     next_br = string(else_child -> str_ptr);
     next_block = make_quads(else_child -> children[0], next_block);
     next_block.push_front(two_arity_quad(node_FUNC_LABEL, next_br));    
+    //check if label or branch exists because if not then make_quads didn't call back to here
+    quad nbb = next_block.back();
+    if (nbb.type != node_FUNC_LABEL && nbb.type != node_BR) {
+      next_block.push_back(two_arity_quad(node_FUNC_LABEL, make_end_label(next_br)));
+    }
   }
 
   list<quad> cond_quads = nested_expression(condition, set_exp, ge);
