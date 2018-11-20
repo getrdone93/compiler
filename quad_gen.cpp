@@ -34,7 +34,7 @@ set<nodetype> set_ground_exp() {
 }
 
 list<quad> ground_expression(parsetree *root, set<nodetype> nested_exp, set<nodetype> accepted_exp) {
-  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
+  //  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
   parsetree *lc = root -> children[0];
   parsetree *left_child = NULL;
   if (contains(accepted_exp, lc -> type)) {
@@ -195,9 +195,9 @@ list<quad> handle_assignment(parsetree *root, set<nodetype> exp_types, set<nodet
   return res;
 }
 
-list<quad> write_exp_quad(parsetree *write_node, parsetree *ident) {
+list<quad> rw_exp_quad(parsetree *rw_node, parsetree *ident) {
   list<quad> res;
-  if (write_node == NULL || ident == NULL) {
+  if (rw_node == NULL || ident == NULL) {
     //do a warn or something
     quad err;
     err.type = node_ERROR;
@@ -209,11 +209,13 @@ list<quad> write_exp_quad(parsetree *write_node, parsetree *ident) {
     //    cout << "loaded leaf\n";
     res.push_back(ll);
     res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
-    res.push_back(three_arity_quad(node_WRITE, res.back().dest, ll.dest));
+    res.push_back(three_arity_quad(rw_node -> type == node_WRITE ? 
+				   node_WRITE : node_READ, res.back().dest, ll.dest));
   }
 
   return res;
 }
+
 
 set<nodetype> post_pre_ops() {
   set<nodetype> unaries;
@@ -385,7 +387,6 @@ set<nodetype> set_pass_nodes() {
   return nodes;
 }
 
-
 list<quad> make_quads(parsetree *root, list<quad> res) {
   //  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
   if (root == NULL) {
@@ -410,8 +411,8 @@ list<quad> make_quads(parsetree *root, list<quad> res) {
   }
     break;
   case node_statement: {
-    list<quad> write_quads = write_exp_quad(root -> children[0], root -> children[1]);
-    res.insert(res.end(), write_quads.begin(), write_quads.end());
+    list<quad> read_write = rw_exp_quad(root -> children[0], root -> children[1]);
+    res.insert(res.end(), read_write.begin(), read_write.end());
   }
     break;
   case node_selection_stmt: {

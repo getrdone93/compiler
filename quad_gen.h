@@ -47,4 +47,4 @@ list<quad> handle_assignment(parsetree *root, set<nodetype> exp_types, set<nodet
 string arm_small_constant(string val);
 string arm_constant(string val);
 string error(string func, string error);
-list<quad> write_exp_quad(parsetree *write_node, parsetree *ident);
+list<quad> rw_exp_quad(parsetree *write_node, parsetree *ident);
