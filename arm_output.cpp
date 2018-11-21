@@ -140,10 +140,6 @@ list<quad> binary_operator(quad binary, arm_register *dest_reg, vector<arm_regis
   return res;
 }
 
-  //  MOV     R0, #0
-  //  SWI   0x6c
-  //  STOR  var, R0
-
 list<quad> read_to_quads(quad read, vector<arm_register> *regs, set<string> idents, map<string, int> *fake_to_real) {
   list<quad> res;
   
