@@ -99,5 +99,6 @@ enum nodetype {
   node_PRE_SUB,
   node_BR_EQ,
   node_BR,
+  node_READ_INT,
   node_end_of_nodes
 };

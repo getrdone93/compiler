@@ -204,18 +204,35 @@ list<quad> rw_exp_quad(parsetree *rw_node, parsetree *ident) {
     err.dest = "write_expression saw a null input";
     res.push_back(err);
   } else {
-    //    cout << "ident stp: " << ident -> symbol_table_ptr << "\n";
-    quad ll = load_leaf(ident);
-    //    cout << "loaded leaf\n";
-    res.push_back(ll);
-    res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
-    res.push_back(three_arity_quad(rw_node -> type == node_WRITE ? 
-				   node_WRITE : node_READ, res.back().dest, ll.dest));
+    list<quad> write = write_to_quad(rw_node, ident);
+    list<quad> read = read_to_quad(rw_node, ident);
+    res.insert(res.end(), write.begin(), write.end());
+    res.insert(res.end(), read.begin(), read.end());
   }
 
   return res;
 }
 
+list<quad> read_to_quad(parsetree *wn, parsetree *ident) {
+  list<quad> res;
+  if (wn != NULL && ident != NULL && wn -> type == node_READ && ident -> type == node_IDENTIFIER) {
+    res.push_back(three_arity_quad(node_LOAD, next_reg(), "0"));
+    res.push_back(three_arity_quad(node_READ, ident -> symbol_table_ptr -> id_name, res.back().dest));
+    res.push_back(three_arity_quad(node_STOR, ident -> symbol_table_ptr -> id_name, res.front().dest));
+  }
+  return res;
+}
+
+list<quad> write_to_quad(parsetree *wn, parsetree *ident) {
+  list<quad> res;
+  if (wn != NULL && ident != NULL && wn -> type == node_WRITE && ident -> type == node_IDENTIFIER) {
+    quad ll = load_leaf(ident);
+    res.push_back(ll);
+    res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
+    res.push_back(three_arity_quad(node_WRITE, res.back().dest, ll.dest));    
+  } 
+  return res;
+}
 
 set<nodetype> post_pre_ops() {
   set<nodetype> unaries;

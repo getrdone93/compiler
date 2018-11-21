@@ -22,6 +22,8 @@
 
 using namespace std;
 
+list<quad> write_to_quad(parsetree *wn, parsetree *ident);
+list<quad> read_to_quad(parsetree *wn, parsetree *ident);
 string make_end_label(string label);
 string end_label(parsetree *node, string last_else);
 string end_label(parsetree *node);

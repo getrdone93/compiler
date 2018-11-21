@@ -140,6 +140,20 @@ list<quad> binary_operator(quad binary, arm_register *dest_reg, vector<arm_regis
   return res;
 }
 
+  //  MOV     R0, #0
+  //  SWI   0x6c
+  //  STOR  var, R0
+
+list<quad> read_to_quads(quad read, vector<arm_register> *regs, set<string> idents, map<string, int> *fake_to_real) {
+  list<quad> res;
+  
+  list<quad> stdin = prepare_operand(read.opd1, 0, regs, fake_to_real);
+  res.insert(res.end(), stdin.begin(), stdin.end());
+
+  res.push_back(two_arity_quad(node_SWI, nodenames[node_READ_INT]));
+  return res;
+}
+
 list<quad> write_to_quads(quad write, vector<arm_register> *regs, set<string> idents, map<string, int> *fake_to_real) {
   list<quad> res;
   list<quad> stdout = prepare_operand(write.dest, 0, regs, fake_to_real);
@@ -214,6 +228,11 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
     case node_WRITE: {
       list<quad> write_asm = write_to_quads(cq, regs, idents, &fake_to_real);
       res.insert(res.end(), write_asm.begin(), write_asm.end());
+    }
+      break;
+    case node_READ: {
+      list<quad> read_asm = read_to_quads(cq, regs, idents, &fake_to_real);
+      res.insert(res.end(), read_asm.begin(), read_asm.end());
     }
       break;
     case node_NEGATE: {
