@@ -404,6 +404,37 @@ set<nodetype> set_pass_nodes() {
   return nodes;
 }
 
+list<quad> handle_while(parsetree *node, set<nodetype> set_exp, set<nodetype> ge) {
+  list<quad> res;
+  
+  string end_label = make_end_label(node -> children[0] -> str_ptr);
+  string begin_label = node -> children[0] -> str_ptr;
+  list<quad> condition = nested_expression(node -> children[1], set_exp, ge);
+  quad ld = three_arity_quad(node_LOAD, next_reg(), "0");
+  quad cmp = three_arity_quad(node_CMP, condition.back().dest, ld.dest);
+  condition.push_back(ld);
+  condition.push_back(cmp);
+  condition.push_back(two_arity_quad(node_BR_EQ, end_label));
+  condition.push_front(two_arity_quad(node_FUNC_LABEL, begin_label));
+
+  list<quad> block;
+  block = make_quads(node -> children[2], block);
+  block.push_back(two_arity_quad(node_BR, begin_label));
+  block.push_back(two_arity_quad(node_FUNC_LABEL, end_label));
+  
+  res.insert(res.end(), condition.begin(), condition.end());
+  res.insert(res.end(), block.begin(), block.end());
+  return res;
+}
+
+list<quad> handle_iter(parsetree *node, set<nodetype> set_exp, set<nodetype> ge) {
+  list<quad> res;
+  if (node -> children[0] -> type == node_WHILE) {
+    res = handle_while(node, set_exp, ge);
+  }
+  return res;
+}
+
 list<quad> make_quads(parsetree *root, list<quad> res) {
   //  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
   if (root == NULL) {
@@ -435,6 +466,11 @@ list<quad> make_quads(parsetree *root, list<quad> res) {
   case node_selection_stmt: {
     list<quad> if_quads = handle_if(root, expr_types, ge);
     res.insert(res.end(), if_quads.begin(), if_quads.end());
+  }
+    break;
+  case node_iteration_stmt: {
+    list<quad> iter_quads = handle_iter(root, expr_types, ge);
+    res.insert(res.end(), iter_quads.begin(), iter_quads.end());
   }
     break;
   default:

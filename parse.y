@@ -871,14 +871,8 @@ int main( int ac, char *av[] )
     {
        //apply tree transformations
       take_out_nodes(root);
-      cout << "calling negate_operands\n";
       negate_operands(root);
       sequential_name(root);
-
-  /*       set<nodetype> types; */
-  /* types.insert(node_IF); */
-  /* types.insert(node_ELSE); */
-  /* check_names(root, types); */
 
       ofstream tree_file("tree.dat");
       dotit(root, 0, &tree_file);
@@ -921,6 +915,7 @@ void sequential_name(parsetree *root) {
   set<nodetype> types;
   types.insert(node_IF);
   types.insert(node_ELSE);
+  types.insert(node_WHILE);
 
   sequential_name(root, types, 0);
   cout << __FUNCTION__ << " is done\n";
