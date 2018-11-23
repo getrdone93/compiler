@@ -871,6 +871,7 @@ int main( int ac, char *av[] )
     {
        //apply tree transformations
       take_out_nodes(root);
+      cout << "calling negate_operands\n";
       negate_operands(root);
       sequential_name(root);
 
@@ -916,11 +917,13 @@ int main( int ac, char *av[] )
 }
 
 void sequential_name(parsetree *root) {
+  cout << "in " << __FUNCTION__ << "\n";
   set<nodetype> types;
   types.insert(node_IF);
   types.insert(node_ELSE);
 
   sequential_name(root, types, 0);
+  cout << __FUNCTION__ << " is done\n";
 }
 
 void check_names(parsetree *root, set<nodetype> node_types) {
@@ -987,6 +990,7 @@ parsetree* new_unary_expr() {
 }
 
 void negate_operands(parsetree *root) {
+  cout << "in " << __FUNCTION__ << "\n";
   set<nodetype> recur_gt = set_expr_types();
 
   set<nodetype> ground_types;
@@ -1003,6 +1007,7 @@ void negate_operands(parsetree *root) {
   expr_types.insert(node_logical_or_expression);
 
   negate_operands(root, expr_types, ground_types, recur_gt);
+  cout << __FUNCTION__ << " is done\n";
 }
 
 void negate_operands(parsetree *root, set<nodetype> expr_types, set<nodetype> ground_types, 
@@ -1033,21 +1038,29 @@ void negate_operands(parsetree *root, set<nodetype> expr_types, set<nodetype> gr
 }
 
 void take_out_nodes(parsetree *root) {
+  cout << "in " << __FUNCTION__ << "\n";
   set<nodetype> remove_nodes;
   remove_nodes.insert(node_primary_expression);
   remove_nodes.insert(node_expression_stmt);
   take_out_nodes(root, remove_nodes);
+  cout << __FUNCTION__ << " is done\n";
 }
 
 void take_out_nodes(parsetree *root, set<nodetype> remove_nodes) {
+  if (root == NULL) {
+    return;
+  }
   parsetree *child;
+  int stop;
   for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
     child = root -> children[i];
-    while (contains(remove_nodes, child -> type)) {
+    while (child != NULL && contains(remove_nodes, child -> type)) {
       child = child -> children[0];
     }
-    root -> children[i] = child;
-    take_out_nodes(child);
+    if (child != NULL) {
+      root -> children[i] = child;
+    }
+    take_out_nodes(child, remove_nodes);
   }
 }
 
