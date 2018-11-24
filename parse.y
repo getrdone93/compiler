@@ -916,6 +916,7 @@ void sequential_name(parsetree *root) {
   types.insert(node_IF);
   types.insert(node_ELSE);
   types.insert(node_WHILE);
+  types.insert(node_FOR);
 
   sequential_name(root, types, 0);
   cout << __FUNCTION__ << " is done\n";

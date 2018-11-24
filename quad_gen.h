@@ -22,6 +22,7 @@
 
 using namespace std;
 
+list<quad> handle_for(parsetree *node, set<nodetype> set_exp, set<nodetype> ge);
 list<quad> handle_while(parsetree *node, set<nodetype> set_exp, set<nodetype> ge);
 list<quad> handle_iter(parsetree *node, set<nodetype> set_exp, set<nodetype> ge);
 list<quad> write_to_quad(parsetree *wn, parsetree *ident);

@@ -404,6 +404,35 @@ set<nodetype> set_pass_nodes() {
   return nodes;
 }
 
+list<quad> handle_for(parsetree *node, set<nodetype> set_exp, set<nodetype> ge) {
+  list<quad> res;
+
+  string end_label = make_end_label(node -> children[0] -> str_ptr);
+  string begin_label = node -> children[0] -> str_ptr;
+  list<quad> assignment = nested_expression(node -> children[1], set_exp, ge);
+  assignment.push_back(two_arity_quad(node_FUNC_LABEL, begin_label));
+
+  list<quad> condition = nested_expression(node -> children[2], set_exp, ge);
+  quad ld = three_arity_quad(node_LOAD, next_reg(), "0");
+  quad cmp = three_arity_quad(node_CMP, condition.back().dest, ld.dest);
+  condition.push_back(ld);
+  condition.push_back(cmp);
+  condition.push_back(two_arity_quad(node_BR_EQ, end_label));
+
+  list<quad> modifier = nested_expression(node -> children[3], set_exp, ge);
+  modifier.push_back(two_arity_quad(node_BR, begin_label));
+  modifier.push_back(two_arity_quad(node_FUNC_LABEL, end_label));
+
+  list<quad> body;
+  body = make_quads(node -> children[4], body);
+
+  res.insert(res.end(), assignment.begin(), assignment.end());
+  res.insert(res.end(), condition.begin(), condition.end());
+  res.insert(res.end(), body.begin(), body.end());
+  res.insert(res.end(), modifier.begin(), modifier.end());
+  return res;
+}
+
 list<quad> handle_while(parsetree *node, set<nodetype> set_exp, set<nodetype> ge) {
   list<quad> res;
   
@@ -431,12 +460,16 @@ list<quad> handle_iter(parsetree *node, set<nodetype> set_exp, set<nodetype> ge)
   list<quad> res;
   if (node -> children[0] -> type == node_WHILE) {
     res = handle_while(node, set_exp, ge);
+  } else if (node -> children[0] -> type == node_FOR) {
+    res = handle_for(node, set_exp, ge);
+  } else {
+    cout << __FUNCTION__ << " WARN: will not process node " << nodenames[node -> type] << "\n";
   }
   return res;
 }
 
 list<quad> make_quads(parsetree *root, list<quad> res) {
-  //  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
+  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
   if (root == NULL) {
     return res;
   }
