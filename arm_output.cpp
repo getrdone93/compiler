@@ -158,7 +158,8 @@ list<quad> write_to_quads(quad write, vector<arm_register> *regs, set<string> id
   list<quad> opd1_prep = prepare_operand(write.opd1, 1, regs, fake_to_real);
   res.insert(res.end(), opd1_prep.begin(), opd1_prep.end());
   
-  res.push_back(two_arity_quad(node_SWI, nodenames[node_PRINT_INT]));
+  res.push_back(two_arity_quad(node_SWI, write.type == node_WRITE_STR ? nodenames[node_PRINT_STR]
+			       : nodenames[node_PRINT_INT]));
 
   //add newline
   res.push_back(three_arity_quad(node_LOAD, regify(1), arm_constant("EOL")));
@@ -174,6 +175,7 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
   map<string, int> fake_to_real;
   list<quad> decs = declare_idents(idents);
   res.insert(res.end(), decs.begin(), decs.end());
+  list<quad> str_labels;
 
   for (list<quad>::iterator it = quads.begin(); it != quads.end(); it++) {
     quad cq = *it;
@@ -194,6 +196,9 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
 	 res.insert(res.end(), cmp_quads.begin(), cmp_quads.end());
        }
         break;
+    case node_STR_LBL:
+      str_labels.push_back(four_arity_quad(node_FUNC_LABEL_4, make_label(cq.dest), cq.opd1, cq.opd2));
+      break;
     case node_LOGICAL_OR:
     case node_LOGICAL_AND:
     case node_PRE_ADD:
@@ -221,6 +226,7 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
       res.insert(res.end(), mod.begin(), mod.end());
     }
       break;
+    case node_WRITE_STR:
     case node_WRITE: {
       list<quad> write_asm = write_to_quads(cq, regs, idents, &fake_to_real);
       res.insert(res.end(), write_asm.begin(), write_asm.end());
@@ -269,7 +275,7 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
   res.push_back(two_arity_quad(node_SWI, HALT));
   res.insert(res.end(), af.begin(), af.end());
 
-  list<quad> ds = data_section();
+  list<quad> ds = data_section(str_labels);
   res.insert(res.end(), ds.begin(), ds.end());
   res.push_back(two_arity_quad(node_FUNC_LABEL, ".end"));
   return res;
@@ -283,10 +289,11 @@ string arm_label(string str) {
   return "." + str + ":";
 }
 
-list<quad> data_section() {
+list<quad> data_section(list<quad> str_labels) {
   list<quad> res;
   res.push_back(two_arity_quad(node_FUNC_LABEL, ".data"));
   res.push_back(four_arity_quad(node_FUNC_LABEL_4, "EOL:", ".asciz", "\"\\n\""));
+  res.insert(res.end(), str_labels.begin(), str_labels.end());
   return res;
 }
 

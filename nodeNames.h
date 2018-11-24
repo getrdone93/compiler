@@ -100,5 +100,7 @@ enum nodetype {
   node_BR_EQ,
   node_BR,
   node_READ_INT,
+  node_STR_LBL,
+  node_WRITE_STR,
   node_end_of_nodes
 };

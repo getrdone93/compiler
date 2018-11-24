@@ -41,7 +41,7 @@ set<nodetype> set_ground_exp();
 list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nodetype> ge);
 bool contains(set<nodetype> types, nodetype type);
 set<nodetype> set_expression_types();
-quad load_leaf(parsetree *node);
+list<quad> load_leaf(parsetree *node);
 string next_reg();
 void output_node(parsetree *node, string var_name);
 list<nodetype> operator_types();

@@ -52,21 +52,29 @@ quad.o: quad.cpp quad.h nodeNames.h
 
 # Run some tests - all should parse OK
 test :	parse
-	# echo "\nquick_test.c-"
-	# -./parse quick_test.c- > /dev/null
-	# cat quick_test.c-
+	echo "\nquick_test.c-"
+	-./parse quick_test.c- > /dev/null
+	cat quick_test.c-
+	cat output.quad
+	echo "---assembler---"
+	cat program.s
+	./makeTree.sh
+
+	# echo "\npre_post_test.c-"
+	# -./parse pre_post_test.c- > /dev/null
+	# cat pre_post_test.c-
 	# cat output.quad
 	# echo "---assembler---"
 	# cat program.s
 	# ./makeTree.sh
 
-	echo "\npre_post_test.c-"
-	-./parse pre_post_test.c- > /dev/null
-	cat pre_post_test.c-
-	cat output.quad
-	echo "---assembler---"
-	cat program.s
-	./makeTree.sh
+	# echo "\nphase3test2.c-"
+	# -./parse phase3test2.c-- > /dev/null
+	# cat phase3test2.c--
+	# cat output.quad
+	# echo "---assembler---"
+	# cat program.s
+	# ./makeTree.sh
 
 
 	# echo "\ntestprog.c"

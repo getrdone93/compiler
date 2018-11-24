@@ -100,6 +100,8 @@ const char *nodenames[] =
     "PRE_SUB",
     "BEQ",
     "B",
-    "0x6c"
+    "0x6c",
+    "STR_LBL",
+    "WRITE_STR"
   };
 

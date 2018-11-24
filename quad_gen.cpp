@@ -10,20 +10,24 @@ string error(string func, string error) {
   return "ERROR in function " + func + ": " + error + "\n";
 }
 
-quad load_leaf(parsetree *node) {
-  quad reg_expr;
+list<quad> load_leaf(parsetree *node) {
+  list<quad> leaf;
   switch (node -> type) {
      case node_IDENTIFIER:
-       reg_expr = three_arity_quad(node_LOAD, next_reg(), node -> symbol_table_ptr -> id_name);
+       leaf.push_back(three_arity_quad(node_LOAD, next_reg(), node -> symbol_table_ptr -> id_name));
        break;
     case node_CONSTANT:
-       reg_expr = three_arity_quad(node_LOAD, next_reg(), node -> str_ptr);
+       leaf.push_back(three_arity_quad(node_LOAD, next_reg(), node -> str_ptr));
        break;
+    case node_STRING_LITERAL:
+      leaf.push_back(four_arity_quad(node_STR_LBL, "str_label_" + next_reg(), ".asciz", node -> str_ptr));
+      leaf.push_back(three_arity_quad(node_LOAD, next_reg(), leaf.back().dest));
+      break;
     default:
-        cout << "hit default uh oh\n";
+      cout << "hit default uh oh " << nodenames[node -> type] << "\n";
       break;
   }
-  return reg_expr;
+  return leaf;
 }
 
 set<nodetype> set_ground_exp() {
@@ -215,7 +219,7 @@ list<quad> rw_exp_quad(parsetree *rw_node, parsetree *ident) {
 
 list<quad> read_to_quad(parsetree *wn, parsetree *ident) {
   list<quad> res;
-  if (wn != NULL && ident != NULL && wn -> type == node_READ && ident -> type == node_IDENTIFIER) {
+  if (wn != NULL && ident != NULL && wn -> type == node_READ) {
     res.push_back(three_arity_quad(node_LOAD, next_reg(), "0"));
     res.push_back(three_arity_quad(node_READ, ident -> symbol_table_ptr -> id_name, res.back().dest));
     res.push_back(three_arity_quad(node_STOR, ident -> symbol_table_ptr -> id_name, res.front().dest));
@@ -225,11 +229,19 @@ list<quad> read_to_quad(parsetree *wn, parsetree *ident) {
 
 list<quad> write_to_quad(parsetree *wn, parsetree *ident) {
   list<quad> res;
-  if (wn != NULL && ident != NULL && wn -> type == node_WRITE && ident -> type == node_IDENTIFIER) {
-    quad ll = load_leaf(ident);
-    res.push_back(ll);
-    res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
-    res.push_back(three_arity_quad(node_WRITE, res.back().dest, ll.dest));    
+  if (wn != NULL && ident != NULL && wn -> type == node_WRITE) {
+    list<quad> ll_list = load_leaf(ident);
+    nodetype wrt = ident -> type == node_STRING_LITERAL ? node_WRITE_STR : node_WRITE;
+    if (ll_list.size() == 1) {
+      quad ll = ll_list.front();
+      res.push_back(ll);
+      res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
+      res.push_back(three_arity_quad(wrt, res.back().dest, ll.dest));    
+    } else {
+      res.insert(res.end(), ll_list.begin(), ll_list.end());
+      res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
+      res.push_back(three_arity_quad(wrt, res.back().dest, ll_list.back().dest));
+    }
   } 
   return res;
 }
@@ -254,7 +266,7 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> post_pre_ops) {
       op = rc;
       leaf = lc;
     }
-    quad ll = load_leaf(leaf);
+    quad ll = load_leaf(leaf).front();
     res.push_back(ll);
     res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
 
@@ -282,7 +294,7 @@ list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> post_pre_ops) {
 list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nodetype> ge) {
   if (node -> type == node_CONSTANT || node -> type == node_IDENTIFIER) {
     list<quad> res;
-    res.push_back(load_leaf(node));
+    res.push_back(load_leaf(node).front());
     return res;
   } else if (contains(nested_exp, node -> type)) {
     return nested_expression(node, nested_exp, ge);
@@ -341,9 +353,9 @@ list<quad> handle_if(parsetree *root, set<nodetype> set_exp, set<nodetype> ge) {
     //check if label or branch exists because if not then make_quads didn't call back to here
     quad nbb = next_block.back();
 
-    if (nbb.type != node_FUNC_LABEL && nbb.type != node_BR) {
-      next_block.push_back(two_arity_quad(node_FUNC_LABEL, make_end_label(next_br)));
-    }
+    //    if (nbb.type != node_FUNC_LABEL && nbb.type != node_BR) {
+    next_block.push_back(two_arity_quad(node_FUNC_LABEL, make_end_label(next_br)));
+   //}
   }
 
   list<quad> cond_quads = nested_expression(condition, set_exp, ge);
