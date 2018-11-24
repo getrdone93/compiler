@@ -469,7 +469,6 @@ list<quad> handle_iter(parsetree *node, set<nodetype> set_exp, set<nodetype> ge)
 }
 
 list<quad> make_quads(parsetree *root, list<quad> res) {
-  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
   if (root == NULL) {
     return res;
   }
