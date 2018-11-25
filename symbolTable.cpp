@@ -44,15 +44,17 @@ void symbol_table(parsetree *root, vector<map<string, id_attrs> > *sym_table) {
     break;
   case node_block: 
     push_scope(sym_table);
-    if (root -> children[0] -> type == node_decl_list || root -> children[0] -> type == node_decl) {
-      process_decl_list(root -> children[0], sym_table);
-    }
+    if (root -> children[0] != NULL && root -> children[1] != NULL) {
+      if (root -> children[0] -> type == node_decl_list || root -> children[0] -> type == node_decl) {
+	process_decl_list(root -> children[0], sym_table);
+      }
     
-    symbol_table(root -> children[0], sym_table);
-    symbol_table(root -> children[1], sym_table);
+      symbol_table(root -> children[0], sym_table);
+      symbol_table(root -> children[1], sym_table);
 
-    output_map(sym_table -> back());
-    sym_table -> pop_back();
+      output_map(sym_table -> back());
+      sym_table -> pop_back();
+    }
     break;
   case node_IDENTIFIER: {
     id_attrs atts = in_scope(root -> str_ptr, sym_table);
