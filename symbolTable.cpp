@@ -100,13 +100,16 @@ bool in_top_scope(string id, vector<map<string, id_attrs> > *sym_table) {
 
 pair<bool, string> key_exists(string id, map<string, id_attrs> m) {
   for (map<string, id_attrs>::const_iterator it = m.begin(); it != m.end(); it++) {
-    if (boost::starts_with(it -> first, id)) {
-      return pair<bool, string>(true, it->first);
+    string key = it -> first;
+    if (strcmp(key.substr(0, key.find("_")).c_str(), id.c_str()) == 0) {
+      return pair<bool, string>(true, key);
       break;
     }
   }
   return pair<bool, string>(false, "not_found");
 }
+
+
 
 void output_map(map<string, id_attrs> m) {
   for (map<string, id_attrs>::const_iterator it = m.begin(); it != m.end(); it++) {

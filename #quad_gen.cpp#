@@ -1,0 +1,881 @@
+#include "quad_gen.h"
+#include <boost/algorithm/string/predicate.hpp>
+
+string next_reg() {
+  static int reg_seq = 0;
+  return "R" + to_string(reg_seq++);
+}
+
+string error(string func, string error) {
+  return "ERROR in function " + func + ": " + error + "\n";
+}
+
+list<quad> load_leaf(parsetree *node) {
+  list<quad> leaf;
+  switch (node -> type) {
+     case node_IDENTIFIER:
+bison -d -t parse.y
+sed "s/stderr/stdout/" parse.tab.c >parse.cpp ; rm parse.tab.c
+mv parse.tab.h y.tab.h
+g++ -g -c parse.cpp
+flex scanner.lex
+mv lex.yy.c scanner.cpp
+g++ -g -c scanner.cpp
+g++ -g -c symbolTable.cpp
+g++ -g -c quad_gen.cpp
+g++ -g -o parse parse.o scanner.o symbolTable.o nodeNames.o quad_gen.o quad.o helper_funcs.o arm_output.o
+rm parse.o scanner.o
+echo "\nquick_test.c-"
+
+quick_test.c-
+./parse quick_test.c- > /dev/null
+cat quick_test.c-
+int main() {
+    int input, nv, v, c, diff, i, isprime, fib1, fib2, fibsum;
+    read(input);
+    isprime = 1;
+    for( i = 2; i < input && isprime; ++i )
+    {
+	write(i);
+	if ( ( input % i ) == 0 ) 
+           isprime = 0; 
+    }
+        if ( isprime )
+           write( "The input was also prime" );
+        else
+	   write( "The input was not prime." );
+}
+
+
+cat output.quad
+(LDR, R0, 0, -)
+(READ, input_1, R0, -)
+(STR, input_1, R0, -)
+(LDR, R1, 1, -)
+(STR, isprime_7, R1, -)
+(LDR, R2, 2, -)
+(STR, i_6, R2, -)
+(LDR, R3, i_6, -)
+(FUNC_LABEL, for_0, -, -)
+(LDR, R4, i_6, -)
+(LDR, R5, input_1, -)
+(LESS_THAN, R6, R4, R5)
+(NEGATE, R7, R6, -)
+(NEGATE, R8, R7, -)
+(LDR, R9, isprime_7, -)
+(NEGATE, R10, R9, -)
+(NEGATE, R11, R10, -)
+(LOGICAL_AND, R12, R8, R11)
+(LDR, R13, 0, -)
+(CMP, R12, R13, -)
+(BEQ, for_0_end, -, -)
+(LDR, R18, i_6, -)
+(LDR, R19, 1, -)
+(WRITE, R19, R18, -)
+(LDR, R20, input_1, -)
+(LDR, R21, i_6, -)
+(MOD, R22, R20, R21)
+(LDR, R23, 0, -)
+(EQUAL, R24, R22, R23)
+(LDR, R25, 0, -)
+(CMP, R24, R25, -)
+(BEQ, if_1_end, -, -)
+(LDR, R26, 0, -)
+(STR, isprime_7, R26, -)
+(FUNC_LABEL, if_1_end, -, -)
+(LDR, R14, i_6, -)
+(LDR, R15, 1, -)
+(PRE_ADD, R16, R14, R15)
+(STR, i_6, R16, -)
+(LDR, R17, i_6, -)
+(B, for_0, -, -)
+(FUNC_LABEL, for_0_end, -, -)
+(LDR, R30, isprime_7, -)
+(NEGATE, R31, R30, -)
+(NEGATE, R32, R31, -)
+(LDR, R33, 0, -)
+(CMP, R32, R33, -)
+(BEQ, else_3, -, -)
+(STR_LBL, str_label_R34, .asciz, "The input was also prime")
+(LDR, R35, str_label_R34, -)
+(LDR, R36, 1, -)
+(WRITE_STR, R36, R35, -)
+(B, else_3_end, -, -)
+(FUNC_LABEL, else_3, -, -)
+(STR_LBL, str_label_R27, .asciz, "The input was not prime.")
+(LDR, R28, str_label_R27, -)
+(LDR, R29, 1, -)
+(WRITE_STR, R29, R28, -)
+(FUNC_LABEL, else_3_end, -, -)
+echo "---assembler---"
+---assembler---
+cat program.s
+i_6:	.word 0
+input_1:	.word 0
+isprime_7:	.word 0
+LDR	R0, =0
+SWI	0x6c
+LDR	R1, =input_1
+STR	R0, [R1]
+LDR	R0, =1
+LDR	R1, =isprime_7
+STR	R0, [R1]
+LDR	R0, =2
+LDR	R1, =i_6
+STR	R0, [R1]
+LDR	R0, =i_6
+LDR	R0, [R0]
+.for_0:	
+LDR	R1, =i_6
+LDR	R1, [R1]
+LDR	R2, =input_1
+LDR	R2, [R2]
+CMP	R1, R2
+MOV	R1, #0
+MOVLT	R1, #1
+MOV	R2, R0
+MOV	R0, R1
+BL	negate
+MOV	R0, R1
+BL	negate
+LDR	R0, =isprime_7
+LDR	R0, [R0]
+MOV	R3, R1
+BL	negate
+MOV	R0, R1
+BL	negate
+AND	R0, R3, R1
+LDR	R1, =0
+CMP	R0, R1
+BEQ	.for_0_end
+LDR	R0, =i_6
+LDR	R0, [R0]
+LDR	R1, =1
+MOV	R3, R0
+MOV	R0, R1
+MOV	R1, R3
+SWI	0x6b
+LDR	R1, =EOL
+SWI	0x69
+LDR	R0, =input_1
+LDR	R0, [R0]
+LDR	R1, =i_6
+LDR	R1, [R1]
+BL	sdiv
+LDR	R0, =0
+CMP	R1, R0
+MOV	R1, #0
+MOVEQ	R1, #1
+LDR	R0, =0
+CMP	R1, R0
+BEQ	.if_1_end
+LDR	R0, =0
+LDR	R1, =isprime_7
+STR	R0, [R1]
+.if_1_end:	
+LDR	R0, =i_6
+LDR	R0, [R0]
+LDR	R1, =1
+ADD	R3, R0, R1
+LDR	R0, =i_6
+STR	R3, [R0]
+LDR	R0, =i_6
+LDR	R0, [R0]
+B	.for_0
+.for_0_end:	
+LDR	R1, =isprime_7
+LDR	R1, [R1]
+MOV	R3, R0
+MOV	R0, R1
+BL	negate
+MOV	R0, R1
+BL	negate
+LDR	R0, =0
+CMP	R1, R0
+BEQ	.else_3
+LDR	R0, =str_label_R34
+LDR	R1, =1
+MOV	R4, R0
+MOV	R0, R1
+MOV	R1, R4
+SWI	0x69
+LDR	R1, =EOL
+SWI	0x69
+B	.else_3_end
+.else_3:	
+LDR	R0, =str_label_R27
+LDR	R1, =1
+MOV	R4, R0
+MOV	R0, R1
+MOV	R1, R4
+SWI	0x69
+LDR	R1, =EOL
+SWI	0x69
+.else_3_end:	
+SWI	0x11
+	
+negate:	
+CMP	R0, #0
+MOV	R1, #0
+MOVEQ	R1, #1
+BX	LR
+	
+sdiv:	
+STMFD	sp!, {r2-r5}
+MOV	R4, R0
+MUL	R5, R0, R1
+CMP	R0, #0
+RSBLT	R0, R0, #0
+CMP	R1, #0
+RSBLT	R1, R1, #0
+MOV	R3, R1
+CMP	R3, R0, lsr #1
+.Div1:	
+MOVLS	R3, R3, lsl #1
+CMP	R3, R0, lsr #1
+BLS	.Div1
+MOV	R2, #0
+.Div2:	
+CMP	R0, R3
+SUBCS	R0, R0, R3
+ADC	R2, R2, R2
+MOV	R3, R3, lsr #1
+CMP	R3, R1
+BHS	.Div2
+CMP	R5, #0
+RSBLT	R2, R2, #0
+CMP	R4, #0
+RSBLT	R0, R0, #0
+MOV	R1, R0
+MOV	R0, R2
+LDMFD	sp!, {r2-r5}
+BX	R14
+.data	
+EOL:	.asciz "\n"
+str_label_R34:	.asciz "The input was also prime"
+str_label_R27:	.asciz "The input was not prime."
+.end	
+./makeTree.sh
+# echo "\npre_post_test.c-"
+# -./parse pre_post_test.c- > /dev/null
+# cat pre_post_test.c-
+# cat output.quad
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\nphase3test2.c-"
+# -./parse phase3test2.c-- > /dev/null
+# cat phase3test2.c--
+# cat output.quad
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\ntestprog.c"
+# -./parse testprog.c- > /dev/null
+# cat testprog.c-
+# cat output.quad
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\na_test1.c"
+# -./parse testFiles/input_progs/a_test1.c- > /dev/null
+# cat testFiles/input_progs/a_test1.c-
+# cat output.quad
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\na_test2.c"
+# -./parse testFiles/input_progs/a_test2.c- > /dev/null
+# 	cat testFiles/input_progs/a_test2.c-
+# 	./makeTree.sh
+# cat output.quad
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\na_test3.c"
+# -./parse testFiles/input_progs/a_test3.c- > /dev/null
+# 	cat testFiles/input_progs/a_test3.c-
+# ./makeTree.sh
+# cat output.quad
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\na_test4.c"
+# -./parse testFiles/input_progs/a_test4.c- > /dev/null
+# 	cat testFiles/input_progs/a_test4.c-
+# ./makeTree.sh
+# cat output.quad
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\na_test5.c"
+# -./parse testFiles/input_progs/a_test5.c- > /dev/null
+# 	cat testFiles/input_progs/a_test5.c-
+# ./makeTree.sh
+# cat output.quad
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\na_test6.c"
+# -./parse testFiles/input_progs/a_test6.c- > /dev/null
+# cat testFiles/input_progs/a_test6.c-
+# ./makeTree.sh
+# cat output.quad
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\na_test7.c"
+# -./parse testFiles/input_progs/a_test7.c- > /dev/null
+# 	cat testFiles/input_progs/a_test7.c-
+# ./makeTree.sh
+# cat output.quad
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\na_test8.c"
+# -./parse testFiles/input_progs/a_test8.c- > /dev/null
+# 	cat testFiles/input_progs/a_test8.c-
+# ./makeTree.sh
+# cat output.quad
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\na_test9.c"
+# -./parse testFiles/input_progs/a_test9.c- > /dev/null
+# 	cat testFiles/input_progs/a_test9.c-
+# cat output.quad
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\na_test10.c"
+# -./parse testFiles/input_progs/a_test10.c-
+# 	cat testFiles/input_progs/a_test10.c-
+# cat output.quad
+# ./makeTree.sh
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+# echo "\na_test11.c"
+# -./parse testFiles/input_progs/a_test11.c-
+# cat testFiles/input_progs/a_test11.c-
+# cat output.quad
+# ./makeTree.sh
+# echo "---assembler---"
+# cat program.s
+# ./makeTree.sh
+       leaf.push_back(three_arity_quad(node_LOAD, next_reg(), node -> symbol_table_ptr -> id_name));
+       break;
+    case node_CONSTANT:
+       leaf.push_back(three_arity_quad(node_LOAD, next_reg(), node -> str_ptr));
+       break;
+    case node_STRING_LITERAL:
+      leaf.push_back(four_arity_quad(node_STR_LBL, "str_label_" + next_reg(), ".asciz", node -> str_ptr));
+      leaf.push_back(three_arity_quad(node_LOAD, next_reg(), leaf.back().dest));
+      break;
+    default:
+      cout << "hit default uh oh " << nodenames[node -> type] << "\n";
+      break;
+  }
+  return leaf;
+}
+
+set<nodetype> set_ground_exp() {
+  set<nodetype> exp_types;
+  exp_types.insert(node_IDENTIFIER);
+  exp_types.insert(node_CONSTANT);
+  return exp_types;
+}
+
+list<quad> ground_expression(parsetree *root, set<nodetype> nested_exp, set<nodetype> accepted_exp) {
+  //  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
+  parsetree *lc = root -> children[0];
+  parsetree *left_child = NULL;
+  if (contains(accepted_exp, lc -> type)) {
+    left_child = lc;
+  }
+
+  parsetree *rc = root -> children[2];
+  parsetree *right_child = NULL;
+  if (contains(accepted_exp, rc -> type)) {
+    right_child = rc;
+  }
+
+  if (left_child == NULL || right_child == NULL) {
+    //do a warn or something
+    list<quad> res;
+    cout << "WARN, returning empty from " << __FUNCTION__ << "\n";
+    return res;
+  } else {
+    list<quad> left = unary_post_pre_exp(lc, nested_exp, accepted_exp);
+    list<quad> right = unary_post_pre_exp(rc, nested_exp, accepted_exp);
+    nodetype op_type = root -> children[1] -> type;
+    quad expr = four_arity_quad(op_type, next_reg(), 
+				left.back().type == node_STOR ? left.back().opd1 : left.back().dest,
+				right.back().type == node_STOR ? right.back().opd1 : right.back().dest);
+
+    //handle two pre-increments in same sub exp and assignment on right of exp
+    if (((right_child -> type == node_unary_expression && (right_child -> children[0] -> type == node_INC_OP
+							 || right_child -> children[0] -> type == node_DEC_OP)
+	|| left_child -> type == node_unary_expression && (left_child -> children[0] -> type == node_INC_OP
+							   || left_child -> children[0] -> type == node_DEC_OP))
+	&& right_child -> type != node_postfix_expression && left_child -> type != node_postfix_expression)
+	|| (right_child -> type == node_assignment_expression && ((left_child -> type == node_assignment_expression
+								  && strcmp(left_child -> children[0] -> symbol_table_ptr
+									    -> id_name, right_child -> children[0]
+									    -> symbol_table_ptr -> id_name) == 0)
+								  || (left_child -> type == node_IDENTIFIER 
+								      && strcmp(left_child -> symbol_table_ptr 
+										-> id_name, right_child 
+										-> children[0] -> symbol_table_ptr
+										-> id_name) == 0)))) {
+      quad rb = right.back();
+      rb.dest = next_reg();
+      right.push_back(rb);
+      expr.opd1 = rb.dest;
+    } 
+
+    list<quad> res;
+    res.insert(res.end(), left.begin(), left.end());
+    res.insert(res.end(), right.begin(), right.end());
+    res.push_back(expr);
+
+    return res;
+  }
+}
+
+void output_node(parsetree *node, string var_name) {
+  if (node == NULL) {
+    cout << var_name << " is NULL\n";
+  } else {
+    cout << var_name << " -> nodetype: " << nodenames[node -> type] << "\n";
+  }
+}
+
+set<nodetype> set_expression_types() {
+  set<nodetype> exp_types;
+  exp_types.insert(node_additive_expression);
+  exp_types.insert(node_multiplicative_expression);
+  exp_types.insert(node_relational_expression);
+  exp_types.insert(node_inclusive_or_expression);
+  exp_types.insert(node_and_expression);
+  exp_types.insert(node_exclusive_or_expression);
+  exp_types.insert(node_logical_and_expression);
+  exp_types.insert(node_logical_or_expression);
+  return exp_types;
+}
+
+bool contains(set<nodetype> types, nodetype type) {
+  return types.find(type) != types.end();
+}
+
+list<quad> nested_expression(parsetree *root, set<nodetype> set_exp, set<nodetype> ge) {
+  //  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
+    if (contains(ge, root -> type)) {
+      return unary_post_pre_exp(root, set_exp, ge);
+    }
+
+    parsetree *lc = root -> children[0];
+    parsetree *left_child = NULL;
+    if (lc == NULL) {
+      left_child = NULL;
+    } else if (contains(set_exp, lc -> type)) {
+      left_child = lc;
+    }
+
+    parsetree *mid_child = root -> children[1];
+
+    parsetree *rc = root -> children[2];
+    parsetree *right_child = NULL;
+    if (rc == NULL) {
+      right_child = NULL;
+    } else if (contains(set_exp, rc -> type)) {
+      right_child = rc;
+    } 
+
+    if (mid_child == NULL) {
+    //do debug or something
+    cout << "not an eggsicutable eggspression, mid_child: " << mid_child << "\n";
+    list<quad> res;
+    res.push_back(two_arity_quad(node_ERROR, "nested_expression saw a null input"));
+    return res;
+  } else {
+    if (left_child == NULL && right_child == NULL) {
+      return ground_expression(root, set_exp, ge);
+    } else {
+      if (left_child != NULL && right_child != NULL) {
+	list<quad> l1 = nested_expression(left_child, set_exp, ge);
+	list<quad> l2 = nested_expression(right_child, set_exp, ge);
+	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, l2.back().dest);
+
+	l1.insert(l1.end(), l2.begin(), l2.end());
+	l1.push_back(expr);
+	return l1;
+      } else {
+	list<quad> l1 = nested_expression(left_child == NULL ? right_child : left_child, set_exp, ge);
+
+	parsetree *ground_node = left_child == NULL ? root -> children[0] : root -> children[2];
+	list<quad> gn = unary_post_pre_exp(ground_node, set_exp, ge); 
+
+	quad expr = four_arity_quad(mid_child -> type, next_reg(), l1.back().dest, 
+				    gn.back().type == node_STOR ? gn.back().opd1 : gn.back().dest);
+	
+	l1.insert(l1.end(), gn.begin(), gn.end());
+	l1.push_back(expr);
+	return l1;
+      }
+    }
+  }
+}
+
+list<quad> handle_assignment(parsetree *root, set<nodetype> exp_types, set<nodetype> ge) {
+  list<quad> res;
+  parsetree *lc = root -> children[0];
+  parsetree *rc = root -> children[2];
+  list<quad> right_side = nested_expression(rc, exp_types, ge);
+
+  if (right_side.empty()) {
+    cout << "ERROR " << __FUNCTION__ << ", right side of assignment was empty\n";
+  } else  {
+    res.insert(res.end(), right_side.begin(), right_side.end());
+    string last_loc = right_side.back().dest;
+    if (boost::starts_with(last_loc, "R")) {
+      res.push_back(three_arity_quad(node_STOR, lc -> symbol_table_ptr -> id_name, last_loc));
+    } else {
+      res.push_back(three_arity_quad(node_LOAD, next_reg(), last_loc));
+      res.push_back(three_arity_quad(node_STOR, lc -> symbol_table_ptr -> id_name, res.back().dest));
+    }
+  }
+  return res;
+}
+
+list<quad> rw_exp_quad(parsetree *rw_node, parsetree *ident) {
+  list<quad> res;
+  if (rw_node == NULL || ident == NULL) {
+    //do a warn or something
+    quad err;
+    err.type = node_ERROR;
+    err.dest = "write_expression saw a null input";
+    res.push_back(err);
+  } else {
+    list<quad> write = write_to_quad(rw_node, ident);
+    list<quad> read = read_to_quad(rw_node, ident);
+    res.insert(res.end(), write.begin(), write.end());
+    res.insert(res.end(), read.begin(), read.end());
+  }
+
+  return res;
+}
+
+list<quad> read_to_quad(parsetree *wn, parsetree *ident) {
+  list<quad> res;
+  if (wn != NULL && ident != NULL && wn -> type == node_READ) {
+    res.push_back(three_arity_quad(node_LOAD, next_reg(), "0"));
+    res.push_back(three_arity_quad(node_READ, ident -> symbol_table_ptr -> id_name, res.back().dest));
+    res.push_back(three_arity_quad(node_STOR, ident -> symbol_table_ptr -> id_name, res.front().dest));
+  }
+  return res;
+}
+
+list<quad> write_to_quad(parsetree *wn, parsetree *ident) {
+  list<quad> res;
+  if (wn != NULL && ident != NULL && wn -> type == node_WRITE) {
+    list<quad> ll_list = load_leaf(ident);
+    nodetype wrt = ident -> type == node_STRING_LITERAL ? node_WRITE_STR : node_WRITE;
+    if (ll_list.size() == 1) {
+      quad ll = ll_list.front();
+      res.push_back(ll);
+      res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
+      res.push_back(three_arity_quad(wrt, res.back().dest, ll.dest));    
+    } else {
+      res.insert(res.end(), ll_list.begin(), ll_list.end());
+      res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
+      res.push_back(three_arity_quad(wrt, res.back().dest, ll_list.back().dest));
+    }
+  } 
+  return res;
+}
+
+set<nodetype> post_pre_ops() {
+  set<nodetype> unaries;
+  unaries.insert(node_INC_OP);
+  unaries.insert(node_DEC_OP);
+  return unaries;
+}
+
+list<quad> prefix_postfix_exp(parsetree *node, set<nodetype> post_pre_ops) {
+    list<quad> res;
+    parsetree *lc = node -> children[0];
+    parsetree *rc = node -> children[1];
+    parsetree *leaf = NULL;
+    parsetree *op = NULL;
+    if (contains(post_pre_ops, lc -> type)) {
+      op = lc;      
+      leaf = rc;
+    } else {
+      op = rc;
+      leaf = lc;
+    }
+    quad ll = load_leaf(leaf).front();
+    res.push_back(ll);
+    res.push_back(three_arity_quad(node_LOAD, next_reg(), "1"));
+
+    nodetype expr_type;
+    if (node -> type == node_postfix_expression) {
+      expr_type = op -> type == node_INC_OP ? node_POST_ADD : node_POST_SUB;
+    } else if (node -> type == node_unary_expression) {
+      expr_type = op -> type == node_INC_OP ? node_PRE_ADD : node_PRE_SUB;
+    } else {
+      cout << __FUNCTION__ << " ERROR, did not see expected nodetype of either postfix_expression or unary_expression\n";
+    }
+    res.push_back(four_arity_quad(expr_type, next_reg(), ll.dest, res.back().dest));
+    res.push_back(three_arity_quad(node_STOR, leaf -> symbol_table_ptr -> id_name, res.back().dest));
+
+    if (node -> type == node_postfix_expression) {
+      //force caller to grab register of original leaf prior to bumping it
+      res.push_back(three_arity_quad(node_LOAD, ll.dest, ll.dest));
+    } else if (node -> type == node_unary_expression) {
+      //load last value published for pre inc
+      res.push_back(three_arity_quad(node_LOAD, next_reg(), res.back().dest));
+    }
+    return res;
+}
+ 
+list<quad> unary_post_pre_exp(parsetree *node, set<nodetype> nested_exp, set<nodetype> ge) {
+  if (node -> type == node_CONSTANT || node -> type == node_IDENTIFIER) {
+    list<quad> res;
+    res.push_back(load_leaf(node).front());
+    return res;
+  } else if (contains(nested_exp, node -> type)) {
+    return nested_expression(node, nested_exp, ge);
+  } else if (node -> type == node_assignment_expression) {
+    list<quad> ha = handle_assignment(node, nested_exp, ge);
+    ha.push_back(three_arity_quad(node_LOAD, next_reg(), ha.back().dest));
+    return ha;
+  } else if (node -> type == node_postfix_expression || node -> children[0] -> type == node_INC_OP
+	     || node -> children[0] -> type == node_DEC_OP) {
+    return prefix_postfix_exp(node, post_pre_ops());
+  } else if (node -> type == node_unary_expression) {
+    list<quad> right = unary_post_pre_exp(node -> children[1], nested_exp, ge);
+    if (node -> children[0] -> type == node_UNARY_MINUS) {
+      right.push_back(three_arity_quad(node_LOAD, next_reg(), "0"));
+      right.push_back(four_arity_quad(node_SUBTRACT, next_reg(), right.back().dest, right.front().dest));
+    } else if (node -> children[0] -> type == node_NEGATE) {
+      right.push_back(three_arity_quad(node_NEGATE, next_reg(), right.back().dest));
+    } else {
+      cout << __FUNCTION__ << " will not handle node: " << nodenames[node -> children[0] -> type] << "\n";
+    }
+    return right;
+  }
+}
+
+set<string> get_identifiers(parsetree *root, set<string> res) {
+  if (root -> type == node_IDENTIFIER && root -> symbol_table_ptr != NULL) {
+    res.insert(root -> symbol_table_ptr -> id_name);
+    return res;
+  } else {
+    for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+      set<string> ret = get_identifiers(root -> children[i], res);
+      res.insert(ret.begin(), ret.end());
+    }
+    return res;
+  }
+}
+
+list<quad> handle_if(parsetree *root, set<nodetype> set_exp, set<nodetype> ge) {
+  //  cout << __FUNCTION__ << " at node: " << nodenames[root -> type] << "\n";
+  list<quad> res;
+
+  parsetree *if_child = root -> children[0];
+  parsetree *condition = root -> children[1];
+  parsetree *curr_block = root -> children[2];
+  parsetree *else_child = root -> children[3];
+
+  list<quad> next_block;
+  string next_br;
+  
+  if (else_child == NULL) {
+    next_br = make_end_label(string(if_child -> str_ptr));
+  } else {
+    next_br = string(else_child -> str_ptr);
+    next_block = make_quads(else_child -> children[0], next_block);
+    next_block.push_front(two_arity_quad(node_FUNC_LABEL, next_br));    
+    //check if label or branch exists because if not then make_quads didn't call back to here
+    quad nbb = next_block.back();
+
+    //    if (nbb.type != node_FUNC_LABEL && nbb.type != node_BR) {
+    next_block.push_back(two_arity_quad(node_FUNC_LABEL, make_end_label(next_br)));
+   //}
+  }
+
+  list<quad> cond_quads = nested_expression(condition, set_exp, ge);
+
+  list<quad> branch;
+  branch.push_back(three_arity_quad(node_LOAD, next_reg(), "0"));
+  branch.push_back(three_arity_quad(node_CMP, cond_quads.back().dest, branch.back().dest));
+  branch.push_back(two_arity_quad(node_BR_EQ, next_br));
+  
+  list<quad> block_quads;
+  block_quads = make_quads(curr_block, block_quads);
+  if (else_child == NULL) {
+    block_quads.push_back(two_arity_quad(node_FUNC_LABEL, next_br));    
+  } else {
+    string el = end_label(else_child, string(else_child -> str_ptr));
+    block_quads.push_back(two_arity_quad(node_BR, el));
+  }
+
+  res.insert(res.end(), cond_quads.begin(), cond_quads.end());
+  res.insert(res.end(), branch.begin(), branch.end());
+  res.insert(res.end(), block_quads.begin(), block_quads.end());
+  res.insert(res.end(), next_block.begin(), next_block.end());
+  return res;
+}
+
+int last_child(parsetree *node) {
+  int res = -1;
+  for (int c = 0; c < 10 && node -> children[c] != NULL; c++) {
+    res = c;
+  }
+  return res;
+}
+
+int num_children(parsetree *node) {
+  return last_child(node) + 1;
+}
+
+string end_label(parsetree *node, string last_else) {
+  if (node == NULL || num_children(node) == 0) {
+    return last_else;
+  } else {
+    int lc = last_child(node);
+    string if_label = node -> type == node_selection_stmt ? make_end_label(node -> children[0] -> str_ptr)
+      : last_else;
+    return end_label(node -> children[lc], node -> type == node_ELSE ? make_end_label(string(node -> str_ptr))
+		     : if_label);    
+  }
+}
+
+string make_end_label(string label) {
+  return label + "_end";
+}
+
+set<nodetype> set_pass_nodes() {
+  set<nodetype> nodes;
+  nodes.insert(node_ELSE);
+  nodes.insert(node_block);
+  return nodes;
+}
+
+list<quad> handle_for(parsetree *node, set<nodetype> set_exp, set<nodetype> ge) {
+  list<quad> res;
+
+  string end_label = make_end_label(node -> children[0] -> str_ptr);
+  string begin_label = node -> children[0] -> str_ptr;
+  list<quad> assignment = nested_expression(node -> children[1], set_exp, ge);
+  assignment.push_back(two_arity_quad(node_FUNC_LABEL, begin_label));
+
+  list<quad> condition = nested_expression(node -> children[2], set_exp, ge);
+  quad ld = three_arity_quad(node_LOAD, next_reg(), "0");
+  quad cmp = three_arity_quad(node_CMP, condition.back().dest, ld.dest);
+  condition.push_back(ld);
+  condition.push_back(cmp);
+  condition.push_back(two_arity_quad(node_BR_EQ, end_label));
+
+  list<quad> modifier = nested_expression(node -> children[3], set_exp, ge);
+  modifier.push_back(two_arity_quad(node_BR, begin_label));
+  modifier.push_back(two_arity_quad(node_FUNC_LABEL, end_label));
+
+  list<quad> body;
+  body = make_quads(node -> children[4], body);
+
+  res.insert(res.end(), assignment.begin(), assignment.end());
+  res.insert(res.end(), condition.begin(), condition.end());
+  res.insert(res.end(), body.begin(), body.end());
+  res.insert(res.end(), modifier.begin(), modifier.end());
+  return res;
+}
+
+list<quad> handle_while(parsetree *node, set<nodetype> set_exp, set<nodetype> ge) {
+  list<quad> res;
+  
+  string end_label = make_end_label(node -> children[0] -> str_ptr);
+  string begin_label = node -> children[0] -> str_ptr;
+  list<quad> condition = nested_expression(node -> children[1], set_exp, ge);
+  quad ld = three_arity_quad(node_LOAD, next_reg(), "0");
+  quad cmp = three_arity_quad(node_CMP, condition.back().dest, ld.dest);
+  condition.push_back(ld);
+  condition.push_back(cmp);
+  condition.push_back(two_arity_quad(node_BR_EQ, end_label));
+  condition.push_front(two_arity_quad(node_FUNC_LABEL, begin_label));
+
+  list<quad> block;
+  block = make_quads(node -> children[2], block);
+  block.push_back(two_arity_quad(node_BR, begin_label));
+  block.push_back(two_arity_quad(node_FUNC_LABEL, end_label));
+  
+  res.insert(res.end(), condition.begin(), condition.end());
+  res.insert(res.end(), block.begin(), block.end());
+  return res;
+}
+
+list<quad> handle_iter(parsetree *node, set<nodetype> set_exp, set<nodetype> ge) {
+  list<quad> res;
+  if (node -> children[0] -> type == node_WHILE) {
+    res = handle_while(node, set_exp, ge);
+  } else if (node -> children[0] -> type == node_FOR) {
+    res = handle_for(node, set_exp, ge);
+  } else {
+    cout << __FUNCTION__ << " WARN: will not process node " << nodenames[node -> type] << "\n";
+  }
+  return res;
+}
+
+list<quad> make_quads(parsetree *root, list<quad> res) {
+  if (root == NULL) {
+    return res;
+  }
+
+  set<nodetype> expr_types = set_expression_types();
+  set<nodetype> ge = set_ground_exp();
+  ge.insert(node_unary_expression);
+  ge.insert(node_postfix_expression);
+  ge.insert(node_assignment_expression);
+  switch(root -> type) {
+    case node_assignment_expression: {
+      list<quad> assign = handle_assignment(root, expr_types, ge);
+      return assign;
+    }
+    break;
+  case node_unary_expression:
+  case node_postfix_expression: {
+    list<quad> postfix = unary_post_pre_exp(root, expr_types, ge);
+    return postfix;
+  }
+    break;
+  case node_statement: {
+    list<quad> read_write = rw_exp_quad(root -> children[0], root -> children[1]);
+    res.insert(res.end(), read_write.begin(), read_write.end());
+  }
+    break;
+  case node_selection_stmt: {
+    list<quad> if_quads = handle_if(root, expr_types, ge);
+    res.insert(res.end(), if_quads.begin(), if_quads.end());
+  }
+    break;
+  case node_iteration_stmt: {
+    list<quad> iter_quads = handle_iter(root, expr_types, ge);
+    res.insert(res.end(), iter_quads.begin(), iter_quads.end());
+  }
+    break;
+  default:
+      list<quad> recur_ret;
+      for (int i = 0; i < 10 && root -> children[i] != NULL; i++) {
+	list<quad> child_quads = make_quads(root -> children[i], res);
+	recur_ret.insert(recur_ret.end(), child_quads.begin(), child_quads.end());
+      }
+      res.insert(res.begin(), recur_ret.begin(), recur_ret.end());
+      break;
+  }
+
+  return res;
+}
+
