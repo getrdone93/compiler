@@ -174,7 +174,6 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
   list<quad> res;
   map<string, int> fake_to_real;
   list<quad> decs = declare_idents(idents);
-  res.insert(res.end(), decs.begin(), decs.end());
   list<quad> str_labels;
 
   for (list<quad>::iterator it = quads.begin(); it != quads.end(); it++) {
@@ -271,8 +270,11 @@ list<quad> quads_to_asm(list<quad> quads, set<string> idents, vector<arm_registe
     }
   }
 
-  list<quad> af = arm_funcs();
   res.push_back(two_arity_quad(node_SWI, HALT));
+  res.push_back(two_arity_quad(node_FUNC_LABEL, ""));  
+  res.insert(res.end(), decs.begin(), decs.end());
+
+  list<quad> af = arm_funcs();
   res.insert(res.end(), af.begin(), af.end());
 
   list<quad> ds = data_section(str_labels);

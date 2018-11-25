@@ -68,22 +68,22 @@ test :	parse
 	# cat program.s
 	# ./makeTree.sh
 
-	# echo "\nphase3test2.c-"
-	# -./parse phase3test2.c-- > /dev/null
-	# cat phase3test2.c--
-	# cat output.quad
-	# echo "---assembler---"
-	# cat program.s
-	# ./makeTree.sh
-
-
-	echo "\ntestprog.c"
-	-./parse testprog.c- > /dev/null
-	cat testprog.c-
+	echo "\nphase3test2.c-"
+	-./parse phase3test2.c- > /dev/null
+	cat phase3test2.c-
 	cat output.quad
 	echo "---assembler---"
 	cat program.s
 	./makeTree.sh
+
+
+	# echo "\ntestprog.c"
+	# -./parse testprog.c- > /dev/null
+	# cat testprog.c-
+	# cat output.quad
+	# echo "---assembler---"
+	# cat program.s
+	# ./makeTree.sh
 
 	# echo "\na_test1.c"
 	# -./parse testFiles/input_progs/a_test1.c- > /dev/null
