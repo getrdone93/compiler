@@ -352,10 +352,7 @@ list<quad> handle_if(parsetree *root, set<nodetype> set_exp, set<nodetype> ge) {
     next_block.push_front(two_arity_quad(node_FUNC_LABEL, next_br));    
     //check if label or branch exists because if not then make_quads didn't call back to here
     quad nbb = next_block.back();
-
-    //    if (nbb.type != node_FUNC_LABEL && nbb.type != node_BR) {
     next_block.push_back(two_arity_quad(node_FUNC_LABEL, make_end_label(next_br)));
-   //}
   }
 
   list<quad> cond_quads = nested_expression(condition, set_exp, ge);
